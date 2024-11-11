@@ -16,6 +16,8 @@ option(ENABLE_PULSE "Set to ON to enable pulse audio (versus alsa)" OFF)
 option(ENABLE_TTS "Set to ON to enable text to speech" OFF)
 option(USE_SYSTEM_PUGIXML "Set to ON to use system-wide pugixml library" OFF)
 
+add_definitions(-w)
+
 # Win32 default platform & directory detection
 if(WIN32)
 
