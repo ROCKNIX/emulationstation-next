@@ -408,7 +408,7 @@ void InputManager::rebuildAllJoysticks(bool deinit)
 
 		if (!loadInputConfig(mInputConfigs[joyId]))
 		{
-#if !BATOCERA
+#if !defined(BATOCERA) || !defined(ROCKNIX)
 			std::string mappingString;
 			
 			if (SDL_IsGameController(idx))

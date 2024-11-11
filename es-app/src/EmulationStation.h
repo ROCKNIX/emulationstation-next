@@ -20,6 +20,8 @@
 #define SCREENSCRAPER_SOFTNAME			"Batocera-Emulationstation"
 #elif RETROBAT
 #define SCREENSCRAPER_SOFTNAME			"Retrobat-Emulationstation"
+#elif ROCKNIX
+#define SCREENSCRAPER_SOFTNAME			"ROCKNIX-Emulationstation"
 #else
 #define SCREENSCRAPER_SOFTNAME			"Emulationstation"
 #endif
