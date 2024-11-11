@@ -121,13 +121,13 @@ public:
 				return true;
 			}
 
-			if (config->isMappedLike("pageup", input))
+			if (config->isMappedLike("LeftShoulder", input))
 			{				
 				mZooming = -1;
 				return true;
 			}
 			
-			if (config->isMappedLike("pagedown", input))
+			if (config->isMappedLike("RightShoulder", input))
 			{
 				mZooming = 1;
 				return true;
@@ -177,7 +177,7 @@ public:
 				return true;
 			}
 			
-			if (config->isMappedLike("pagedown", input) || config->isMappedLike("pageup", input))
+			if (config->isMappedLike("RightShoulder", input) || config->isMappedLike("LeftShoulder", input))
 			{
 				mZooming = 0;
 				return true;

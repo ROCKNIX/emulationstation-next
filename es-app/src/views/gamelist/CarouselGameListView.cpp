@@ -135,7 +135,7 @@ void CarouselGameListView::addPlaceholder()
 std::string CarouselGameListView::getQuickSystemSelectRightButton()
 {
 	if (mList.isHorizontalCarousel())
-		return "r2";
+		return "righttrigger";
 
 	return "right";
 }
@@ -143,7 +143,7 @@ std::string CarouselGameListView::getQuickSystemSelectRightButton()
 std::string CarouselGameListView::getQuickSystemSelectLeftButton()
 {
 	if (mList.isHorizontalCarousel())
-		return "l2";
+		return "lefttrigger";
 
 	return "left";
 }

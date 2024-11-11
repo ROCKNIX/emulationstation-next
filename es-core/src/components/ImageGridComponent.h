@@ -532,14 +532,14 @@ bool ImageGridComponent<T>::input(InputConfig* config, Input input)
 			dir[0 ^ idx] = -1;
 		else if (config->isMappedLike("right", input))
 			dir[0 ^ idx] = 1;
-		else  if (config->isMappedTo("pageup", input))
+		else  if (config->isMappedTo("leftshoulder", input))
 		{
 			if (isVertical())
 				dir[1 ^ idx] = -dimScrollable;
 			else
 				dir[0 ^ idx] = -dimScrollable;
 		}
-		else if (config->isMappedTo("pagedown", input))
+		else if (config->isMappedTo("rightshoulder", input))
 		{
 			if (isVertical())
 				dir[1 ^ idx] = dimScrollable;
@@ -561,7 +561,7 @@ bool ImageGridComponent<T>::input(InputConfig* config, Input input)
 	{
 		if (config->isMappedLike("up", input) || config->isMappedLike("down", input) ||
 			config->isMappedLike("left", input) || config->isMappedLike("right", input) ||
-			config->isMappedTo("pagedown", input) || config->isMappedTo("pageup", input))
+			config->isMappedTo("rightshoulder", input) || config->isMappedTo("leftshoulder", input))
 		{
 			stopScrolling();
 		}

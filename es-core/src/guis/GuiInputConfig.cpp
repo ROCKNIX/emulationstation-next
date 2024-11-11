@@ -48,33 +48,33 @@ void GuiInputConfig::initInputConfigStructure(InputConfig* target)
 {
 	GUI_INPUT_CONFIG_LIST =
 	{
-		{ "b",               false, "SOUTH",			  ":/help/buttons_south.svg" },
-		{ "a",               false, "EAST",			      ":/help/buttons_east.svg" },
-		{ "x",               true,  "NORTH",              ":/help/buttons_north.svg" },
-		{ "y",               true,  "WEST",               ":/help/buttons_west.svg" },
+		{ "Up",               false, "D-PAD UP",           ":/help/dpad_up.svg" },
+		{ "Down",             false, "D-PAD DOWN",         ":/help/dpad_down.svg" },
+		{ "Left",             false, "D-PAD LEFT",         ":/help/dpad_left.svg" },
+		{ "Right",            false, "D-PAD RIGHT",        ":/help/dpad_right.svg" },
+		{ "Start",            true,  "START",              ":/help/button_start.svg" },
+		{ "Select",           true,  "SELECT",             ":/help/button_select.svg" },
 
-		{ "start",           true,  "START",              ":/help/button_start.svg" },
-		{ "select",          true,  "SELECT",             ":/help/button_select.svg" },
+		{ "a",                false, "BUTTON A / EAST",    ":/help/buttons_east.svg" },
+		{ "b",                true,  "BUTTON B / SOUTH",   ":/help/buttons_south.svg" },
+		{ "x",                true,  "BUTTON X / NORTH",   ":/help/buttons_north.svg" },
+		{ "y",                true,  "BUTTON Y / WEST",    ":/help/buttons_west.svg" },
 
-		{ "up",              false, "D-PAD UP",           ":/help/dpad_up.svg" },
-		{ "down",            false, "D-PAD DOWN",         ":/help/dpad_down.svg" },
-		{ "left",            false, "D-PAD LEFT",         ":/help/dpad_left.svg" },
-		{ "right",           false, "D-PAD RIGHT",        ":/help/dpad_right.svg" },
-
-		{ "pageup",          true,  "LEFT SHOULDER",      ":/help/button_l.svg" },
-		{ "pagedown",        true,  "RIGHT SHOULDER",     ":/help/button_r.svg" },
-
-		{ "joystick1up",     true,  "LEFT ANALOG UP",     ":/help/analog_up.svg" },
-		{ "joystick1left",   true,  "LEFT ANALOG LEFT",   ":/help/analog_left.svg" },
-		{ "joystick2up",     true,  "RIGHT ANALOG UP",    ":/help/analog_up.svg" },
-		{ "joystick2left",   true,  "RIGHT ANALOG LEFT",  ":/help/analog_left.svg" },
-
-		{ "l2",              true,  "LEFT TRIGGER",       ":/help/button_lt.svg" },
-		{ "r2",              true,  "RIGHT TRIGGER",      ":/help/button_rt.svg" },
-		{ "l3",              true,  "LEFT STICK PRESS",   ":/help/analog_thumb.svg" },
-		{ "r3",              true,  "RIGHT STICK PRESS",  ":/help/analog_thumb.svg" },
-
-		{ "hotkey",          true,  "HOTKEY",             ":/help/button_hotkey.svg" }
+		{ "LeftShoulder",     true,  "LEFT SHOULDER",      ":/help/button_l.svg" },
+		{ "RightShoulder",    true,  "RIGHT SHOULDER",     ":/help/button_r.svg" },
+		{ "LeftTrigger",      true,  "LEFT TRIGGER",       ":/help/button_lt.svg" },
+		{ "RightTrigger",     true,  "RIGHT TRIGGER",      ":/help/button_rt.svg" },
+		{ "LeftThumb",        true,  "LEFT THUMB",         ":/help/analog_thumb.svg" },
+		{ "RightThumb",       true,  "RIGHT THUMB",        ":/help/analog_thumb.svg" },
+		{ "LeftAnalogUp",     true,  "LEFT ANALOG UP",     ":/help/analog_up.svg" },
+		{ "LeftAnalogDown",   true,  "LEFT ANALOG DOWN",   ":/help/analog_down.svg" },
+		{ "LeftAnalogLeft",   true,  "LEFT ANALOG LEFT",   ":/help/analog_left.svg" },
+		{ "LeftAnalogRight",  true,  "LEFT ANALOG RIGHT",  ":/help/analog_right.svg" },
+		{ "HotKeyEnable",     true,  "HOTKEY ENABLE",      ":/help/button_hotkey.svg" },
+		{ "RightAnalogUp",    true,  "RIGHT ANALOG UP",    ":/help/analog_up.svg" },
+		{ "RightAnalogDown",  true,  "RIGHT ANALOG DOWN",  ":/help/analog_down.svg" },
+		{ "RightAnalogLeft",  true,  "RIGHT ANALOG LEFT",  ":/help/analog_left.svg" },
+		{ "RightAnalogRight", true,  "RIGHT ANALOG RIGHT", ":/help/analog_right.svg" }
 	};
 	
 #ifdef INVERTEDINPUTCONFIG
@@ -264,19 +264,19 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("OK"), "ok", [this, okFunction] { 
 		// check if the hotkey enable button is set. if not prompt the user to use select or nothing.
 		Input input;
-		if (!mTargetConfig->getInputByName("hotkey", &input)) { 
+		if (!mTargetConfig->getInputByName("HotKeyEnable", &input)) {
 			mWindow->pushGui(new GuiMsgBox(mWindow,
 				_("NO HOTKEY BUTTON HAS BEEN ASSIGNED. THIS IS REQUIRED FOR EXITING GAMES WITH A CONTROLLER. DO YOU WANT TO USE THE SELECT BUTTON AS YOUR HOTKEY?"),  
 				_("SET SELECT AS HOTKEY"), [this, okFunction] { 
 					Input input;
 					mTargetConfig->getInputByName("Select", &input);
-					mTargetConfig->mapInput("hotkey", input); 
+					mTargetConfig->mapInput("HotKeyEnable", input);
 					okFunction();
 					},
 				_("DO NOT ASSIGN HOTKEY"), [this, okFunction] { 
 					// for a disabled hotkey enable button, set to a key with id 0,
 					// so the input configuration script can be backwards compatible.
-					mTargetConfig->mapInput("hotkey", Input(DEVICE_KEYBOARD, TYPE_KEY, 0, 1, true)); 
+					mTargetConfig->mapInput("HotKeyEnable", Input(DEVICE_KEYBOARD, TYPE_KEY, 0, 1, true));
 					okFunction();
 				}
 			));
@@ -406,7 +406,7 @@ bool GuiInputConfig::assign(Input input, int inputId)
 	// (if it's the same as what it was before, allow it)
 	if (mTargetConfig->getMappedTo(input).size() > 0 && 
 		!mTargetConfig->isMappedTo(GUI_INPUT_CONFIG_LIST[inputId].name, input) && 
-		GUI_INPUT_CONFIG_LIST[inputId].name != "hotkey") 
+		GUI_INPUT_CONFIG_LIST[inputId].name != "HotKeyEnable")
 	{
 		error(mMappings.at(inputId), "Already mapped!");
 		return false;

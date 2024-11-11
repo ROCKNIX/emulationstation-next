@@ -927,8 +927,8 @@ void InputManager::loadDefaultKBConfig()
 	cfg->mapInput("start", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_F1, 1, true));
 	cfg->mapInput("select", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_F2, 1, true));
 
-	cfg->mapInput("pageup", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_RIGHTBRACKET, 1, true));
-	cfg->mapInput("pagedown", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_LEFTBRACKET, 1, true));
+	cfg->mapInput("leftshoulder", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_RIGHTBRACKET, 1, true));
+	cfg->mapInput("rightshoulder", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_LEFTBRACKET, 1, true));
 }
 
 void InputManager::loadDefaultGunConfig()
@@ -1235,15 +1235,8 @@ std::string InputManager::configureEmulators() {
   for (int player = 0; player < MAX_PLAYERS; player++) {
     InputConfig * playerInputConfig = playerJoysticks[player];
     if(playerInputConfig != NULL){
-      command <<  "-p" << player+1 << "index "      << playerInputConfig->getDeviceIndex();
+      command << " -p" << player+1 << "index "      << playerInputConfig->getDeviceIndex();
       command << " -p" << player+1 << "guid "       << playerInputConfig->getDeviceGUIDString();
-#if WIN32
-	  command << " -p" << player+1 << "path \""     << playerInputConfig->getDevicePath() << "\"";
-#endif
-      command << " -p" << player+1 << "name \""     << playerInputConfig->getDeviceName() << "\"";
-      command << " -p" << player+1 << "nbbuttons "  << playerInputConfig->getDeviceNbButtons();
-      command << " -p" << player+1 << "nbhats "     << playerInputConfig->getDeviceNbHats();
-      command << " -p" << player+1 << "nbaxes "     << playerInputConfig->getDeviceNbAxes();
       command << " ";
     }
   }

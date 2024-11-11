@@ -361,7 +361,7 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 	}
 
 	// For deleting a chara (Left Top Button)
-	if (config->isMappedTo("pageup", input) && input.value) {
+	if (config->isMappedTo("leftshoulder", input) && input.value) {
 		bool editing = mText->isEditing();
 		if (!editing)
 			mText->startEditing();
@@ -373,7 +373,7 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 	}
 
 	// For Adding a space (Right Top Button)
-	if (config->isMappedTo("pagedown", input) && input.value) 
+	if (config->isMappedTo("rightshoulder", input) && input.value)
 	{
 		bool editing = mText->isEditing();
 		if (!editing)

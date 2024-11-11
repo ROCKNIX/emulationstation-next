@@ -92,7 +92,7 @@ bool GuiDetectDevice::input(InputConfig* config, Input input)
 		return true;
 
 	if(!mFirstRun && (input.device == DEVICE_KEYBOARD && input.type == TYPE_KEY && input.value && input.id == SDLK_ESCAPE) ||
-	                 (input.device != DEVICE_KEYBOARD && config->isMappedTo("hotkey", input))) 
+	                 (input.device != DEVICE_KEYBOARD && config->isMappedTo("HotKeyEnable", input)))
 	{
 		// cancel configuring
 		PowerSaver::resume();

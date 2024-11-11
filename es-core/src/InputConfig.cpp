@@ -226,16 +226,16 @@ bool InputConfig::isMappedTo(const std::string& name, Input input, bool reversed
 bool InputConfig::isMappedLike(const std::string& name, Input input)
 {
 	if (name == "left")
-		return isMappedTo("left", input) || isMappedTo("joystick1left", input);
+		return isMappedTo("left", input) || isMappedTo("leftanalogleft", input) || isMappedTo("rightanalogleft", input);
 
 	if (name == "right")
-		return isMappedTo("right", input) || isMappedTo("joystick1left", input, true);
+		return isMappedTo("right", input) || isMappedTo("leftanalogright", input) || isMappedTo("rightanalogright", input);
 
 	if (name == "up")
-		return isMappedTo("up", input) || isMappedTo("joystick1up", input);
+		return isMappedTo("up", input) || isMappedTo("leftanalogup", input) || isMappedTo("rightanalogup", input);
 
 	if (name == "down")
-		return isMappedTo("down", input) || isMappedTo("joystick1up", input, true);
+		return isMappedTo("down", input) || isMappedTo("leftanalogdown", input) || isMappedTo("rightanalogdown", input);
 
 	return isMappedTo(name, input);
 }

@@ -96,12 +96,12 @@ bool CarouselComponent::input(InputConfig* config, Input input)
 		{
 		case CarouselType::VERTICAL:
 		case CarouselType::VERTICAL_WHEEL:
-			if (config->isMappedLike("up", input) || config->isMappedLike("l2", input))
+			if (config->isMappedLike("up", input) || config->isMappedLike("lefttrigger", input))
 			{
 				listInput(-1);
 				return true;
 			}
-			if (config->isMappedLike("down", input) || config->isMappedLike("r2", input))
+			if (config->isMappedLike("down", input) || config->isMappedLike("righttrigger", input))
 			{
 				listInput(1);
 				return true;
@@ -123,12 +123,12 @@ bool CarouselComponent::input(InputConfig* config, Input input)
 		case CarouselType::HORIZONTAL:
 		case CarouselType::HORIZONTAL_WHEEL:
 		default:
-			if (config->isMappedLike("left", input) || config->isMappedLike("l2", input))
+			if (config->isMappedLike("left", input) || config->isMappedLike("lefttrigger", input))
 			{
 				listInput(-1);
 				return true;
 			}
-			if (config->isMappedLike("right", input) || config->isMappedLike("r2", input))
+			if (config->isMappedLike("right", input) || config->isMappedLike("righttrigger", input))
 			{
 				listInput(1);
 				return true;
@@ -157,8 +157,8 @@ bool CarouselComponent::input(InputConfig* config, Input input)
 			config->isMappedLike("down", input) ||
 			config->isMappedLike("pagedown", input) ||
 			config->isMappedLike("pageup", input) ||
-			config->isMappedLike("l2", input) ||
-			config->isMappedLike("r2", input))
+			config->isMappedLike("lefttrigger", input) ||
+			config->isMappedLike("righttrigger", input))
 			listInput(0);
 	}
 

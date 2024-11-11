@@ -405,23 +405,23 @@ bool SystemView::input(InputConfig* config, Input input)
 			auto carousel = mCarousel.asCarousel();
 			if (carousel != nullptr && carousel->isHorizontalCarousel())
 			{
-				if (config->isMappedLike("left", input) || config->isMappedLike("l2", input))
+				if (config->isMappedLike("left", input) || config->isMappedLike("lefttrigger", input))
 				{
 					mCarousel.moveSelectionBy(-1);
 					return true;
 				}
-				if (config->isMappedLike("right", input) || config->isMappedLike("r2", input))
+				if (config->isMappedLike("right", input) || config->isMappedLike("righttrigger", input))
 				{
 					mCarousel.moveSelectionBy(1);
 					return true;
 				}
-				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("down", input)) || config->isMappedTo("pagedown", input))
+				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("down", input)) || config->isMappedTo("rightshoulder", input))
 				{
 					int cursor = moveCursorFast(true);
 					mCarousel.moveSelectionBy(cursor - mCursor);
 					return true;
 				}
-				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("up", input)) || config->isMappedTo("pageup", input))
+				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("up", input)) || config->isMappedTo("leftshoulder", input))
 				{
 					int cursor = moveCursorFast(false);
 					mCarousel.moveSelectionBy(cursor - mCursor);
@@ -430,23 +430,23 @@ bool SystemView::input(InputConfig* config, Input input)
 			}
 			else
 			{
-				if (config->isMappedLike("up", input) || config->isMappedLike("l2", input))
+				if (config->isMappedLike("up", input) || config->isMappedLike("lefttrigger", input))
 				{
 					mCarousel.moveSelectionBy(-1);
 					return true;
 				}
-				if (config->isMappedLike("down", input) || config->isMappedLike("r2", input))
+				if (config->isMappedLike("down", input) || config->isMappedLike("righttrigger", input))
 				{
 					mCarousel.moveSelectionBy(1);
 					return true;
 				}
-				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("right", input)) || config->isMappedTo("pagedown", input))
+				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("right", input)) || config->isMappedTo("rightshoulder", input))
 				{
 					int cursor = moveCursorFast(true);
 					mCarousel.moveSelectionBy(cursor - mCursor);
 					return true;
 				}
-				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("left", input)) || config->isMappedTo("pageup", input))
+				if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike("left", input)) || config->isMappedTo("leftshoulder", input))
 				{
 					int cursor = moveCursorFast(false);
 					mCarousel.moveSelectionBy(cursor - mCursor);
@@ -460,10 +460,10 @@ bool SystemView::input(InputConfig* config, Input input)
 				config->isMappedLike("right", input) ||
 				config->isMappedLike("up", input) ||
 				config->isMappedLike("down", input) ||
-				config->isMappedLike("pagedown", input) ||
-				config->isMappedLike("pageup", input) ||
-				config->isMappedLike("l2", input) ||
-				config->isMappedLike("r2", input))
+				config->isMappedLike("rightshoulder", input) ||
+				config->isMappedLike("leftshoulder", input) ||
+				config->isMappedLike("lefttrigger", input) ||
+				config->isMappedLike("righttrigger", input))
 				mCarousel.moveSelectionBy(0);
 		}
 	}
