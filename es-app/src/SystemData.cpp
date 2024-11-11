@@ -323,6 +323,10 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 			if (mMetadata.name == "vpinball" && fn == "roms")
 				continue;			
 
+			// Skip ports folders, as many folders in ports causes slow down at startup
+			if (fileInfo.path.rfind("ports") != std::string::npos)
+				continue;
+
 			FolderData* newFolder = new FolderData(filePath, this);
 			populateFolder(newFolder, fileMap);
 
