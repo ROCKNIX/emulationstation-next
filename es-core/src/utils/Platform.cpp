@@ -617,6 +617,10 @@ namespace Utils
 			return "rk3399";
 #endif
 
+#if RK3566
+			return "rk3566";
+#endif
+
 #if RK3568
 			return "rk3568";
 #endif
@@ -663,6 +667,10 @@ namespace Utils
 
 #if S922X
 			return "s922x";
+#endif
+
+#if SD865
+			return "sd865";
 #endif
 
 #endif

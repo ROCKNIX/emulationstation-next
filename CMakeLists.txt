@@ -90,6 +90,12 @@ LIST(APPEND CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Packages
 )
 
+# Pull the hardware device out of the build environment
+if(DEFINED ENV{DEVICE})
+    add_definitions(-DHW_DEVICE="$ENV{DEVICE}")
+    add_definitions(-D$ENV{DEVICE})
+endif()
+
 if(BATOCERA)
   MESSAGE("Batocera build")
   add_definitions(-DBATOCERA)
@@ -235,24 +241,24 @@ if(CEC)
   endif()
 endif()
 
-if(DEFINED SCREENSCRAPER_SOFTNAME)
-    add_definitions(-DSCREENSCRAPER_SOFTNAME="${SCREENSCRAPER_SOFTNAME}")
+if(DEFINED ENV{SCREENSCRAPER_SOFTNAME})
+    add_definitions(-DSCREENSCRAPER_SOFTNAME="$ENV{SCREENSCRAPER_SOFTNAME}")
 endif()
 
-if(DEFINED SCREENSCRAPER_DEV_LOGIN)
-    add_definitions(-DSCREENSCRAPER_DEV_LOGIN="${SCREENSCRAPER_DEV_LOGIN}")
+if(DEFINED ENV{SCREENSCRAPER_DEV_LOGIN})
+    add_definitions(-DSCREENSCRAPER_DEV_LOGIN="$ENV{SCREENSCRAPER_DEV_LOGIN}")
 endif()
 
-if(DEFINED GAMESDB_APIKEY)
-    add_definitions(-DGAMESDB_APIKEY="${GAMESDB_APIKEY}")
+if(DEFINED ENV{GAMESDB_APIKEY})
+    add_definitions(-DGAMESDB_APIKEY="$ENV{GAMESDB_APIKEY}")
 endif()
 
-if(DEFINED CHEEVOS_DEV_LOGIN)
-    add_definitions(-DCHEEVOS_DEV_LOGIN="${CHEEVOS_DEV_LOGIN}")
+if(DEFINED ENV{CHEEVOS_DEV_LOGIN})
+    add_definitions(-DCHEEVOS_DEV_LOGIN="$ENV{CHEEVOS_DEV_LOGIN}")
 endif()
 
-if(DEFINED HFS_DEV_LOGIN)
-    add_definitions(-DHFS_DEV_LOGIN="${HFS_DEV_LOGIN}")
+if(DEFINED ENV{HFS_DEV_LOGIN})
+    add_definitions(-DHFS_DEV_LOGIN="$ENV{HFS_DEV_LOGIN}")
 endif()
 
 #-------------------------------------------------------------------------------
