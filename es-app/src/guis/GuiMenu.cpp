@@ -2010,8 +2010,24 @@ void GuiMenu::openSystemSettings()
 #endif
 	
 	// Developer options
-	if (isFullUI)
+	if (isFullUI) {
 		s->addEntry(_("FRONTEND DEVELOPER OPTIONS"), true, [this] { openDeveloperSettings(); });
+
+		// Security
+		s->addEntry(_("SECURITY"), true, [this, s]
+		{
+			GuiSettings *securityGui = new GuiSettings(mWindow, _("SECURITY").c_str());
+			auto rootpassword = std::make_shared<TextComponent>(mWindow, SystemConf::getInstance()->get("root.password"), ThemeData::getMenuTheme()->Text.font, ThemeData::getMenuTheme()->Text.color);
+			securityGui->addInputTextRow(_("ROOT PASSWORD"), "root.password", false);
+
+			securityGui->addSaveFunc([this, rootpassword] {
+				SystemConf::getInstance()->saveSystemConf();
+				const std::string rootpass = SystemConf::getInstance()->get("root.password");
+				Utils::Platform::runSystemCommand("setrootpass " + rootpass, "", nullptr);
+			});
+			mWindow->pushGui(securityGui);
+		});
+	}
 
 	auto pthis = this;
 	s->onFinalize([s, pthis, window]

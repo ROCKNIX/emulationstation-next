@@ -703,22 +703,11 @@ bool ApiSystem::forgetBluetoothControllers()
 std::string ApiSystem::getRootPassword() 
 {
 	LOG(LogDebug) << "ApiSystem::getRootPassword";
+	auto RootPassword = SystemConf::getInstance()->get("root.password");
+	if (!RootPassword.empty())
+		return RootPassword;
 
-	std::ostringstream oss;
-	oss << "rocknix-config getRootPassword";
-	FILE *pipe = popen(oss.str().c_str(), "r");
-	char line[1024];
-
-	if (pipe == NULL) {
-		return "";
-	}
-
-	if (fgets(line, 1024, pipe)) {
-		strtok(line, "\n");
-		pclose(pipe);
-		return std::string(line);
-	}
-	return oss.str().c_str();
+	return "linux";
 }
 
 std::vector<std::string> ApiSystem::getAvailableVideoOutputDevices() 
