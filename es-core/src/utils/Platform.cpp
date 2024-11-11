@@ -677,5 +677,62 @@ namespace Utils
 
 			return "";
 		}
+
+		int runSystemCommand(const std::string& cmd_utf8, const std::string& name, Window* window)
+		{
+
+			std::string stderrFilename = " 2>/var/log/es_launch_stderr.log";
+			std::string stdoutFilename = " >/var/log/es_launch_stdout.log";
+
+			// Parent fork
+			pid_t ret = fork();
+			if (ret == 0)
+			{
+				ret = fork();
+				if (ret == 0)
+				{
+					execl("/usr/bin/sh", "sh", "-c", (cmd_utf8 + stderrFilename + stdoutFilename).c_str(), (char *) NULL);
+					_exit(1); // execl failed
+				}
+				int status;
+				waitpid(ret, &status, 0); // Wait for fork exit..
+				_exit(0);
+			}
+			else
+			{
+				if (ret > 0)
+				{
+					int status;
+					waitpid(ret, &status, 0); // keep calm and kill zombies
+				}
+			}
+			return 0;
+		}
+
+		std::string GetEnv(const std::string& var) {
+			const char* val = std::getenv(var.c_str());
+			if (val == nullptr) {
+				return "";
+			} else {
+				return val;
+			}
+		}
+
+		std::string GetShOutput(const std::string& mStr)
+		{
+			std::string result, file;
+			FILE* pipe{popen(mStr.c_str(), "r")};
+			char buffer[256];
+
+			while(fgets(buffer, sizeof(buffer), pipe) != NULL)
+			{
+				file = buffer;
+				result += file.substr(0, file.size() - 1);
+			}
+
+			pclose(pipe);
+			return result;
+		}
+
 	}
 }
