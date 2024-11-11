@@ -44,7 +44,7 @@ void Log::init()
 			lvl = (LogLevel) -1; // Disabled
 	}
 
-	auto logPath = Paths::getUserEmulationStationPath() + "/es_log.txt";
+	auto logPath = Paths::getLogPath() + "/es_log.txt";
 	auto bakPath = logPath + ".bak";
 
 	if ((int)lvl < 0) 
