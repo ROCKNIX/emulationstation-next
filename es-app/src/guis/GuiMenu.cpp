@@ -1226,31 +1226,15 @@ void GuiMenu::openUpdatesSettings()
 		// Enable updates
 		updateGui->addSwitch(_("CHECK FOR UPDATES"), "updates.enabled", false);
 
-		auto updatesTypeList = std::make_shared<OptionListComponent<std::string> >(mWindow, _("UPDATE TYPE"), false);
+		updateGui->addSwitch(_("FORCE NEXT UPDATE"), "updates.force", false);
 
-#if BATOCERA
-#define BETA_NAME "butterfly"
-#else
-#define BETA_NAME "beta"
-#endif
-
-		std::string updatesType = SystemConf::getInstance()->get("updates.type");
-
-#if WIN32
-		if (updatesType == "unstable")
-			updatesTypeList->add("unstable", "unstable", updatesType == "unstable");
-		else
-#endif
-			if (updatesType.empty() || updatesType != BETA_NAME)
-				updatesType = "stable";
-
-		updatesTypeList->add("stable", "stable", updatesType == "stable");
-		updatesTypeList->add(BETA_NAME, BETA_NAME, updatesType == BETA_NAME);
-
-		updateGui->addWithLabel(_("UPDATE TYPE"), updatesTypeList);
-		updatesTypeList->setSelectedChangedCallback([](std::string name)
+		auto updatesBranchList = std::make_shared<OptionListComponent<std::string> >(mWindow, _("UPDATE BRANCH"), false);
+		std::string updatesBranch = SystemConf::getInstance()->get("updates.branch");
+		updatesBranchList->add("release", "stable", updatesBranch == "stable");
+		updateGui->addWithLabel(_("UPDATE BRANCH"), updatesBranchList);
+		updatesBranchList->setSelectedChangedCallback([](std::string name)
 		{
-			if (SystemConf::getInstance()->set("updates.type", name))
+			if (SystemConf::getInstance()->set("updates.branch", name))
 				SystemConf::getInstance()->saveSystemConf();
 		});
 
