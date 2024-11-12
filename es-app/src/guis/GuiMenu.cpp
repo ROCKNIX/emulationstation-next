@@ -4373,6 +4373,12 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	if (quickAccessMenu)
 		s->addGroup(_("QUIT"));
 
+	s->addEntry(_("RESTART EMULATIONSTATION"), false, [window] {
+		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART EMULATIONSTATION?"),
+			_("YES"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT); },
+			_("NO"), nullptr));
+	}, "iconRestart");
+
 	s->addEntry(_("RESTART SYSTEM"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"), 
 			_("YES"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::REBOOT); },
