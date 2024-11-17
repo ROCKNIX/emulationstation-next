@@ -4213,7 +4213,211 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		}
 	});
 
+	// ENABLE IPV6
+	auto enable_ipv6 = std::make_shared<SwitchComponent>(mWindow);
+	bool ipv6Enabled = SystemConf::getInstance()->get("ipv6.enabled") == "1";
+	enable_ipv6->setState(ipv6Enabled);
+	s->addWithLabel(_("ENABLE IPV6"), enable_ipv6);
+	enable_ipv6->setOnChangedCallback([enable_ipv6] {
+		bool ipv6Enabled = enable_ipv6->getState();
+		SystemConf::getInstance()->set("ipv6.enabled", ipv6Enabled ? "1" : "0");
+		Utils::Platform::runSystemCommand("/usr/bin/toggle-ipv6", "", nullptr);
+	});
+
+	// NETWORK SERVICES
+	s->addGroup(_("NETWORK SERVICES"));
+
+       auto sshd_enabled = std::make_shared<SwitchComponent>(mWindow);
+	bool sshbaseEnabled = SystemConf::getInstance()->get("ssh.enabled") == "1";
+	sshd_enabled->setState(sshbaseEnabled);
+	s->addWithLabel(_("ENABLE SSH"), sshd_enabled);
+	sshd_enabled->setOnChangedCallback([sshd_enabled] {
+		if (sshd_enabled->getState() == false) {
+			Utils::Platform::runSystemCommand("systemctl stop sshd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl disable sshd", "", nullptr);
+			Utils::Platform::runSystemCommand("rm /storage/.cache/services/sshd.conf", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
+			Utils::Platform::runSystemCommand("touch /storage/.cache/services/sshd.conf", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl enable sshd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl start sshd", "", nullptr);
+						}
+			bool sshenabled = sshd_enabled->getState();
+			SystemConf::getInstance()->set("ssh.enabled", sshenabled ? "1" : "0");
+		});
+
+       auto samba_enabled = std::make_shared<SwitchComponent>(mWindow);
+	bool smbbaseEnabled = SystemConf::getInstance()->get("samba.enabled") == "1";
+	samba_enabled->setState(smbbaseEnabled);
+	s->addWithLabel(_("ENABLE SAMBA"), samba_enabled);
+	samba_enabled->setOnChangedCallback([samba_enabled] {
+		if (samba_enabled->getState() == false) {
+			Utils::Platform::runSystemCommand("systemctl stop nmbd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl stop smbd", "", nullptr);
+			Utils::Platform::runSystemCommand("rm /storage/.cache/services/smb.conf", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
+			Utils::Platform::runSystemCommand("touch /storage/.cache/services/smb.conf", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl start nmbd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl start smbd", "", nullptr);
+						}
+			bool sambaenabled = samba_enabled->getState();
+			SystemConf::getInstance()->set("samba.enabled", sambaenabled ? "1" : "0");
+		});
+
+	auto simple_http_enabled = std::make_shared<SwitchComponent>(mWindow);
+	bool simplehttpEnabled = SystemConf::getInstance()->get("simplehttp.enabled") == "1";
+	simple_http_enabled->setState(simplehttpEnabled);
+	s->addWithLabel(_("ENABLE SIMPLE HTTP SERVER"), simple_http_enabled);
+	simple_http_enabled->setOnChangedCallback([simple_http_enabled] {
+		if(simple_http_enabled->getState() == false) {
+			Utils::Platform::runSystemCommand("systemctl disable --now simple-http-server", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("systemctl enable --now simple-http-server", "", nullptr);
+		}
+		bool simplehttpenabled = simple_http_enabled->getState();
+		SystemConf::getInstance()->set("simplehttp.enabled", simplehttpenabled ? "1" : "0");
+	});
+
+       auto optionsUSBGadget = std::make_shared<OptionListComponent<std::string> >(mWindow, _("USB GADGET FUNCTION"), false);
+	std::string selectedUSBGadget = SystemConf::getInstance()->get("usbgadget.function");
+	if (selectedUSBGadget.empty())
+		selectedUSBGadget = "disabled";
+
+	optionsUSBGadget->add(_("DISABLED"), "disabled", selectedUSBGadget == "disabled");
+	optionsUSBGadget->add(_("MTP"), "mtp", selectedUSBGadget == "mtp");
+	optionsUSBGadget->add(_("ECM"), "ecm", selectedUSBGadget == "ecm");
+
+	s->addWithLabel(_("USB GADGET FUNCTION"), optionsUSBGadget);
+
+	s->addSaveFunc([this, optionsUSBGadget, selectedUSBGadget]
+	{
+		if (optionsUSBGadget->changed()) {
+			SystemConf::getInstance()->set("usbgadget.function", optionsUSBGadget->getSelected());
+			Utils::Platform::runSystemCommand("/usr/bin/usbgadget stop", "", nullptr);
+			if (optionsUSBGadget->getSelected() == "mtp")
+				Utils::Platform::runSystemCommand("/usr/bin/usbgadget start mtp", "", nullptr);
+			else if (optionsUSBGadget->getSelected() == "ecm") {
+				Utils::Platform::runSystemCommand("/usr/bin/usbgadget start cdc", "", nullptr);
+				std::string usbip = std::string(Utils::Platform::GetShOutput(R"(cat /storage/.cache/usbgadget/ip_address.conf)"));
+				mWindow->pushGui(new GuiMsgBox(mWindow, _("USB Networking enabled, the device IP is ") + usbip, _("OK"), nullptr));
+			}
+		}
+	});
+
+	// CLOUD SERVICES
+	s->addGroup(_("CLOUD SERVICES"));
+
+       auto enable_syncthing = std::make_shared<SwitchComponent>(mWindow);
+	bool syncthingEnabled = SystemConf::getInstance()->get("syncthing.enabled") == "1";
+	enable_syncthing->setState(syncthingEnabled);
+	s->addWithLabel(_("ENABLE SYNCTHING"), enable_syncthing);
+	enable_syncthing->setOnChangedCallback([enable_syncthing] {
+		if (enable_syncthing->getState() == false) {
+			Utils::Platform::runSystemCommand("systemctl stop syncthing", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("systemctl start syncthing", "", nullptr);
+		}
+		bool syncthingenabled = enable_syncthing->getState();
+		SystemConf::getInstance()->set("syncthing.enabled", syncthingenabled ? "1" : "0");
+	});
+
+       auto mount_cloud = std::make_shared<SwitchComponent>(mWindow);
+	bool mntcloudEnabled = SystemConf::getInstance()->get("clouddrive.mounted") == "1";
+	mount_cloud->setState(mntcloudEnabled);
+	s->addWithLabel(_("MOUNT CLOUD DRIVE"), mount_cloud);
+	mount_cloud->setOnChangedCallback([mount_cloud] {
+		if (mount_cloud->getState() == false) {
+			Utils::Platform::runSystemCommand("rclonectl unmount", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("rclonectl mount", "", nullptr);
+		}
+		bool cloudenabled = mount_cloud->getState();
+		SystemConf::getInstance()->set("clouddrive.mounted", cloudenabled ? "1" : "0");
+	});
+
+	s->addGroup(_("VPN SERVICES"));
+
+	const std::string wireguardConfigFile = "/storage/.config/wireguard/wg0.conf";
+	if (Utils::FileSystem::exists(wireguardConfigFile)) {
+		auto wireguard = std::make_shared<SwitchComponent>(mWindow);
+		bool wgUp = SystemConf::getInstance()->get("wireguard.up") == "1";
+		wireguard->setState(wgUp);
+		s->addWithLabel(_("WIREGUARD VPN"), wireguard);
+		wireguard->setOnChangedCallback([wireguard, wireguardConfigFile] {
+			if (wireguard->getState() == false) {
+				Utils::Platform::runSystemCommand("wg-quick down " + wireguardConfigFile, "", nullptr);
+				Utils::Platform::runSystemCommand("systemctl stop connman-vpn", "", nullptr);
+			} else {
+				Utils::Platform::runSystemCommand("systemctl start connman-vpn", "", nullptr);
+				Utils::Platform::runSystemCommand("wg-quick up " + wireguardConfigFile, "", nullptr);
+			}
+			SystemConf::getInstance()->set("wireguard.up", wireguard->getState() ? "1" : "0");
+		});
+	}
+
+	auto tailscale = std::make_shared<SwitchComponent>(mWindow);
+	bool tsUp = SystemConf::getInstance()->get("tailscale.up") == "1";
+	tailscale->setState(tsUp);
+	s->addWithLabel(_("TAILSCALE VPN"), tailscale);
+	tailscale->setOnChangedCallback([tailscale] {
+		bool tsEnabled = tailscale->getState();
+		if (tsEnabled) {
+			Utils::Platform::runSystemCommand("systemctl start tailscaled", "", nullptr);
+			Utils::Platform::runSystemCommand("tailscale up --timeout=7s", "", nullptr);
+			tsEnabled = IsTailscaleUp();
+		} else {
+			Utils::Platform::runSystemCommand("tailscale down", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl stop tailscaled", "", nullptr);
+		}
+		SystemConf::getInstance()->set("tailscale.up", tsEnabled ? "1" : "0");
+	});
+
+	std::string tsUrl;
+	if ( tsUp == true) {
+		if (!IsTailscaleUp(&tsUrl) && !tsUrl.empty()) {
+			s->addGroup("TAILSCALE REAUTHENTICATE:");
+			s->addGroup(tsUrl);
+		}
+	}
+
+	auto zerotier = std::make_shared<SwitchComponent>(mWindow);
+	bool ztUp = SystemConf::getInstance()->get("zerotier.up") == "1";
+	zerotier->setState(ztUp);
+	s->addWithLabel(_("ZeroTier One"), zerotier);
+	zerotier->setOnChangedCallback([zerotier] {
+		bool ztEnabled = zerotier->getState();
+		if(ztEnabled) {
+			Utils::Platform::runSystemCommand("systemctl start zerotier-one", "", nullptr);
+			ztEnabled = IsZeroTierUp();
+		} else {
+			Utils::Platform::runSystemCommand("systemctl stop zerotier-one", "", nullptr);
+		}
+		SystemConf::getInstance()->set("zerotier.up", ztEnabled ? "1" : "0");
+	});
+
 	mWindow->pushGui(s);
+}
+
+bool GuiMenu::IsTailscaleUp(std::string* loginUrl) {
+	bool loggedOut = false;
+	ApiSystem::executeScriptLegacy("tailscale status", [loginUrl, &loggedOut](std::string line) {
+		 const std::string prompt = "Log in at: ";
+		 if (loginUrl && line.find(prompt) == 0)
+			 *loginUrl = line.substr(prompt.length());
+
+		 if (line.find("Logged out.") != std::string::npos) loggedOut = true;
+	});
+	return !loggedOut;
+}
+
+bool GuiMenu::IsZeroTierUp(std::string* networkId) {
+	bool running = false;
+	ApiSystem::executeScriptLegacy("zerotier-cli -D/storage/.config/zerotier/ info", [networkId, &running](std::string line) {
+		if (line.find("Error connecting to the ZeroTier") != std::string::npos ) running = false;
+		else running = true;
+	});
+	return running;
 }
 
 void GuiMenu::openQuitMenu()
