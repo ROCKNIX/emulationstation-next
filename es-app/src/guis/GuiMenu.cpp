@@ -268,8 +268,8 @@ void GuiMenu::addVersionInfo()
 
 	if (!ApiSystem::getInstance()->getVersion().empty())
 	{
-		if (ApiSystem::getInstance()->getApplicationName() == "BATOCERA")
-			label = "BATOCERA.LINUX ES V" + ApiSystem::getInstance()->getVersion() + buildDate;
+		if (ApiSystem::getInstance()->getApplicationName() == "ROCKNIX")
+			label = "ROCKNIX " + ApiSystem::getInstance()->getVersion() + " (" + ApiSystem::getInstance()->getVersion(true) + ")";
 		else
 		{
 			std::string aboutInfo = ApiSystem::getInstance()->getApplicationName() + " V" + ApiSystem::getInstance()->getVersion();

@@ -159,63 +159,19 @@ bool ApiSystem::isFreeSpaceLimit()
 std::string ApiSystem::getVersion(bool extra)
 {
 	LOG(LogDebug) << "ApiSystem::getVersion";
-
-	if (isScriptingSupported(VERSIONINFO)) 
-	{
-		std::string command = "batocera-version";
-		if (extra) 
-			command += " --extra";
-
-		auto res = executeEnumerationScript(command);
-		if (res.size() > 0 && !res[0].empty())
-			return res[0];
-	}
-
+	std::string version = Utils::Platform::GetEnv("OS_VERSION");
 	if (extra)
-		return "none";
-
-	std::string localVersionFile = Paths::getVersionInfoPath();
-	if (!Utils::FileSystem::exists(localVersionFile))
-		localVersionFile = Paths::findEmulationStationFile("version.info");
-
-	if (Utils::FileSystem::exists(localVersionFile))
 	{
-		std::string localVersion = Utils::FileSystem::readAllText(localVersionFile);
-		localVersion = Utils::String::replace(Utils::String::replace(localVersion, "\r", ""), "\n", "");
-		return localVersion;
+		std::string build = Utils::Platform::GetEnv("OS_BUILD");
+		return build;
 	}
-
-	return PROGRAM_VERSION_STRING;	
+	else
+		return version;
 }
 
 std::string ApiSystem::getApplicationName()
 {
-	std::string localVersionFile = Paths::findEmulationStationFile("about.info");
-	if (Utils::FileSystem::exists(localVersionFile))
-	{
-		std::string aboutInfo = Utils::FileSystem::readAllText(localVersionFile);
-		aboutInfo = Utils::String::replace(Utils::String::replace(aboutInfo, "\r", ""), "\n", "");
-
-		auto ver = ApiSystem::getInstance()->getVersion();
-		auto cut = aboutInfo.find(" V" + ver);
-
-		if (cut == std::string::npos)
-			cut = aboutInfo.find(" " + ver);
-
-		if (cut == std::string::npos)
-			cut = aboutInfo.find(ver);
-
-		if (cut != std::string::npos)
-			aboutInfo = aboutInfo.substr(0, cut);
-
-		return aboutInfo;
-	}
-
-#if BATOCERA
-	return "BATOCERA";
-#else
-	return "EMULATIONSTATION";
-#endif
+	return "ROCKNIX";
 }
 
 bool ApiSystem::setOverscan(bool enable) 
