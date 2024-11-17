@@ -14,6 +14,7 @@ GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window,
 
 	bool warning = ApiSystem::getInstance()->isFreeSpaceLimit();
 
+#if !defined(ROCKNIX)
 	addGroup(_("INFORMATION"));
 
 	addWithLabel(_("VERSION"), std::make_shared<TextComponent>(window, ApiSystem::getInstance()->getVersion(), font, color));
@@ -28,6 +29,7 @@ GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window,
 			}
 		}
 	#endif
+#endif
 
 	std::vector<std::string> infos = ApiSystem::getInstance()->getSystemInformations();
 	if (infos.size() > 0)
