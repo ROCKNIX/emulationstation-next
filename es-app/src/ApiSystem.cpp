@@ -1624,6 +1624,45 @@ std::vector<std::string> ApiSystem::executeEnumerationScript(const std::string c
 	return res;
 }
 
+std::vector<std::string> ApiSystem::executeScriptLegacy(const std::string& command) {
+	std::vector<std::string> vec;
+	executeScriptLegacy(command, [&vec](const std::string& line) {
+		vec.push_back(line);
+	});
+	return vec;
+}
+
+std::pair<std::string, int> ApiSystem::executeScriptLegacy(const std::string& command, const std::function<void(const std::string)>& func)
+{
+	std::cout << "ApiSystem::executeScriptLegacy -> " << command << std::endl;
+	LOG(LogInfo) << "ApiSystem::executeScriptLegacy -> " << command;
+
+	FILE *pipe = popen(command.c_str(), "r");
+	if (pipe == NULL)
+	{
+		LOG(LogError) << "Error executing " << command;
+		return std::pair<std::string, int>("Error starting command : " + command, -1);
+	}
+
+	std::stringstream output_stream;
+	char buff[1024];
+	while (fgets(buff, 1024, pipe))
+	{
+		std::stringstream output_stream(buff);
+		std::string line;
+		while (getline(output_stream, line).good()) {
+			if (line.empty()) continue;
+			std::cout << line << std::endl;
+			if (func != nullptr) {
+				func(std::string(line));
+			}
+		}
+	}
+
+	int exitCode = WEXITSTATUS(pclose(pipe));
+	return std::pair<std::string, int>("", exitCode);
+}
+
 std::pair<std::string, int> ApiSystem::executeScript(const std::string command, const std::function<void(const std::string)>& func)
 {
 	LOG(LogInfo) << "ApiSystem::executeScript -> " << command;

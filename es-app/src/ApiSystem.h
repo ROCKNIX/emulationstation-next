@@ -340,6 +340,9 @@ public:
 	virtual std::vector<std::string> backglassThemes();
 	virtual void restartBackglass();
 
+	static std::pair<std::string, int> executeScriptLegacy(const std::string& command, const std::function<void(const std::string)>& func);
+	static std::vector<std::string> executeScriptLegacy(const std::string& command);
+
 protected:
 	ApiSystem();
 

@@ -62,6 +62,8 @@ public:
 	std::vector<std::string> customHeaders;
 	std::string dataToPost;
 	std::string userAgent;
+	// Client certificate files in .pem format
+	std::string clientCert, clientKey;
 
 	bool useCookieManager;
 };

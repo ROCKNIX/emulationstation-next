@@ -16,6 +16,7 @@
 #include "guis/GuiRetroAchievements.h"
 #include "guis/GuiGamelistOptions.h"
 #include "guis/GuiImageViewer.h"
+#include "guis/GuiMoonlight.h"
 #include "guis/GuiNetPlaySettings.h"
 #include "guis/GuiRetroAchievementsSettings.h"
 #include "guis/GuiSystemInformation.h"
@@ -3204,6 +3205,8 @@ void GuiMenu::openGamesSettings()
 
 	// Game List Update
 	s->addEntry(_("UPDATE GAMELISTS"), false, [this, window] { updateGameLists(window); });
+
+	s->addEntry(_("MOONLIGHT GAME STREAMING"), false, [this, window] { GuiMoonlight::show(mWindow); });
 
 	if (SystemConf::getInstance()->getBool("global.retroachievements") && !Settings::getInstance()->getBool("RetroachievementsMenuitem") && SystemConf::getInstance()->get("global.retroachievements.username") != "")
 	{
