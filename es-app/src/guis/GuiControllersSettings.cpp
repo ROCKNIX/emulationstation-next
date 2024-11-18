@@ -47,6 +47,15 @@ GuiControllersSettings::GuiControllersSettings(Window* wnd, int autoSel) : GuiSe
 
 	addGroup(_("SETTINGS"));
 
+	// Provides a mechanism to disable automatic hotkey assignment
+	bool HotKeysEnabled = SystemConf::getInstance()->getBool("system.autohotkeys");
+	auto autohotkeys = std::make_shared<SwitchComponent>(mWindow);
+	autohotkeys->setState(HotKeysEnabled);
+	addWithLabel(_("AUTOCONFIGURE RETROARCH HOTKEYS"), autohotkeys);
+	addSaveFunc([autohotkeys] {
+		SystemConf::getInstance()->setBool("system.autohotkeys", autohotkeys->getState());
+	});
+
 	// CONTROLLER CONFIGURATION
 	addEntry(_("CONTROLLER MAPPING"), false, [window, this]
 	{
