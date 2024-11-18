@@ -4628,6 +4628,15 @@ void GuiMenu::openSoundSettings()
 		}
 	});
 
+	auto batteryWarning = std::make_shared<SwitchComponent>(mWindow);
+	bool batteryWarningEnabled = SystemConf::getInstance()->get("system.battery.warning") == "1";
+	batteryWarning->setState(batteryWarningEnabled);
+	s->addWithLabel(_("ENABLE AUDIBLE BATTERY WARNING"), batteryWarning);
+	s->addSaveFunc([batteryWarning] {
+		bool batteryWarningEnabled = batteryWarning->getState();
+		SystemConf::getInstance()->set("system.battery.warning", batteryWarningEnabled ? "1" : "0");
+	});
+
 	s->addSwitch(_("ENABLE VIDEO PREVIEW AUDIO"), "VideoAudio", true);
 	
 	mWindow->pushGui(s);
