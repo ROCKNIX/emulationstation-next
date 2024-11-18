@@ -227,6 +227,15 @@ public:
 
 	bool setPowerLedGameForce(std::string basic_string);    
 
+    /* OS Info */
+    std::vector<std::string> getAvailableGovernors();
+
+    /* LED Colors */
+    std::vector<std::string> getAvailableColors();
+
+    /* Sleep modes */
+    std::vector<std::string> getSleepModes();
+
     /* audio card */
     bool setAudioOutputDevice(std::string device);
     std::vector<std::string> getAvailableAudioOutputDevices();

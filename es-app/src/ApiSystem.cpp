@@ -683,6 +683,21 @@ std::vector<std::string> ApiSystem::getAvailableAudioOutputDevices()
 	return executeEnumerationScript("set-audio list");
 }
 
+std::vector<std::string> ApiSystem::getAvailableGovernors()
+{
+	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" < /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors\" | grep [a-z]");
+}
+
+std::vector<std::string> ApiSystem::getAvailableColors()
+{
+	return executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/ledcontrol list\"");
+}
+
+std::vector<std::string> ApiSystem::getSleepModes()
+{
+	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" </sys/power/state | grep -v disk\"");
+}
+
 std::string ApiSystem::getCurrentAudioOutputDevice() 
 {
 #if WIN32

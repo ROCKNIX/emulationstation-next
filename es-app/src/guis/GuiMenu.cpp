@@ -239,6 +239,95 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 			setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, Renderer::getScreenHeight() * 0.15f);
 	}
 }
+
+void GuiMenu::openResetOptions()
+{
+	Window *window = mWindow;
+
+	auto s = new GuiSettings(mWindow, _("SYSTEM MANAGEMENT AND RESET").c_str());
+
+	s->addGroup(_("DATA MANAGEMENT"));
+	s->addEntry(_("BACKUP CONFIGURATIONS"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nAFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/roms/backup/ROCKNIX_BACKUP.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\nBACKUP CURRENT CONFIG AND RESTART?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/backuptool backup\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("RESTORE FROM BACKUP"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING THIS WILL REBOOT YOUR DEVICE!\n\nYOUR EXISTING CONFIGURATION WILL BE OVERWRITTEN!\n\nRESTORE FROM BACKUP AND RESTART?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/backuptool restore\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("CLEAN GAMELISTS & REMOVE UNUSED MEDIA"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("ARE YOU SURE?"), _("YES"), [&]
+	{
+		int idx = 0;
+		for (auto system : SystemData::sSystemVector)
+		{
+			cleanupGamelist(system);
+			idx++;
+		}
+		}, _("NO"), nullptr));
+	});
+
+	s->addGroup(_("EMULATOR MANAGEMENT"));
+	s->addEntry(_("RESET RETROARCH CONFIG TO DEFAULT"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: RETROARCH CONFIG WILL RESET TO DEFAULT\n\nPER-CORE CONFIGURATIONS WILL NOT BE AFFECTED AND NO BACKUP WILL BE CREATED!\n\nRESET RETROARCH CONFIG TO DEFAULT?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset retroarch\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("RESET OVERLAYS (CORES, CHEATS, JOYPADS, ETC)"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: ALL CUSTOM RETROARCH OVERLAYS WILL BE REMOVED\n\nCUSTOM CORES, JOYSTICKS, CHEATS, ETC. NO BACKUP WILL BE CREATED!\n\nRESET RETROARCH OVERLAYS TO DEFAULT?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset overlays\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("FULLY RESET RETROARCH"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: RETROARCH AND ALL USER SAVED CONFIGURATIONS WILL RESET TO DEFAULT\n\nPER-CORE CONFIGURATIONS WILL BE REMOVED AND NO BACKUP WILL BE CREATED!\n\nRESET RETROARCH?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset retroarch-full && /usr/bin/factoryreset overlays\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("RESET MEDNAFEN CONFIG TO DEFAULT"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: MEDNAFEN CONFIG WILL RESET TO DEFAULT\n\nNO BACKUP WILL BE CREATED!\n\nRESET MEDNAFEN CONFIG TO DEFAULT?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset mednafen\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("RESET STANDALONE EMULATOR CONFIGS TO DEFAULT"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: STANDALONE EMULATOR CONFIGS WILL RESET TO DEFAULT\n\nNO BACKUP WILL BE CREATED!\n\nRESET STANDALONE EMULATOR CONFIGS TO DEFAULT?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset standalone\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addGroup(_("SYSTEM MANAGEMENT"));
+
+	s->addEntry(_("AUDIO RESET"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: AUDIO SETTINGS WILL BE RESET TO DEFAULTS AND THE SYSTEM WILL REBOOT!\n\nRESET AUDIO AND RESTART?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset audio\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	s->addEntry(_("FACTORY RESET"), true, [window] {
+	window->pushGui(new GuiMsgBox(window, _("WARNING: YOUR DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nEJECT YOUR GAME CARD BEFORE PROCEEDING!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
+		[] {
+		Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset ALL\"", "", nullptr);
+		}, _("NO"), nullptr));
+	});
+
+	mWindow->pushGui(s);
+}
+
 void GuiMenu::openScraperSettings()
 {		
 	mWindow->pushGui(new GuiScraperStart(mWindow));
@@ -1341,6 +1430,24 @@ void GuiMenu::openSystemSettings()
 	});
 
 	// Timezone
+#if defined(ROCKNIX)
+	auto tzChoices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("SELECT YOUR TIME ZONE"), false);
+	std::string currentTZ = SystemConf::getInstance()->get("system.timezone");
+	if (currentTZ.empty())
+		currentTZ = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/timeinfo current_timezone)"));
+	std::string tz;
+	for(std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/timeinfo timezones)")); getline(ss, tz, ','); ) {
+		tzChoices->add(tz, tz, currentTZ == tz);
+	}
+	s->addWithLabel(_("TIMEZONE"), tzChoices);
+	s->addSaveFunc([tzChoices] {
+		if (tzChoices->changed()) {
+			std::string selectedTimezone = tzChoices->getSelected();
+			Utils::Platform::runSystemCommand("ln -sf /usr/share/zoneinfo/" + selectedTimezone + " $(readlink /etc/localtime)", "", nullptr);
+		}
+		SystemConf::getInstance()->set("system.timezone", tzChoices->getSelected());
+	});
+#else
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::ScriptId::TIMEZONES))
 	{
 		VectorEx<std::string> availableTimezones = ApiSystem::getInstance()->getTimezones();
@@ -1363,6 +1470,7 @@ void GuiMenu::openSystemSettings()
 			});
 		}
 	}
+#endif
 
 	// Clock time format (14:42 or 2:42 pm)
 	s->addSwitch(_("SHOW CLOCK IN 12-HOUR FORMAT"), "ClockMode12", true);
@@ -1446,7 +1554,7 @@ void GuiMenu::openSystemSettings()
 	int brighness;
 	if (ApiSystem::getInstance()->getBrightness(brighness))
 	{
-		auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 1.f, 100.f, 1.f, "%");
+		auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 5.f, 100.f, 5.f, "%");
 		brightnessComponent->setValue(brighness);
 		brightnessComponent->setOnValueChanged([](const float &newVal)
 		{
@@ -1458,6 +1566,380 @@ void GuiMenu::openSystemSettings()
 
 		s->addWithLabel(_("BRIGHTNESS"), brightnessComponent);
 	}
+
+	if (Utils::Platform::GetEnv("DEVICE_PWR_LED_CONTROL") == "true") {
+		// Disable Power LED
+		auto pwr_led_disabled = std::make_shared<SwitchComponent>(mWindow);
+		bool pwrleddisabled = SystemConf::getInstance()->get("powerled.disabled") == "1";
+		pwr_led_disabled->setState(SystemConf::getInstance()->getBool("powerled.disabled"));
+		s->addWithLabel(_("DISABLE POWER LED"), pwr_led_disabled);
+		pwr_led_disabled->setOnChangedCallback([pwr_led_disabled] {
+			bool pwrleddisabled = pwr_led_disabled->getState();
+				SystemConf::getInstance()->set("powerled.disabled", pwrleddisabled ? "1" : "0");
+		});
+	}
+
+        if (Utils::Platform::GetEnv("DEVICE_LED_CONTROL") == "true"){
+		// Provides LED management
+		auto optionsColors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LED COLOR"), false);
+		std::vector<std::string> availableColors = ApiSystem::getInstance()->getAvailableColors();
+		std::string selectedColors = SystemConf::getInstance()->get("led.color");
+		if (selectedColors.empty())
+			selectedColors = "default";
+		bool lfound = false;
+		for (auto it = availableColors.begin(); it != availableColors.end(); it++)
+		{
+			optionsColors->add((*it), (*it), selectedColors == (*it));
+			if (selectedColors == (*it))
+			        lfound = true;
+		}
+		if (!lfound)
+			optionsColors->add(selectedColors, selectedColors, true);
+		s->addWithLabel(_("LED COLOR"), optionsColors);
+		s->addSaveFunc([this, optionsColors, selectedColors]
+		{
+			if (optionsColors->changed()) {
+				SystemConf::getInstance()->set("led.color", optionsColors->getSelected());
+				Utils::Platform::runSystemCommand("/usr/bin/sh -lc \"/usr/bin/ledcontrol " + optionsColors->getSelected() + "\"" , "", nullptr);
+			}
+		});
+	}
+	if (Utils::Platform::GetEnv("DEVICE_LED_BRIGHTNESS") == "true"){
+	        // Sets LED brightness
+	        auto optionsLEDBrightness = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LED BRIGHTNESS"), false);
+	        std::string selectedLEDBrightness = SystemConf::getInstance()->get("led.brightness");
+	        if (selectedLEDBrightness.empty())
+	                selectedLEDBrightness = "max";
+	        optionsLEDBrightness->add(_("MAX"),"max", selectedLEDBrightness == "max");
+	        optionsLEDBrightness->add(_("MID"),"mid", selectedLEDBrightness == "mid");
+	        optionsLEDBrightness->add(_("MIN"),"min", selectedLEDBrightness == "min");
+	        s->addWithLabel(_("LED BRIGHTNESS"), optionsLEDBrightness);
+	        s->addSaveFunc([this, optionsLEDBrightness, selectedLEDBrightness]
+	        {
+	                if (optionsLEDBrightness->changed()) {
+	                        SystemConf::getInstance()->set("led.brightness", optionsLEDBrightness->getSelected());
+	                        Utils::Platform::runSystemCommand("/usr/bin/ledcontrol brightness " + optionsLEDBrightness->getSelected(), "", nullptr);
+	                }
+	        });
+	}
+
+	if (Utils::Platform::GetEnv("DEVICE_DTB_SWITCH") == "true"){
+		s->addGroup(_("DEVICE"));
+		// Switch device dtb between the R33S & R36S
+		auto device_switch = std::make_shared<SwitchComponent>(mWindow);
+		bool deviceswitchEnabled = SystemConf::getInstance()->get("system.device-dtb-r36s") == "1";
+		device_switch->setState(deviceswitchEnabled);
+		s->addWithLabel(_("DEVICE IS R36S / R35S?"), device_switch);
+		s->addSaveFunc([this,device_switch] {
+			if (device_switch->changed()) {
+				std::string msg = _("The system will restart\n and user settings will be reset")+"\n";
+				msg += _("Do you want to continue?");
+				mWindow->pushGui(new GuiMsgBox(mWindow,msg, _("YES"),
+					[this,device_switch] {
+
+					bool dswitchenabled = device_switch->getState();
+					SystemConf::getInstance()->set("system.device-dtb-r36s", dswitchenabled ? "1" : "0");
+					if (device_switch->getState() == false) {
+						Utils::Platform::runSystemCommand("/usr/bin/device-switch R33S", "", nullptr);
+					} else {
+						Utils::Platform::runSystemCommand("/usr/bin/device-switch R36S", "", nullptr);
+					}
+				}, "NO",nullptr));
+			}
+		});
+        }
+
+	if (Utils::Platform::GetEnv("DEVICE_MMC_EJECT") != "false") {
+		s->addGroup(_("STORAGE"));
+		// Provides a mechanism to disable use of the second device
+		bool MountGamesEnabled = SystemConf::getInstance()->getBool("system.automount");
+		auto mount_games = std::make_shared<SwitchComponent>(mWindow);
+		mount_games->setState(MountGamesEnabled);
+		s->addWithLabel(_("AUTODETECT GAMES CARD"), mount_games);
+		mount_games->setOnChangedCallback([this, s, mount_games] {
+			SystemConf::getInstance()->setBool("system.automount", mount_games->getState());
+			Utils::Platform::runSystemCommand("/usr/bin/systemctl restart rocknix-automount", "", nullptr);
+		});
+		if (Utils::FileSystem::exists("/storage/.ms_supported") && MountGamesEnabled)
+		{
+			auto overlayState = std::make_shared<SwitchComponent>(mWindow);
+			bool overlayStateEnabled = SystemConf::getInstance()->getBool("system.merged.storage");
+			overlayState->setState(overlayStateEnabled);
+			s->addWithLabel(_("ENABLE MERGED STORAGE"), overlayState);
+			overlayState->setOnChangedCallback([this, s, overlayState] {
+				bool overlayStateEnabled = overlayState->getState();
+				SystemConf::getInstance()->setBool("system.merged.storage", overlayState->getState());
+				Utils::Platform::runSystemCommand("/usr/bin/systemctl restart rocknix-automount", "", nullptr);
+			});
+			auto optionsMSDevice = std::make_shared<OptionListComponent<std::string> >(mWindow, _("MERGED STORAGE PRIMARY CARD"), false);
+			std::string selectedMSDevice = SystemConf::getInstance()->get("system.merged.device");
+			if (selectedMSDevice.empty())
+				selectedMSDevice = "default";
+			optionsMSDevice->add(_("DEFAULT"),"default", selectedMSDevice == "default");
+			optionsMSDevice->add(_("EXTERNAL"),"external", selectedMSDevice == "external");
+			optionsMSDevice->add(_("INTERNAL"),"internal", selectedMSDevice == "internal");
+			s->addWithLabel(_("MERGED STORAGE PRIMARY CARD"), optionsMSDevice);
+			s->addSaveFunc([this, optionsMSDevice, selectedMSDevice]
+			{
+				if (optionsMSDevice->changed()) {
+					mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: CHANGING THE PRIMARY CARD CAN CAUSE ACCESS TO GAMES TO BE LOST, REQUIRING MANUAL INTERVENTION TO CORRECT. CONTINUE?"), _("YES"), [this, optionsMSDevice, selectedMSDevice]
+					{
+						SystemConf::getInstance()->set("system.merged.device", optionsMSDevice->getSelected());
+						Utils::Platform::runSystemCommand("/usr/bin/systemctl restart rocknix-automount " + optionsMSDevice->getSelected(), "", nullptr);
+					}, _("NO"), nullptr));
+				}
+			});
+		}
+		s->addEntry(_("EJECT MICROSD CARD"), false, [window] {
+			if (Utils::FileSystem::exists("/storage/.ms_supported"))
+			{
+				Utils::Platform::runSystemCommand("/usr/bin/umount -f /storage/roms; /usr/bin/umount -f /storage/games-external", "", nullptr);
+			} else {
+				Utils::Platform::runSystemCommand("/usr/bin/umount -f /storage/roms", "", nullptr);
+			}
+			window->pushGui(new GuiMsgBox(window, _("You may now remove the card.")));
+		});
+	}
+
+	s->addGroup(_("PERFORMANCE"));
+	if (Utils::Platform::GetEnv("DEVICE_HAS_FAN") == "true") {
+		// Provides cooling profile switching
+		auto optionsFanProfile = std::make_shared<OptionListComponent<std::string> >(mWindow, _("COOLING PROFILE"), false);
+		std::string selectedFanProfile = SystemConf::getInstance()->get("cooling.profile");
+		if (selectedFanProfile.empty())
+			selectedFanProfile = "auto";
+		optionsFanProfile->add(_("AUTO"),"auto", selectedFanProfile == "auto");
+		optionsFanProfile->add(_("QUIET"),"quiet", selectedFanProfile == "quiet");
+		optionsFanProfile->add(_("MODERATE"),"moderate", selectedFanProfile == "moderate");
+		optionsFanProfile->add(_("AGGRESSIVE"),"aggressive", selectedFanProfile == "aggressive");
+		optionsFanProfile->add(_("CUSTOM"),"custom", selectedFanProfile == "custom");
+		s->addWithLabel(_("COOLING PROFILE"), optionsFanProfile);
+		s->addSaveFunc([this, optionsFanProfile, selectedFanProfile]
+		{
+			if (optionsFanProfile->changed()) {
+				SystemConf::getInstance()->set("cooling.profile", optionsFanProfile->getSelected());
+				Utils::Platform::runSystemCommand("systemctl restart fancontrol", "", nullptr);
+			}
+		});
+	}
+
+	// Default Scaling governor
+	auto optionsGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEFAULT SCALING GOVERNOR"), false);
+	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableGovernors();
+	std::string selectedGovernors = SystemConf::getInstance()->get("system.cpugovernor");
+	if (selectedGovernors.empty())
+		selectedGovernors = "default";
+	bool cfound = false;
+	for (auto it = availableGovernors.begin(); it != availableGovernors.end(); it++)
+	{
+		optionsGovernors->add((*it), (*it), selectedGovernors == (*it));
+		if (selectedGovernors == (*it))
+			cfound = true;
+	}
+	if (!cfound)
+		optionsGovernors->add(selectedGovernors, selectedGovernors, true);
+	s->addWithLabel(_("DEFAULT SCALING GOVERNOR"), optionsGovernors);
+	s->addSaveFunc([selectedGovernors, optionsGovernors]
+	{
+		if (optionsGovernors->changed()) {
+			SystemConf::getInstance()->set("system.cpugovernor", optionsGovernors->getSelected());
+		}
+		Utils::Platform::runSystemCommand("/usr/bin/sh -lc \". /etc/profile.d/099-freqfunctions; "+ optionsGovernors->getSelected() + "\"", "", nullptr);
+	});
+
+	// GPU performance mode with enhanced power savings
+	auto gpuPerformance = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU PERFORMANCE PROFILE"), false);
+	std::string gpu_performance = SystemConf::getInstance()->get("system.gpuperf");
+	if (gpu_performance.empty())
+		gpu_performance = "auto";
+	gpuPerformance->add(_("Balanced"), "auto", gpu_performance == "auto");
+	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
+	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
+	s->addWithLabel(_("GPU PERFORMANCE PROFILE"), gpuPerformance);
+	s->addSaveFunc([this, gpuPerformance, gpu_performance]
+	{
+		if (gpuPerformance->changed()) {
+			SystemConf::getInstance()->set("system.gpuperf", gpuPerformance->getSelected());
+			Utils::Platform::runSystemCommand("/usr/bin/sh -lc \". /etc/profile.d/030-powerfunctions; gpu_performance_level "+ gpuPerformance->getSelected() + "\"", "", nullptr);
+		}
+	});
+
+	if (Utils::Platform::GetEnv("DEVICE_TURBO_MODE") == "true"){
+		// Add option to enable turbo mode overclocking
+		auto turbo_mode = std::make_shared<SwitchComponent>(mWindow);
+		bool internalmoduleEnabled = SystemConf::getInstance()->get("enable.turbo-mode") == "1";
+		turbo_mode->setState(internalmoduleEnabled);
+		s->addWithLabel(_("ENABLE CPU OVERCLOCK"), turbo_mode);
+		turbo_mode->setOnChangedCallback([turbo_mode] {
+		if (turbo_mode->getState() == false) {
+			Utils::Platform::runSystemCommand("/usr/bin/turbomode disable", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("/usr/bin/turbomode enable", "", nullptr);
+                }
+		bool turbomode = turbo_mode->getState();
+			SystemConf::getInstance()->set("enable.turbo-mode", turbomode ? "1" : "0");
+		});
+	}
+
+	if (Utils::Platform::GetEnv("DEVICE_GPU_OVERCLOCK") == "true"){
+		// Add option to enable gpu overclocking
+		auto gpu_overclock = std::make_shared<SwitchComponent>(mWindow);
+		bool internalmoduleEnabled = SystemConf::getInstance()->get("enable.gpu-overclock") == "1";
+		gpu_overclock->setState(internalmoduleEnabled);
+		s->addWithLabel(_("ENABLE GPU OVERCLOCK"), gpu_overclock);
+		gpu_overclock->setOnChangedCallback([gpu_overclock] {
+			if (gpu_overclock->getState() == false) {
+				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/SD865/bin/gpu_overclock disable", "", nullptr);
+			} else {
+				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/SD865/bin/gpu_overclock enable", "", nullptr);
+			}
+			bool gpuoverclock = gpu_overclock->getState();
+			SystemConf::getInstance()->set("enable.gpu-overclock", gpuoverclock ? "1" : "0");
+		});
+	}
+
+	const std::string gpuDriverScript = "/usr/bin/gpudriver";
+	if (Utils::FileSystem::exists(gpuDriverScript)) {
+		auto optionsGpuDriver = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU DRIVER"), false);
+		std::string selectedGpuDriver = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/gpudriver)"));
+		std::string a;
+		for(std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/gpudriver --options)")); getline(ss, a, ' '); ) {
+			optionsGpuDriver->add(a, a, a == selectedGpuDriver);
+		}
+		s->addWithLabel(_("GPU DRIVER"), optionsGpuDriver);
+		s->addSaveFunc([this, window, gpuDriverScript, optionsGpuDriver, selectedGpuDriver] {
+			if (optionsGpuDriver->changed()) {
+				Utils::Platform::runSystemCommand(gpuDriverScript + " " + optionsGpuDriver->getSelected(), "", nullptr);
+				window->pushGui(new GuiMsgBox(window, _("GPU driver will be switched on next reboot"),
+					_("Reboot now"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::REBOOT); },
+					_("later"), nullptr)
+				);
+			}
+		});
+        }
+
+	if (Utils::FileSystem::exists("/usr/bin/dtb_overlay")) {
+		s->addGroup(_("TWEAKS"));
+		dtbOverlayItem(mWindow, s, "undervolt-cpu");
+		dtbOverlayItem(mWindow, s, "custom");
+	}
+
+	s->addGroup(_("POWER SAVING"));
+	// Automatically enable or disable enhanced power saving mode
+	auto enh_powersave = std::make_shared<SwitchComponent>(mWindow);
+	bool enhpowersaveEnabled = SystemConf::getInstance()->get("system.powersave") == "1";
+	enh_powersave->setState(enhpowersaveEnabled);
+	s->addWithLabel(_("ENHANCED POWER SAVING"), enh_powersave);
+	s->addSaveFunc([enh_powersave] {
+		bool enhpowersaveEnabled = enh_powersave->getState();
+		SystemConf::getInstance()->set("system.powersave", enhpowersaveEnabled ? "1" : "0");
+	});
+
+	if (SystemConf::getInstance()->getBool("system.powersave", true)) {
+		// Options for enhanced power savings mode
+		auto enh_cpupowersave = std::make_shared<SwitchComponent>(mWindow);
+		bool enhcpupowersaveEnabled = SystemConf::getInstance()->get("system.power.cpu") == "1";
+		enh_cpupowersave->setState(enhcpupowersaveEnabled);
+		s->addWithLabel(_("CPU POWER SAVING"), enh_cpupowersave);
+		enh_cpupowersave->setOnChangedCallback([enh_cpupowersave] {
+			bool enhcpupowersaveEnabled = enh_cpupowersave->getState();
+			SystemConf::getInstance()->set("system.power.cpu", enhcpupowersaveEnabled ? "1" : "0");
+		});
+
+		auto enh_audiopowersave = std::make_shared<SwitchComponent>(mWindow);
+		bool enhaudiopowersaveEnabled = SystemConf::getInstance()->get("system.power.audio") == "1";
+		enh_audiopowersave->setState(enhaudiopowersaveEnabled);
+		s->addWithLabel(_("AUDIO POWER SAVING"), enh_audiopowersave);
+		enh_audiopowersave->setOnChangedCallback([enh_audiopowersave] {
+			bool enhaudiopowersaveEnabled = enh_audiopowersave->getState();
+			SystemConf::getInstance()->set("system.power.audio", enhaudiopowersaveEnabled ? "1" : "0");
+		});
+
+		// Automatically enable or disable WIFI power saving mode
+		auto wifi_powersave = std::make_shared<SwitchComponent>(mWindow);
+		bool wifipowersaveEnabled = SystemConf::getInstance()->get("system.power.wifi") == "1";
+		wifi_powersave->setState(wifipowersaveEnabled);
+		s->addWithLabel(_("WIFI POWER SAVING"), wifi_powersave);
+		wifi_powersave->setOnChangedCallback([wifi_powersave] {
+			bool wifipowersaveEnabled = wifi_powersave->getState();
+			SystemConf::getInstance()->set("system.power.wifi", wifipowersaveEnabled ? "1" : "0");
+			Utils::Platform::runSystemCommand("/usr/bin/wifictl setpowersave", "", nullptr);
+		});
+
+		auto warn = std::make_shared<TextComponent>(mWindow, "Below options can affect stability.", ThemeData::getMenuTheme()->Text.font, ThemeData::getMenuTheme()->Text.color);
+		s->addWithLabel(_("WARNING"), warn);
+		auto enh_pciepowersave = std::make_shared<SwitchComponent>(mWindow);
+		bool enhpciepowersaveEnabled = SystemConf::getInstance()->get("system.power.pcie") == "1";
+		enh_pciepowersave->setState(enhpciepowersaveEnabled);
+		s->addWithLabel(_("PCIE ACTIVE STATE POWER MANAGEMENT"), enh_pciepowersave);
+		enh_pciepowersave->setOnChangedCallback([enh_pciepowersave] {
+			bool enhpciepowersaveEnabled = enh_pciepowersave->getState();
+			SystemConf::getInstance()->set("system.power.pcie", enhpciepowersaveEnabled ? "1" : "0");
+		});
+
+		auto wakeevents = std::make_shared<SwitchComponent>(mWindow);
+		bool wakeeventsEnabled = SystemConf::getInstance()->get("system.power.wakeevents") == "1";
+		wakeevents->setState(wakeeventsEnabled);
+		s->addWithLabel(_("ENABLE WAKE EVENTS"), wakeevents);
+		wakeevents->setOnChangedCallback([wakeevents] {
+			bool wakeeventsEnabled = wakeevents->getState();
+			SystemConf::getInstance()->set("system.power.wakeevents", wakeeventsEnabled ? "1" : "0");
+		});
+
+		auto rtpm = std::make_shared<SwitchComponent>(mWindow);
+		bool rtpmEnabled = SystemConf::getInstance()->get("system.power.rtpm") == "1";
+		rtpm->setState(rtpmEnabled);
+		s->addWithLabel(_("RUNTIME POWER MANAGEMENT"), rtpm);
+		rtpm->setOnChangedCallback([rtpm] {
+			bool rtpmEnabled = rtpm->getState();
+			SystemConf::getInstance()->set("system.power.rtpm", rtpmEnabled ? "1" : "0");
+		});
+	}
+
+// Do not show on S922X devices yet.
+#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SD865)
+	// Allow user control over how the device sleeps
+	s->addGroup(_("SUSPEND"));
+	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
+	std::vector<std::string> availableSleepModes = ApiSystem::getInstance()->getSleepModes();
+	std::string selectedSleep = SystemConf::getInstance()->get("system.suspendmode");
+	if (selectedSleep.empty())
+		selectedSleep = "default";
+	bool found = false;
+	for (auto it = availableSleepModes.begin(); it != availableSleepModes.end(); it++)
+	{
+		optionsSleep->add((*it), (*it), selectedSleep == (*it));
+		if (selectedSleep == (*it))
+			found = true;
+	}
+	if (!found)
+		optionsSleep->add(selectedSleep, selectedSleep, true);
+	s->addWithLabel(_("DEVICE SUSPEND MODE"), optionsSleep);
+	s->addSaveFunc([this, optionsSleep, selectedSleep]
+	{
+		if (optionsSleep->changed()) {
+			SystemConf::getInstance()->set("system.suspendmode", optionsSleep->getSelected());
+			Utils::Platform::runSystemCommand("/usr/bin/suspendmode " + optionsSleep->getSelected(), "", nullptr);
+		}
+	});
+#endif
+
+#ifdef RK3399
+	// Add option to disable RG552 wifi gpio
+	auto internal_wifi = std::make_shared<SwitchComponent>(mWindow);
+	bool internalmoduleEnabled = SystemConf::getInstance()->get("internal.wifi") == "1";
+	internal_wifi->setState(internalmoduleEnabled);
+	s->addWithLabel(_("ENABLE INTERNAL WIFI"), internal_wifi);
+	internal_wifi->setOnChangedCallback([internal_wifi] {
+		if (internal_wifi->getState() == false) {
+			Utils::Platform::runSystemCommand("/usr/bin/internalwifi disable", "", nullptr);
+		} else {
+			Utils::Platform::runSystemCommand("/usr/bin/internalwifi enable", "", nullptr);
+		}
+		bool internalwifi = internal_wifi->getState();
+		SystemConf::getInstance()->set("internal.wifi", internalwifi ? "1" : "0");
+	});
+#endif
 
 #ifdef BATOCERA
 	// video device
@@ -2011,6 +2493,8 @@ void GuiMenu::openSystemSettings()
 			});
 			mWindow->pushGui(securityGui);
 		});
+
+		s->addEntry(_("SYSTEM MANAGEMENT AND RESET"), true, [this] { openResetOptions(); });
 	}
 
 	auto pthis = this;
@@ -2064,6 +2548,129 @@ void GuiMenu::openLatencyReductionConfiguration(Window* mWindow, std::string con
 	guiLatency->addSaveFunc([configName, vrr_runloop_enable] { SystemConf::getInstance()->set(configName + ".vrr_runloop_enable", vrr_runloop_enable->getSelected()); });
 
 	mWindow->pushGui(guiLatency);
+}
+
+void GuiMenu::dtbOverlayItem(Window* mWindow, GuiSettings *s, const std::string dtb_type)
+{
+	const std::string overlayScript = "/usr/bin/dtb_overlay";
+	const std::string getDtb = overlayScript + " get " + dtb_type;
+	const std::string listDtb = overlayScript + " ls " + dtb_type;
+	const std::string setDtb = overlayScript + " set " + dtb_type;
+	const std::string title = dtb_type + " DTB OVERLAY";
+
+	auto optionsDtb = std::make_shared<OptionListComponent<std::string> >(mWindow, _(title.c_str()), false);
+	std::string selectedDtb = std::string(Utils::Platform::GetShOutput(getDtb));
+	if (selectedDtb.empty() || selectedDtb.compare("None") == 0)
+		optionsDtb->add("None", "None", true);
+	else
+		optionsDtb->add("None", "None", false);
+
+	std::string option;
+	for(std::stringstream ss(Utils::Platform::GetShOutput(listDtb)); getline(ss, option, ' '); ) {
+		optionsDtb->add(option, option, option == selectedDtb);
+	}
+
+	s->addWithLabel(_(title.c_str()), optionsDtb);
+
+	s->addSaveFunc([this, mWindow, overlayScript, setDtb, optionsDtb] {
+	if (optionsDtb->changed()) {
+			Utils::Platform::runSystemCommand(setDtb + " " + optionsDtb->getSelected(), "", nullptr);
+			mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: You are altering "
+				"hardware parameters that may yield your system unstable or unbootable. "
+				"In this case you will need to recover by manually editing "
+				"extlinux/extlinux.conf on the ROCKNIX partition from a PC, by "
+				"removing the whole line starting with: FDTOVERLAYS. \n "
+				"The changes will be applied on next reboot"),
+				_("Reboot now"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT); },
+				_("later"), nullptr));
+			}
+	});
+}
+
+void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string configName)
+{
+	GuiSettings* guiSystemOptions = new GuiSettings(mWindow, _("SYSTEM OPTIONS").c_str());
+	bool cfound = false;
+
+#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SD865)
+	// Core chooser
+	auto cores_used = std::make_shared<OptionListComponent<std::string>>(mWindow, _("CORES USED"));
+	cores_used->addRange({ {("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));
+	guiSystemOptions->addWithLabel(_("CORES USED"), cores_used);
+	guiSystemOptions->addSaveFunc([cores_used, configName] { SystemConf::getInstance()->set(configName + ".cores", cores_used->getSelected()); });
+#endif
+
+	if (Utils::Platform::GetEnv("DEVICE_HAS_FAN") == "true") {
+		// Provides cooling profile switching
+		auto optionsFanProfile = std::make_shared<OptionListComponent<std::string> >(mWindow, _("COOLING PROFILE"), false);
+		std::string selectedFanProfile = SystemConf::getInstance()->get(configName + ".cooling.profile");
+		if (selectedFanProfile.empty())
+			selectedFanProfile = "default";
+
+		optionsFanProfile->add(_("DEFAULT"),"default", selectedFanProfile == "default");
+		optionsFanProfile->add(_("AUTO"),"auto", selectedFanProfile == "auto");
+		optionsFanProfile->add(_("QUIET"),"quiet", selectedFanProfile == "quiet");
+		optionsFanProfile->add(_("MODERATE"),"moderate", selectedFanProfile == "moderate");
+		optionsFanProfile->add(_("AGGRESSIVE"),"aggressive", selectedFanProfile == "aggressive");
+		optionsFanProfile->add(_("CUSTOM"),"custom", selectedFanProfile == "custom");
+
+		guiSystemOptions->addWithLabel(_("COOLING PROFILE"), optionsFanProfile);
+		guiSystemOptions->addSaveFunc([optionsFanProfile, selectedFanProfile, configName]
+			{
+				if (optionsFanProfile->changed()) {
+				SystemConf::getInstance()->set(configName + ".cooling.profile", optionsFanProfile->getSelected());
+			}
+		});
+	}
+
+	// Per game/core/emu CPU governor
+	auto optionsGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CPU SCALING GOVERNOR"), false);
+
+	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableGovernors();
+	std::string selectedGovernors = SystemConf::getInstance()->get(configName + ".cpugovernor");
+	if (selectedGovernors.empty())
+		selectedGovernors = "default";
+
+	cfound = false;
+	for (auto it = availableGovernors.begin(); it != availableGovernors.end(); it++)
+	{
+		optionsGovernors->add((*it), (*it), selectedGovernors == (*it));
+		if (selectedGovernors == (*it))
+			cfound = true;
+	}
+	if (!cfound)
+		optionsGovernors->add(selectedGovernors, selectedGovernors, true);
+
+	guiSystemOptions->addWithLabel(_("CPU SCALING GOVERNOR"), optionsGovernors);
+
+	guiSystemOptions->addSaveFunc([configName, selectedGovernors, optionsGovernors]
+	{
+		if (optionsGovernors->changed()) {
+			SystemConf::getInstance()->set(configName + ".cpugovernor", optionsGovernors->getSelected());
+		}
+	});
+
+	// GPU performance mode with enhanced power savings
+	auto gpuPerformance = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU PERFORMANCE PROFILE"), false);
+	std::string gpu_performance = SystemConf::getInstance()->get(configName + ".gpuperf");
+	if (gpu_performance.empty())
+		gpu_performance = "default";
+
+	gpuPerformance->add(_("DEFAULT"), "default", gpu_performance == "default");
+	gpuPerformance->add(_("Balanced"), "auto", gpu_performance == "auto");
+	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
+	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
+
+	guiSystemOptions->addWithLabel(_("GPU PERFORMANCE PROFILE"), gpuPerformance);
+
+	guiSystemOptions->addSaveFunc([configName, gpuPerformance, gpu_performance]
+	{
+		if (gpuPerformance->changed()) {
+			SystemConf::getInstance()->set(configName + ".gpuperf", gpuPerformance->getSelected());
+		}
+	});
+
+	mWindow->pushGui(guiSystemOptions);
 }
 
 void GuiMenu::openRetroachievementsSettings()
@@ -4740,6 +5347,9 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 
 		systemConfiguration->addWithLabel(_("Emulator"), emulChoice);
 	}
+
+	// System settings
+	systemConfiguration->addEntry(_("SYSTEM OPTIONS"), true, [mWindow, configName] { openSystemOptionsConfiguration(mWindow, configName); });
 
 	auto customFeatures = systemData->getCustomFeatures(currentEmulator, currentCore);
 

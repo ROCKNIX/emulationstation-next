@@ -61,6 +61,7 @@ private:
         void openMultiScreensSettings();
         void openDmdSettings();
         void openDeveloperSettings();
+        void openResetOptions();
         void openNetplaySettings(); 
         void openRetroachievementsSettings();
         void openMissingBiosSettings();
@@ -81,6 +82,9 @@ private:
 	static void popSpecificConfigurationGui(Window* mWindow, std::string title, std::string configName, SystemData *systemData, FileData* fileData, bool selectCoreLine = false);
 
 	static void openLatencyReductionConfiguration(Window* mWindow, std::string configName);
+	void dtbOverlayItem(Window* window, GuiSettings *s, const std::string dtb_type);
+
+	static void openSystemOptionsConfiguration(Window* mWindow, std::string configName);
 
 	static void addDecorationSetOptionListComponent(Window* window, GuiSettings* parentWindow, const std::vector<DecorationSetInfo>& sets, const std::string& configName = "global");
 	static void createDecorationItemTemplate(Window* window, std::vector<DecorationSetInfo> sets, std::string data, ComponentListRow& row);
