@@ -1146,7 +1146,7 @@ void GuiMenu::openDeveloperSettings()
 		s->addWithLabel(_("RETROARCH MENU DRIVER"), retroarchRgui);
 		s->addSaveFunc([retroarchRgui] { SystemConf::getInstance()->set("global.retroarch.menu_driver", retroarchRgui->getSelected()); });
 	}
-
+#if !defined(ROCKNIX)
 	auto invertJoy = std::make_shared<SwitchComponent>(mWindow);
 	invertJoy->setState(Settings::getInstance()->getBool("InvertButtons"));
 	s->addWithDescription(_("SWITCH CONFIRM & CANCEL BUTTONS IN EMULATIONSTATION"), _("Switches the South and East buttons' functionality"), invertJoy);
@@ -1167,7 +1167,7 @@ void GuiMenu::openDeveloperSettings()
 		if (Settings::getInstance()->setBool("GameOptionsAtNorth", invertLongPress->getState()))
 			s->setVariable("reloadAll", true);
 	});
-
+#endif
 	auto firstJoystickOnly = std::make_shared<SwitchComponent>(mWindow);
 	firstJoystickOnly->setState(Settings::getInstance()->getBool("FirstJoystickOnly"));
 	s->addWithLabel(_("CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"), firstJoystickOnly);
@@ -4099,7 +4099,7 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				if (Settings::getInstance()->setString(system->getName() + ".ShowCheevosIcon", showCheevos->getSelected()))
 					themeconfig->setVariable("reloadAll", true);
 			});
-#if defined(BATOCERA)
+#if !defined(ROCKNIX)
 		// Show gun icons
 		auto defGI = Settings::getInstance()->getBool("ShowGunIconOnGames") ? _("YES") : _("NO");
 		auto curGI = Settings::getInstance()->getString(system->getName() + ".ShowGunIconOnGames");
@@ -4471,6 +4471,29 @@ void GuiMenu::openUISettings()
 		}		
 	}
 
+#if defined(ROCKNIX)
+	s->addGroup(_("CONTROL OPTIONS"));
+	auto invertJoy = std::make_shared<SwitchComponent>(mWindow);
+	invertJoy->setState(Settings::getInstance()->getBool("InvertButtons"));
+	s->addWithDescription(_("SWITCH CONFIRM & CANCEL BUTTONS IN EMULATIONSTATION"), _("Switches the South and East buttons' functionality"), invertJoy);
+	s->addSaveFunc([this, s, invertJoy]
+	{
+		if (Settings::getInstance()->setBool("InvertButtons", invertJoy->getState()))
+		{
+			InputConfig::AssignActionButtons();
+			s->setVariable("reloadAll", true);
+		}
+	});
+
+	auto invertLongPress = std::make_shared<SwitchComponent>(mWindow);
+	invertLongPress->setState(Settings::getInstance()->getBool("GameOptionsAtNorth"));
+	s->addWithDescription(_("ACCESS GAME OPTIONS WITH NORTH BUTTON"), _("Switches to short-press North for Savestates & long-press South button for Game Options"), invertLongPress);
+	s->addSaveFunc([this, s, invertLongPress]
+	{
+	if (Settings::getInstance()->setBool("GameOptionsAtNorth", invertLongPress->getState()))
+		s->setVariable("reloadAll", true);
+	});
+#endif
 	s->addGroup(_("DISPLAY OPTIONS"));
 	s->addEntry(_("SCREENSAVER SETTINGS"), true, std::bind(&GuiMenu::openScreensaverOptions, this));
 	s->addOptionList(_("LIST TRANSITION"), { { _("auto"), "auto" },{ _("fade"), "fade" },{ _("slide"), "slide" },{ _("fade & slide"), "fade & slide" },{ _("instant"), "instant" } }, "TransitionStyle", true);
@@ -4494,7 +4517,7 @@ void GuiMenu::openUISettings()
 	s->addSwitch(_("SHOW SAVESTATE ICON"), "ShowSaveStates", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW MANUAL ICON"), "ShowManualIcon", true, [s] { s->setVariable("reloadAll", true); });	
 	s->addSwitch(_("SHOW RETROACHIEVEMENTS ICON"), "ShowCheevosIcon", true, [s] { s->setVariable("reloadAll", true); });
-#if defined(BATOCERA)
+#if !defined(ROCKNIX)
 	s->addSwitch(_("SHOW GUN ICON"), "ShowGunIconOnGames", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW WHEEL ICON"), "ShowWheelIconOnGames", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW TRACKBALL ICON"), "ShowTrackballIconOnGames", true, [s] { s->setVariable("reloadAll", true); });
