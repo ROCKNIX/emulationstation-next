@@ -50,3 +50,7 @@ CPackSourceConfig.cmake
 /.vs/
 *.sqlite
 .DS_Store
+
+# backup files
+*.orig
+*.rej
