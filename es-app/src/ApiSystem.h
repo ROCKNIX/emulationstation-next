@@ -206,6 +206,8 @@ public:
 	virtual std::vector<std::string> getPairedBluetoothDeviceList();	
     virtual bool scanNewBluetooth(const std::function<void(const std::string)>& func = nullptr); // Obsolete
 
+	virtual int GetTotalRam();
+
     std::vector<std::string> getAvailableBackupDevices();
     std::vector<std::string> getAvailableInstallDevices();
     std::vector<std::string> getAvailableInstallArchitectures();

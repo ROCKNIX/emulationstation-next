@@ -463,6 +463,14 @@ std::string ApiSystem::getIpAddress()
 	return result;
 }
 
+int ApiSystem::GetTotalRam()
+{
+	auto result = executeEnumerationScript("echo $(( $(awk '/MemTotal/ {print $2}' /proc/meminfo) / 1000 ))");
+	std::string data = Utils::String::join(result, "");
+	int ret = stoi(data);
+	return ret;
+}
+
 bool ApiSystem::enableBluetooth()
 {
 	return executeScript("rocknix-bluetooth enable 2>&1 >/dev/null");
