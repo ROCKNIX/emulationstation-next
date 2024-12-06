@@ -187,6 +187,11 @@ std::vector<SaveState*> SaveStateRepository::getSaveStates(FileData* game, std::
 
 bool SaveStateRepository::isEnabled(FileData* game)
 {
+	auto emulatorName = game->getEmulator();
+
+	if (emulatorName != "retroarch")
+		return false;
+
 	auto system = game->getSourceFileData()->getSystem();
 
 	if (system->hasPlatformId(PlatformIds::IMAGEVIEWER))
