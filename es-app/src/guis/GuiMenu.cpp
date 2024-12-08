@@ -1805,9 +1805,9 @@ void GuiMenu::openSystemSettings()
 		s->addWithLabel(_("ENABLE GPU OVERCLOCK"), gpu_overclock);
 		gpu_overclock->setOnChangedCallback([gpu_overclock] {
 			if (gpu_overclock->getState() == false) {
-				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/SD865/bin/gpu_overclock disable", "", nullptr);
+				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/${HW_DEVICE}/bin/gpu_overclock disable", "", nullptr);
 			} else {
-				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/SD865/bin/gpu_overclock enable", "", nullptr);
+				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/${HW_DEVICE}/bin/gpu_overclock enable", "", nullptr);
 			}
 			bool gpuoverclock = gpu_overclock->getState();
 			SystemConf::getInstance()->set("enable.gpu-overclock", gpuoverclock ? "1" : "0");
