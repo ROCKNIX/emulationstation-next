@@ -4896,17 +4896,6 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		}
 	});
 
-	// ENABLE IPV6
-	auto enable_ipv6 = std::make_shared<SwitchComponent>(mWindow);
-	bool ipv6Enabled = SystemConf::getInstance()->get("ipv6.enabled") == "1";
-	enable_ipv6->setState(ipv6Enabled);
-	s->addWithLabel(_("ENABLE IPV6"), enable_ipv6);
-	enable_ipv6->setOnChangedCallback([enable_ipv6] {
-		bool ipv6Enabled = enable_ipv6->getState();
-		SystemConf::getInstance()->set("ipv6.enabled", ipv6Enabled ? "1" : "0");
-		Utils::Platform::runSystemCommand("/usr/bin/toggle-ipv6", "", nullptr);
-	});
-
 	// NETWORK SERVICES
 	s->addGroup(_("NETWORK SERVICES"));
 
