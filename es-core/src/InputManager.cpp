@@ -555,6 +555,9 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 	
 	case SDL_MOUSEBUTTONDOWN:        
 	case SDL_MOUSEBUTTONUP:
+		if (Settings::getInstance()->getBool("DisableTouchscreen"))
+			return false;
+
 		if (!getGunManager()->isReplacingMouse())
 			if (!window->processMouseButton(ev.button.button, ev.type == SDL_MOUSEBUTTONDOWN, ev.button.x, ev.button.y))
 				window->input(getInputConfigByDevice(DEVICE_MOUSE), Input(DEVICE_MOUSE, TYPE_BUTTON, ev.button.button, ev.type == SDL_MOUSEBUTTONDOWN, false));
@@ -565,6 +568,9 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 #if !WIN32
 	  if (ev.motion.which == SDL_TOUCH_MOUSEID)
 #endif
+		if (Settings::getInstance()->getBool("DisableTouchscreen"))
+			return false;
+
 		if (!getGunManager()->isReplacingMouse())
 			window->processMouseMove(ev.motion.x, ev.motion.y, ev.motion.which == SDL_TOUCH_MOUSEID);
 

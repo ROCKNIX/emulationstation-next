@@ -4535,6 +4535,18 @@ void GuiMenu::openUISettings()
 	if (Settings::getInstance()->setBool("GameOptionsAtNorth", invertLongPress->getState()))
 		s->setVariable("reloadAll", true);
 	});
+
+	if (Utils::Platform::GetEnv("DEVICE_HAS_TOUCHSCREEN") == "true") {
+		auto disableTouchscreen = std::make_shared<SwitchComponent>(mWindow);
+		disableTouchscreen->setState(Settings::getInstance()->getBool("DisableTouchscreen"));
+		s->addWithLabel(_("DISABLE TOUCHSCREEN IN EMULATIONSTATION"), disableTouchscreen);
+
+		s->addSaveFunc([this, s, disableTouchscreen]
+		{
+			if (Settings::getInstance()->setBool("DisableTouchscreen", disableTouchscreen->getState()))
+				s->setVariable("reloadAll", true);
+		});
+	};
 #endif
 	s->addGroup(_("DISPLAY OPTIONS"));
 	s->addEntry(_("SCREENSAVER SETTINGS"), true, std::bind(&GuiMenu::openScreensaverOptions, this));
