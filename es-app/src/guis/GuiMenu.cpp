@@ -4966,27 +4966,23 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		SystemConf::getInstance()->set("simplehttp.enabled", simplehttpenabled ? "1" : "0");
 	});
 
-       auto optionsUSBGadget = std::make_shared<OptionListComponent<std::string> >(mWindow, _("USB GADGET FUNCTION"), false);
-	std::string selectedUSBGadget = SystemConf::getInstance()->get("usbgadget.function");
+	const std::string usbGadgetScript = "/usr/bin/usbgadget";
+	auto optionsUSBGadget = std::make_shared<OptionListComponent<std::string> >(mWindow, _("USB GADGET FUNCTION"), false);
+	std::string selectedUSBGadget = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget)"));
 	if (selectedUSBGadget.empty())
 		selectedUSBGadget = "disabled";
 
-	optionsUSBGadget->add(_("DISABLED"), "disabled", selectedUSBGadget == "disabled");
-	optionsUSBGadget->add(_("MTP"), "mtp", selectedUSBGadget == "mtp");
-	optionsUSBGadget->add(_("ECM"), "ecm", selectedUSBGadget == "ecm");
-
+	std::string a;
+	for(std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget --options)")); getline(ss, a, ' '); ) {
+		optionsUSBGadget->add(a, a, a == selectedUSBGadget);
+	}
 	s->addWithLabel(_("USB GADGET FUNCTION"), optionsUSBGadget);
 
-	s->addSaveFunc([this, optionsUSBGadget, selectedUSBGadget]
-	{
+	s->addSaveFunc([this, window, usbGadgetScript, optionsUSBGadget, selectedUSBGadget] {
 		if (optionsUSBGadget->changed()) {
-			SystemConf::getInstance()->set("usbgadget.function", optionsUSBGadget->getSelected());
-			Utils::Platform::runSystemCommand("/usr/bin/usbgadget stop", "", nullptr);
-			if (optionsUSBGadget->getSelected() == "mtp")
-				Utils::Platform::runSystemCommand("/usr/bin/usbgadget start mtp", "", nullptr);
-			else if (optionsUSBGadget->getSelected() == "ecm") {
-				Utils::Platform::runSystemCommand("/usr/bin/usbgadget start cdc", "", nullptr);
-				std::string usbip = std::string(Utils::Platform::GetShOutput(R"(cat /storage/.cache/usbgadget/ip_address.conf)"));
+			Utils::Platform::runSystemCommand(usbGadgetScript + " " + optionsUSBGadget->getSelected(), "", nullptr);
+			if (optionsUSBGadget->getSelected() == "network") {
+				std::string usbip = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget address)"));
 				mWindow->pushGui(new GuiMsgBox(mWindow, _("USB Networking enabled, the device IP is ") + usbip, _("OK"), nullptr));
 			}
 		}
