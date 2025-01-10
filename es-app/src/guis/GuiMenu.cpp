@@ -4569,6 +4569,13 @@ void GuiMenu::openUISettings()
 		s->addOptionList(_("SHOW BATTERY STATUS"), { { _("NO"), "" },{ _("ICON"), "icon" },{ _("ICON AND TEXT"), "text" } }, "ShowBattery", true);
 
 	s->addGroup(_("GAMELIST OPTIONS"));
+#if defined(ROCKNIX)
+	// Enable Video Previews
+	auto enable_preview = std::make_shared<SwitchComponent>(mWindow);
+	enable_preview->setState(Settings::getInstance()->getBool("EnableVideoPreviews"));
+	s->addWithLabel(_("SHOW VIDEO PREVIEWS"), enable_preview);
+	s->addSaveFunc([enable_preview] { Settings::getInstance()->setBool("EnableVideoPreviews", enable_preview->getState()); });
+#endif
 	s->addSwitch(_("SHOW FAVORITES ON TOP"), "FavoritesFirst", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW HIDDEN FILES"), "ShowHiddenFiles", true, [s] { s->setVariable("reloadAll", true); });
 	s->addOptionList(_("SHOW FOLDERS"), { { _("always"), "always" },{ _("never") , "never" },{ _("having multiple games"), "having multiple games" } }, "FolderViewMode", true, [s] { s->setVariable("reloadAll", true); });
