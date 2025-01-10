@@ -310,6 +310,13 @@ void GuiMenu::openResetOptions()
 		}, _("NO"), nullptr));
 	});
 
+        s->addEntry(_("FULLY RESET PORTMASTER"), true, [window] {
+        window->pushGui(new GuiMsgBox(window, _("WARNING: PORTMASTER WILL RESET TO DEFAULT\n\nNO BACKUP WILL BE CREATED!\n\nRESET RESET PORTMASTER TO DEFAULT?"), _("YES"),
+                [] {
+                Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset portmaster\"", "", nullptr);
+                }, _("NO"), nullptr));
+        });
+
 	s->addGroup(_("SYSTEM MANAGEMENT"));
 
 	s->addEntry(_("AUDIO RESET"), true, [window] {
