@@ -222,6 +222,7 @@ public:
     bool generateSupportFile();
 
     std::string getCurrentStorage();
+    std::string getRumblePath();
 
     bool setStorage(std::string basic_string);
 

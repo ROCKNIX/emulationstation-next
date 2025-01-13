@@ -13,6 +13,8 @@
 #include "InputManager.h"
 #include "SystemConf.h"
 
+#include "utils/Platform.h"
+
 #define gettext_controllers_settings				_("CONTROLLER SETTINGS")
 #define gettext_controllers_and_bluetooth_settings  _("CONTROLLER & BLUETOOTH SETTINGS")
 
@@ -68,6 +70,22 @@ GuiControllersSettings::GuiControllersSettings(Window* wnd, int autoSel) : GuiSe
 			_("CANCEL"), nullptr,
 			GuiMsgBoxIcon::ICON_INFORMATION));
 	});
+
+	const std::string rumblePath = ApiSystem::getInstance()->getRumblePath();
+	if (!rumblePath.empty()) {
+		auto rumble_enabled = std::make_shared<SwitchComponent>(mWindow);
+		bool rumbleEnabled = SystemConf::getInstance()->get("rumble.enabled") == "1";
+		rumble_enabled->setState(rumbleEnabled);
+		addWithLabel(_("ENABLE RUMBLE"), rumble_enabled);
+		rumble_enabled->setOnChangedCallback([rumble_enabled, rumblePath] {
+			if (rumble_enabled->getState() == true) {
+				Utils::Platform::runSystemCommand("echo 1 >" + rumblePath, "", nullptr);
+			} else {
+				Utils::Platform::runSystemCommand("echo 0 >" + rumblePath, "", nullptr);
+			}
+			SystemConf::getInstance()->set("rumble.enabled", rumble_enabled->getState() ? "1" : "0");
+		});
+	}
 
 	bool sindenguns_menu = false;
 	bool wiiguns_menu = false;

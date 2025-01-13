@@ -645,6 +645,32 @@ std::string ApiSystem::getCurrentStorage()
 	return "INTERNAL";
 }
 
+std::string ApiSystem::getRumblePath()
+{
+	LOG(LogDebug) << "ApiSystem::getRumblePath";
+
+	std::string joypadPath;
+	std::string rumblePath;
+
+	auto files = Utils::FileSystem::getDirContent("/sys/devices/platform");
+	for (auto file : files)
+	{
+		if ((Utils::String::toLower(file).find("/retroid-pocket-gamepad") != std::string::npos) && (joypadPath.empty()))
+			joypadPath = file;
+
+		if ((Utils::String::toLower(file).find("/rocknix") != std::string::npos) && (joypadPath.empty()))
+			joypadPath = file;
+	}
+
+	if (!joypadPath.empty())
+		rumblePath = joypadPath + "/rumble_enable";
+
+	if (!Utils::FileSystem::exists(rumblePath))
+		return "";
+
+	return rumblePath;
+}
+
 bool ApiSystem::setStorage(std::string selected) 
 {
 	return executeScript("rocknix-config storage " + selected);
