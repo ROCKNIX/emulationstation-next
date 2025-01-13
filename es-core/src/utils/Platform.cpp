@@ -680,9 +680,7 @@ namespace Utils
 
 		int runSystemCommand(const std::string& cmd_utf8, const std::string& name, Window* window)
 		{
-
-			std::string stderrFilename = " 2>/var/log/es_launch_stderr.log";
-			std::string stdoutFilename = " >/var/log/es_launch_stdout.log";
+			LOG(LogInfo) << "runSystemCommand: " + cmd_utf8;
 
 			// Parent fork
 			pid_t ret = fork();
@@ -691,7 +689,7 @@ namespace Utils
 				ret = fork();
 				if (ret == 0)
 				{
-					execl("/usr/bin/sh", "sh", "-c", (cmd_utf8 + stderrFilename + stdoutFilename).c_str(), (char *) NULL);
+					execl("/usr/bin/sh", "sh", "-c", (cmd_utf8).c_str(), (char *) NULL);
 					_exit(1); // execl failed
 				}
 				int status;
