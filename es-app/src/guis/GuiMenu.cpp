@@ -1905,7 +1905,7 @@ void GuiMenu::openSystemSettings()
 	}
 
 // Do not show on S922X devices yet.
-#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SD865)
+#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM8250)
 	// Allow user control over how the device sleeps
 	s->addGroup(_("SUSPEND"));
 	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
@@ -2601,7 +2601,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	GuiSettings* guiSystemOptions = new GuiSettings(mWindow, _("SYSTEM OPTIONS").c_str());
 	bool cfound = false;
 
-#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SD865)
+#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SM8250)
 	// Core chooser
 	auto cores_used = std::make_shared<OptionListComponent<std::string>>(mWindow, _("CORES USED"));
 	cores_used->addRange({ {("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));

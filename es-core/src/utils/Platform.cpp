@@ -669,8 +669,8 @@ namespace Utils
 			return "s922x";
 #endif
 
-#if SD865
-			return "sd865";
+#if SM8250
+			return "sm8250";
 #endif
 
 #endif
