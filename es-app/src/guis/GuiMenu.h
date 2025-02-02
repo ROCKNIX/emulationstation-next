@@ -64,6 +64,7 @@ private:
         void openResetOptions();
         void openNetplaySettings(); 
         void openRetroachievementsSettings();
+        void openAnalogSticksLedControls();
         void openMissingBiosSettings();
         void openFormatDriveSettings();
         void exitKidMode();

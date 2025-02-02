@@ -21,6 +21,7 @@
 #include "guis/GuiRetroAchievementsSettings.h"
 #include "guis/GuiSystemInformation.h"
 #include "guis/GuiControllersSettings.h"
+#include "guis/GuiAnalogSticksLedControls.h"
 #include "views/UIModeController.h"
 #include "views/ViewController.h"
 #include "CollectionSystemManager.h"
@@ -1587,7 +1588,7 @@ void GuiMenu::openSystemSettings()
 		});
 	}
 
-        if (Utils::Platform::GetEnv("DEVICE_LED_CONTROL") == "true"){
+	if (Utils::Platform::GetEnv("DEVICE_LED_CONTROL") == "true"){
 		// Provides LED management
 		auto optionsColors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LED COLOR"), false);
 		std::vector<std::string> availableColors = ApiSystem::getInstance()->getAvailableColors();
@@ -1612,6 +1613,7 @@ void GuiMenu::openSystemSettings()
 			}
 		});
 	}
+
 	if (Utils::Platform::GetEnv("DEVICE_LED_BRIGHTNESS") == "true"){
 	        // Sets LED brightness
 	        auto optionsLEDBrightness = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LED BRIGHTNESS"), false);
@@ -1629,6 +1631,10 @@ void GuiMenu::openSystemSettings()
 	                        Utils::Platform::runSystemCommand("/usr/bin/ledcontrol brightness " + optionsLEDBrightness->getSelected(), "", nullptr);
 	                }
 	        });
+	}
+
+	if (Utils::Platform::GetEnv("DEVICE_ANALOG_STICKS_LED_CONTROL") == "true"){
+		s->addEntry(_("ANALOG STICKS LED COLOR"), true, [this] { openAnalogSticksLedControls(); });
 	}
 
 	if (Utils::Platform::GetEnv("DEVICE_DTB_SWITCH") == "true"){
@@ -2690,6 +2696,11 @@ void GuiMenu::openRetroachievementsSettings()
 void GuiMenu::openNetplaySettings()
 {
 	mWindow->pushGui(new GuiNetPlaySettings(mWindow));	
+}
+
+void GuiMenu::openAnalogSticksLedControls()
+{
+	mWindow->pushGui(new GuiAnalogSticksLedControls(mWindow));	
 }
 
 void GuiMenu::addDecorationSetOptionListComponent(Window* window, GuiSettings* parentWindow, const std::vector<DecorationSetInfo>& sets, const std::string& configName)
