@@ -4741,6 +4741,17 @@ void GuiMenu::openSoundSettings()
 		SystemConf::getInstance()->set("system.battery.warning", batteryWarningEnabled ? "1" : "0");
 	});
 
+	auto batteryWarningThreshold = std::make_shared<SliderComponent>(mWindow, 0.f, 50.f, 1.f, "%");
+	if (SystemConf::getInstance()->get("system.battery.warning_threshold").length() == 0) {
+		SystemConf::getInstance()->set("system.battery.warning_threshold", "25");
+	}
+	float batteryWarningThresholdValue = (float)atoi(SystemConf::getInstance()->get("system.battery.warning_threshold").c_str());
+	batteryWarningThreshold->setValue(batteryWarningThresholdValue);
+	s->addWithLabel(_("BATTERY WARNING THRESHOLD"), batteryWarningThreshold);
+	s->addSaveFunc([batteryWarningThreshold] {
+		SystemConf::getInstance()->set("system.battery.warning_threshold", std::to_string((int)round(batteryWarningThreshold->getValue())));
+	});
+
 	s->addSwitch(_("ENABLE VIDEO PREVIEW AUDIO"), "VideoAudio", true);
 	
 	mWindow->pushGui(s);
