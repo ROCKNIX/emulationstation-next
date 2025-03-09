@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2025-02-26 19:14+0000\n"
+"PO-Revision-Date: 2025-03-05 09:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2570,9 +2570,6 @@ msgstr "Eine Spiel-Lobby zum Beitreten auswählen"
 msgid "FAILED"
 msgstr "FEHLGESCHLAGEN"
 
-msgid "NO GAMES FOUND"
-msgstr "KEINE SPIELE GEFUNDEN"
-
 msgid "UNKNOWN ROM VERSION"
 msgstr "UNBEKANNTE ROM-VERSION"
 
@@ -2585,8 +2582,11 @@ msgstr "GLEICHE ROM-DATEI"
 msgid "UNAVAILABLE CORE"
 msgstr "NICHT VERFÜGBARER CORE"
 
+msgid "LAN GAMES"
+msgstr "LAN-SPIELE"
+
 msgid "ONLINE GAMES"
-msgstr ""
+msgstr "ONLINE-SPIELE"
 
 msgid "AVAILABLE GAMES"
 msgstr "VERFÜGBARE SPIELE"
@@ -2594,8 +2594,8 @@ msgstr "VERFÜGBARE SPIELE"
 msgid "UNAVAILABLE GAMES"
 msgstr "NICHT VERFÜGBARE SPIELE"
 
-msgid "LAN GAMES"
-msgstr ""
+msgid "NO GAMES FOUND"
+msgstr "KEINE SPIELE GEFUNDEN"
 
 msgid "JOIN GAME"
 msgstr "SPIEL BEITRETEN"

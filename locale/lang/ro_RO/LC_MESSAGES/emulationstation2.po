@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-17 15:25+0200\n"
+"PO-Revision-Date: 2025-03-01 22:07+0200\n"
 "Last-Translator: Mihai Vasiliu <mihai.vasiliu.93@gmail.com>\n"
 "Language-Team: \n"
 "Language: ro_RO\n"
@@ -2565,9 +2565,6 @@ msgstr "Alege o sală pentru te alătura"
 msgid "FAILED"
 msgstr "EȘUAT"
 
-msgid "NO GAMES FOUND"
-msgstr "NU S-AU GĂSIT JOCURI"
-
 msgid "UNKNOWN ROM VERSION"
 msgstr "VERSIUNE ROM NECUNOSCUTĂ"
 
@@ -2580,8 +2577,11 @@ msgstr "ACELAȘI ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "NUCLEU INDISPONIBIL"
 
+msgid "LAN GAMES"
+msgstr "JOCURI ÎN REȚEA"
+
 msgid "ONLINE GAMES"
-msgstr ""
+msgstr "JOCURI ONLINE"
 
 msgid "AVAILABLE GAMES"
 msgstr "JOCURI DISPONIBILE"
@@ -2589,8 +2589,8 @@ msgstr "JOCURI DISPONIBILE"
 msgid "UNAVAILABLE GAMES"
 msgstr "JOCURI INDISPONIBILE"
 
-msgid "LAN GAMES"
-msgstr ""
+msgid "NO GAMES FOUND"
+msgstr "NU S-AU GĂSIT JOCURI"
 
 msgid "JOIN GAME"
 msgstr "ALĂTURĂ-TE JOCULUI"
@@ -2667,10 +2667,10 @@ msgid "DRAW GUN CROSSHAIR"
 msgstr "DESENEAZĂ ȚINTĂ PISTOL"
 
 msgid "BEHAVIOR"
-msgstr ""
+msgstr "COMPORTAMENT"
 
 msgid "RESTRICT HOTKEYS TO EXIT"
-msgstr ""
+msgstr "LIMITEAZĂ TASTELE RAPIDE DE IEȘIRE"
 
 msgid "default"
 msgstr "implicit"
@@ -2850,13 +2850,13 @@ msgid "SHOW GAME INFO"
 msgstr "AFIȘEAZĂ INFORMAȚII JOC"
 
 msgid "SHOW DATE TIME"
-msgstr ""
+msgstr "ARATĂ DATA ȘI ORA"
 
 msgid "DATE FORMAT"
-msgstr ""
+msgstr "FORMAT DATĂ"
 
 msgid "TIME FORMAT"
-msgstr ""
+msgstr "FORMAT ORĂ"
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "FOLOSEȘTE BANNER CA INFORMAȚII JOC"
@@ -3138,7 +3138,7 @@ msgid "UKNOWN ERROR"
 msgstr "EROARE NECUNOSCUTĂ"
 
 msgid "Interlaced"
-msgstr ""
+msgstr "Intercalat"
 
 msgid "all games"
 msgstr "toate jocurile"
