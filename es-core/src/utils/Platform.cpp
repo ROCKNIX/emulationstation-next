@@ -419,6 +419,9 @@ namespace Utils
 					if ((Utils::String::toLower(file).find("/qcom-battery") != std::string::npos) && (batteryRootPath.empty()))
 						batteryRootPath = file;
 
+					if ((Utils::String::toLower(file).find("/qcom-battmgr-bat") != std::string::npos) && (batteryRootPath.empty()))
+						batteryRootPath = file;
+
 					if ((Utils::String::toLower(file).find("fuel") != std::string::npos) && (fuelgaugeRootPath.empty()))
 						fuelgaugeRootPath = file;
 
@@ -663,6 +666,10 @@ namespace Utils
 
 #if SM8250
 			return "sm8250";
+#endif
+
+#if SM8550
+			return "sm8550";
 #endif
 
 #endif

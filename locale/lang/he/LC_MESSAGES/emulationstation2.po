@@ -552,27 +552,6 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "הכרז ציבורית על משחק"
-
-msgid "PLAYER PASSWORD"
-msgstr "סיסמת שחקן"
-
-msgid "VIEWER PASSWORD"
-msgstr ""
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr ""
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr ""
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "הצג משחקים לא זמינים"
 
@@ -1061,12 +1040,6 @@ msgid "AUTO"
 msgstr "אוטומטי"
 
 msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
 msgstr ""
 
 msgid "BRIGHTNESS"
@@ -2163,6 +2136,15 @@ msgstr "התחל משחק"
 msgid "HOST A NETPLAY GAME"
 msgstr "ארח משחק רשת"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "הכרז ציבורית על משחק"
+
+msgid "PLAYER PASSWORD"
+msgstr "סיסמת שחקן"
+
+msgid "VIEWER PASSWORD"
+msgstr ""
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "מציאת משחקים דומים..."
 
@@ -2526,11 +2508,11 @@ msgstr "התחברות לרשת NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "בחר לובי משחק בכדי להתחבר"
 
-msgid "Select a game lobby to create or join"
-msgstr ""
-
 msgid "FAILED"
 msgstr "נכשל"
+
+msgid "NO GAMES FOUND"
+msgstr "לא נמצאו משחקים"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "גרסה לא ידועה ROM"
@@ -2544,13 +2526,7 @@ msgstr "אותו ה ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "ליבה לא זמינה"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr ""
-
-msgid "PLAY OFFLINE"
-msgstr ""
-
-msgid "JOIN EXISTING GAME"
+msgid "ONLINE GAMES"
 msgstr ""
 
 msgid "AVAILABLE GAMES"
@@ -2559,8 +2535,8 @@ msgstr "משחקים זמנים"
 msgid "UNAVAILABLE GAMES"
 msgstr "משחקים לא זמינים"
 
-msgid "NO GAMES FOUND"
-msgstr "לא נמצאו משחקים"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "הצטרפות למשחק"
@@ -2629,6 +2605,12 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "הצגת רמת סוללה לבקר"
 
 msgid "DRAW GUN CROSSHAIR"
+msgstr ""
+
+msgid "BEHAVIOR"
+msgstr ""
+
+msgid "RESTRICT HOTKEYS TO EXIT"
 msgstr ""
 
 msgid "default"
@@ -2807,6 +2789,15 @@ msgstr "שימוש בנגן OMX לשומר מסך"
 
 msgid "SHOW GAME INFO"
 msgstr "הצגת מידע על משחק"
+
+msgid "SHOW DATE TIME"
+msgstr ""
+
+msgid "DATE FORMAT"
+msgstr ""
+
+msgid "TIME FORMAT"
+msgstr ""
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "השתמש בדגל במידע על משחק"
@@ -3081,6 +3072,9 @@ msgid "CORE IS MISSING"
 msgstr ""
 
 msgid "UKNOWN ERROR"
+msgstr ""
+
+msgid "Interlaced"
 msgstr ""
 
 msgid "all games"

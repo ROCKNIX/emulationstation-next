@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-26 00:00+0100\n"
-"PO-Revision-Date: 2025-01-03 00:00+0100\n"
+"PO-Revision-Date: 2025-02-28 00:00+0100\n"
 "Last-Translator: roliverosc\n"
 "Language-Team: spanish\n"
 "Language: es\n"
@@ -548,29 +548,6 @@ msgstr "PERSONALIZAR"
 msgid "CUSTOM RELAY SERVER"
 msgstr "PERSONALIZAR SERVIDOR DE RETRANSMISIÓN"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANUNCIAR PÚBLICAMENTE"
-
-msgid "PLAYER PASSWORD"
-msgstr "CONTRASEÑA PARA JUGADORES"
-
-msgid "VIEWER PASSWORD"
-msgstr "CONTRASEÑA PARA ESPECTADORES"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr "MOSTRAR OPCIONES DE NETPLAY AL INICIAR EL JUEGO"
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr "Permite elegir entre jugar online, offline o unirse a otro juego."
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "MOSTRAR SOLO JUEGOS DE SERVIDOR DE RETRANSMISIÓN"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-"Los juegos con servidores de retransmisión tienen mayores posibilidades de "
-"acceso con éxito."
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "MOSTRAR JUEGOS NO DISPONIBLES"
 
@@ -1077,12 +1054,6 @@ msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "tamaño de la matriz dmd"
-
-msgid "MATRIX"
-msgstr "MATRIZ"
-
-msgid "rgb dmd order"
-msgstr "orden rgb dmd"
 
 msgid "BRIGHTNESS"
 msgstr "BRILLO"
@@ -2219,6 +2190,15 @@ msgstr "INICIAR JUEGO"
 msgid "HOST A NETPLAY GAME"
 msgstr "ORGANIZAR UN JUEGO EN NETPLAY"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANUNCIAR PÚBLICAMENTE"
+
+msgid "PLAYER PASSWORD"
+msgstr "CONTRASEÑA PARA JUGADORES"
+
+msgid "VIEWER PASSWORD"
+msgstr "CONTRASEÑA PARA ESPECTADORES"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "BUSCAR JUEGOS SIMILARES..."
 
@@ -2587,11 +2567,11 @@ msgstr "CONECTAR A NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Selecciona una sala de juego para unirte"
 
-msgid "Select a game lobby to create or join"
-msgstr "Selecciona una sala de juego para crear o unirte"
-
 msgid "FAILED"
 msgstr "FALLÓ"
+
+msgid "NO GAMES FOUND"
+msgstr "NO SE HAN ENCONTRADO JUEGOS"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "VERSIÓN DE ROM DESCONOCIDA"
@@ -2605,14 +2585,8 @@ msgstr "MISMA ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "NÚCLEO NO DISPONIBLE"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr "JUGAR ONLINE COMO ANFITRIÓN"
-
-msgid "PLAY OFFLINE"
-msgstr "JUGAR SIN CONEXIÓN"
-
-msgid "JOIN EXISTING GAME"
-msgstr "UNIRTE A JUEGO EXISTENTE"
+msgid "ONLINE GAMES"
+msgstr "JUEGOS ONLINE"
 
 msgid "AVAILABLE GAMES"
 msgstr "JUEGOS DISPONIBLES"
@@ -2620,8 +2594,8 @@ msgstr "JUEGOS DISPONIBLES"
 msgid "UNAVAILABLE GAMES"
 msgstr "JUEGOS NO DISPONIBLES"
 
-msgid "NO GAMES FOUND"
-msgstr "NO SE HAN ENCONTRADO JUEGOS"
+msgid "LAN GAMES"
+msgstr "JUEGOS RED LOCAL"
 
 msgid "JOIN GAME"
 msgstr "UNIRTE A LA PARTIDA"
@@ -2698,6 +2672,12 @@ msgstr "MOSTRAR NIVEL DE BATERÍA"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "DIBUJAR PUNTO DE MIRA DE ARMA"
+
+msgid "BEHAVIOR"
+msgstr "COMPORTAMIENTO"
+
+msgid "RESTRICT HOTKEYS TO EXIT"
+msgstr "RESTRINGIR TECLAS DE ACCESO RÁPIDO PARA SALIR"
 
 msgid "default"
 msgstr "defecto"
@@ -2876,6 +2856,15 @@ msgstr "USAR REPRODUCTOR OMX PARA SALVAPANTALLAS"
 msgid "SHOW GAME INFO"
 msgstr "MOSTRAR INFORMACIÓN DEL JUEGO"
 
+msgid "SHOW DATE TIME"
+msgstr "MOSTRAR FECHA Y HORA"
+
+msgid "DATE FORMAT"
+msgstr "FORMATO DE FECHA"
+
+msgid "TIME FORMAT"
+msgstr "FORMATO DE HORA"
+
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "USAR MARQUESINA COMO INFORMACIÓN DEL JUEGO"
 
@@ -3042,8 +3031,8 @@ msgid ""
 "CORRECTLY.\n"
 "DO YOU WANT TO LAUNCH IT ANYWAY?"
 msgstr ""
-"ADVERTENCIA: EL SISTEMA TIENE ARCHIVOS BIOS AUSENTES Y ES POSIBLE QUE EL JUEGO NO "
-"FUNCIONE CORRECTAMENTE.\n"
+"ADVERTENCIA: EL SISTEMA TIENE ARCHIVOS BIOS AUSENTES Y ES POSIBLE QUE EL "
+"JUEGO NO FUNCIONE CORRECTAMENTE.\n"
 "¿QUIERES INICIARLO DE TODOS MODOS?"
 
 msgid "Preloading UI"
@@ -3150,6 +3139,9 @@ msgstr "FALTA EL NÚCLEO"
 
 msgid "UKNOWN ERROR"
 msgstr "ERROR DESCONOCIDO"
+
+msgid "Interlaced"
+msgstr "Entrelazado"
 
 msgid "all games"
 msgstr "todos los juegos"
@@ -3595,6 +3587,38 @@ msgid ""
 msgstr ""
 "CALIBRANDO PISTOLA\n"
 "Dispara a los objetivos para calibrar"
+
+#~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+#~ msgstr "MOSTRAR OPCIONES DE NETPLAY AL INICIAR EL JUEGO"
+
+#~ msgid "Allows choice of online, offline, or joining another game."
+#~ msgstr "Permite elegir entre jugar online, offline o unirse a otro juego."
+
+#~ msgid "SHOW RELAY SERVER GAMES ONLY"
+#~ msgstr "MOSTRAR SOLO JUEGOS DE SERVIDOR DE RETRANSMISIÓN"
+
+#~ msgid "Relay server games have a higher chance of successful entry."
+#~ msgstr ""
+#~ "Los juegos con servidores de retransmisión tienen mayores posibilidades "
+#~ "de acceso con éxito."
+
+#~ msgid "Select a game lobby to create or join"
+#~ msgstr "Selecciona una sala de juego para crear o unirte"
+
+#~ msgid "PLAY ONLINE AS HOST"
+#~ msgstr "JUGAR ONLINE COMO ANFITRIÓN"
+
+#~ msgid "PLAY OFFLINE"
+#~ msgstr "JUGAR SIN CONEXIÓN"
+
+#~ msgid "JOIN EXISTING GAME"
+#~ msgstr "UNIRTE A JUEGO EXISTENTE"
+
+#~ msgid "MATRIX"
+#~ msgstr "MATRIZ"
+
+#~ msgid "rgb dmd order"
+#~ msgstr "orden rgb dmd"
 
 #~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 #~ msgstr ""

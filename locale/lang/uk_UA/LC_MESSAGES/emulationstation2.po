@@ -551,27 +551,6 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr ""
-
-msgid "PLAYER PASSWORD"
-msgstr ""
-
-msgid "VIEWER PASSWORD"
-msgstr ""
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr ""
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr ""
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "ПОКАЗАТИ НЕДОСТУПНІ ІГРИ"
 
@@ -1065,12 +1044,6 @@ msgid "AUTO"
 msgstr "АВТО"
 
 msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
 msgstr ""
 
 msgid "BRIGHTNESS"
@@ -2167,6 +2140,15 @@ msgstr ""
 msgid "HOST A NETPLAY GAME"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr ""
+
+msgid "PLAYER PASSWORD"
+msgstr ""
+
+msgid "VIEWER PASSWORD"
+msgstr ""
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "ЗНАЙТИ СХОЖІ ІГРИ..."
 
@@ -2532,11 +2514,11 @@ msgstr "ПІД'ЄДНАТИСЬ ДО NETPLAY"
 msgid "Select a game lobby to join"
 msgstr ""
 
-msgid "Select a game lobby to create or join"
-msgstr ""
-
 msgid "FAILED"
 msgstr "ПОМИЛКА"
+
+msgid "NO GAMES FOUND"
+msgstr "НЕ ЗНАЙДЕНО ЖОДНОЇ ГРИ"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "НЕВІДОМА ВЕРСІЯ ГРИ"
@@ -2550,13 +2532,7 @@ msgstr "ТА Ж САМА ГРА"
 msgid "UNAVAILABLE CORE"
 msgstr "НЕДОСТУПНЕ ЯДРО"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr ""
-
-msgid "PLAY OFFLINE"
-msgstr ""
-
-msgid "JOIN EXISTING GAME"
+msgid "ONLINE GAMES"
 msgstr ""
 
 msgid "AVAILABLE GAMES"
@@ -2565,8 +2541,8 @@ msgstr "ДОСТУПНІ ІГРИ"
 msgid "UNAVAILABLE GAMES"
 msgstr "НЕДОСТУПНІ ІГРИ"
 
-msgid "NO GAMES FOUND"
-msgstr "НЕ ЗНАЙДЕНО ЖОДНОЇ ГРИ"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "ПРИЄДНАТИСЬ ДО ГРИ"
@@ -2635,6 +2611,12 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr ""
 
 msgid "DRAW GUN CROSSHAIR"
+msgstr ""
+
+msgid "BEHAVIOR"
+msgstr ""
+
+msgid "RESTRICT HOTKEYS TO EXIT"
 msgstr ""
 
 msgid "default"
@@ -2813,6 +2795,15 @@ msgstr "ВИКОРИСТАТИ OMX ПЛЕЄР ДЛЯ ЗАСТАВКИ"
 
 msgid "SHOW GAME INFO"
 msgstr "ПОКАЗАТИ ІНФОРМАЦІЮ ПРО ГРУ"
+
+msgid "SHOW DATE TIME"
+msgstr ""
+
+msgid "DATE FORMAT"
+msgstr ""
+
+msgid "TIME FORMAT"
+msgstr ""
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "ВИКОРИСТАТИ БАНЕР ЯК ІНФОРМАЦІЮ ПРО ГРУ"
@@ -3083,6 +3074,9 @@ msgid "CORE IS MISSING"
 msgstr ""
 
 msgid "UKNOWN ERROR"
+msgstr ""
+
+msgid "Interlaced"
 msgstr ""
 
 msgid "all games"

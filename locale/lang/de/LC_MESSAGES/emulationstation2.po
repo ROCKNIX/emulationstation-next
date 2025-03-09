@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-12-30 08:55+0000\n"
+"PO-Revision-Date: 2025-02-26 19:14+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -551,31 +551,6 @@ msgstr "BENUTZERDEFINIERT"
 msgid "CUSTOM RELAY SERVER"
 msgstr "BENUTZERDEFINIERTER RELAY-SERVER"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "SPIEL ÖFFENTLICH ANKÜNDIGEN"
-
-msgid "PLAYER PASSWORD"
-msgstr "SPIELER-PASSWORT"
-
-msgid "VIEWER PASSWORD"
-msgstr "ZUSCHAUER-PASSWORT"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr "NETPLAY-OPTIONEN BEIM SPIELSTART ANZEIGEN"
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
-"Ermöglicht die Wahl zwischen Online, Offline oder der Teilnahme an einem "
-"anderen Spiel."
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "NUR RELAY-SERVER-SPIELE ANZEIGEN"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-"Bei Relay-Server-Spielen ist die Chance auf einen erfolgreichen Einstieg "
-"höher."
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "NICHT VERFÜGBARE SPIELE ANZEIGEN"
 
@@ -1079,12 +1054,6 @@ msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "DMD-Matrix Größe"
-
-msgid "MATRIX"
-msgstr "MATRIX"
-
-msgid "rgb dmd order"
-msgstr "RGB DMD-Order"
 
 msgid "BRIGHTNESS"
 msgstr "HELLIGKEIT"
@@ -2221,6 +2190,15 @@ msgstr "SPIEL STARTEN"
 msgid "HOST A NETPLAY GAME"
 msgstr "HOSTE EIN NETPLAY-SPIEL"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "SPIEL ÖFFENTLICH ANKÜNDIGEN"
+
+msgid "PLAYER PASSWORD"
+msgstr "SPIELER-PASSWORT"
+
+msgid "VIEWER PASSWORD"
+msgstr "ZUSCHAUER-PASSWORT"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "ÄHNLICHE SPIELE FINDEN..."
 
@@ -2589,12 +2567,11 @@ msgstr "MIT NETPLAY VERBINDEN"
 msgid "Select a game lobby to join"
 msgstr "Eine Spiel-Lobby zum Beitreten auswählen"
 
-msgid "Select a game lobby to create or join"
-msgstr ""
-"Wählen Sie eine Spiel-Lobby aus, die Sie erstellen oder beitreten möchten"
-
 msgid "FAILED"
 msgstr "FEHLGESCHLAGEN"
+
+msgid "NO GAMES FOUND"
+msgstr "KEINE SPIELE GEFUNDEN"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "UNBEKANNTE ROM-VERSION"
@@ -2608,14 +2585,8 @@ msgstr "GLEICHE ROM-DATEI"
 msgid "UNAVAILABLE CORE"
 msgstr "NICHT VERFÜGBARER CORE"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr "ALS HOST ONLINE SPIELEN"
-
-msgid "PLAY OFFLINE"
-msgstr "OFFLINE SPIELEN"
-
-msgid "JOIN EXISTING GAME"
-msgstr "VORHANDENEM SPIEL BEITRETEN"
+msgid "ONLINE GAMES"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "VERFÜGBARE SPIELE"
@@ -2623,8 +2594,8 @@ msgstr "VERFÜGBARE SPIELE"
 msgid "UNAVAILABLE GAMES"
 msgstr "NICHT VERFÜGBARE SPIELE"
 
-msgid "NO GAMES FOUND"
-msgstr "KEINE SPIELE GEFUNDEN"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "SPIEL BEITRETEN"
@@ -2700,6 +2671,12 @@ msgstr "CONTROLLER AKKUSTAND ANZEIGEN"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "FADENKREUZ ANZEIGEN"
+
+msgid "BEHAVIOR"
+msgstr "VERHALTEN"
+
+msgid "RESTRICT HOTKEYS TO EXIT"
+msgstr "HOTKEYS ZUM BEENDEN EINSCHRÄNKEN"
 
 msgid "default"
 msgstr "Standard"
@@ -2877,6 +2854,15 @@ msgstr "OMX PLAYER FÜR BILDSCHIRMSCHONER VERWENDEN"
 
 msgid "SHOW GAME INFO"
 msgstr "SPIELINFORMATIONEN ANZEIGEN"
+
+msgid "SHOW DATE TIME"
+msgstr "ZEIGE DATUM/UHRZEIT"
+
+msgid "DATE FORMAT"
+msgstr "DATUMSFORMAT"
+
+msgid "TIME FORMAT"
+msgstr "ZEITFORMAT"
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "BANNER ALS SPIELINFO VERWENDEN"
@@ -3152,6 +3138,9 @@ msgstr "CORE FEHLT"
 
 msgid "UKNOWN ERROR"
 msgstr "UNBEKANNTER FEHLER"
+
+msgid "Interlaced"
+msgstr "Interlaced"
 
 msgid "all games"
 msgstr "alle Spiele"

@@ -85,17 +85,17 @@
 #define fake_gettext_cpu_frequency _("Cpu max frequency")
 #define fake_gettext_cpu_feature  _("Cpu feature")
 
-#define fake_gettext_cpu_feature  _("Available Memory")
-#define fake_gettext_cpu_feature  _("Display Resolution")
-#define fake_gettext_cpu_feature  _("Display Refresh Rate")
-#define fake_gettext_cpu_feature  _("OpenGL Driver Version")
-#define fake_gettext_cpu_feature  _("Vulkan Driver Name")
-#define fake_gettext_cpu_feature  _("Vulkan Driver Version")
-#define fake_gettext_cpu_feature  _("Data Partition Format")
-#define fake_gettext_cpu_feature  _("Data Partition Available Space")
-#define fake_gettext_cpu_feature  _("Network IP Address")
-#define fake_gettext_cpu_feature  _("UEFI Boot")
-#define fake_gettext_cpu_feature  _("Secure Boot")
+#define fake_gettext_available_memory               _("Available Memory")
+#define fake_gettext_display_resolution             _("Display Resolution")
+#define fake_gettext_display_refresh_rate           _("Display Refresh Rate")
+#define fake_gettext_opengl_driver_version          _("OpenGL Driver Version")
+#define fake_gettext_vulkan_driver_name             _("Vulkan Driver Name")
+#define fake_gettext_vulkan_driver_version          _("Vulkan Driver Version")
+#define fake_gettext_data_partition_format          _("Data Partition Format")
+#define fake_gettext_data_partition_available_space _("Data Partition Available Space")
+#define fake_gettext_network_ip_address             _("Network IP Address")
+#define fake_gettext_uefi_boot                      _("UEFI Boot")
+#define fake_gettext_secure_boot                    _("Secure Boot")
 
 #define fake_gettext_simple_bilinear_simple	pgettext("game_options", "SHARP-BILINEAR-SIMPLE")
 #define fake_gettext_scanlines				pgettext("game_options", "SCANLINES")
@@ -550,29 +550,18 @@ void GuiMenu::openDmdSettings()
 
 	s->addGroup("ZEDMD");
 
-	// zedmd.matrix
-	auto zedmd_matrix = std::make_shared< OptionListComponent<std::string> >(window, _("MATRIX"), false);
-	std::string current_zedmd_matrix = SystemConf::getInstance()->get("dmd.zedmd.matrix");
-	zedmd_matrix->addRange({ { _("AUTO"), "" }, { "RGB", "rgb" }, { "RBG", "rbg" }, { "BRG", "brg" }, { "BGR", "bgr" }, { "GRB", "grb" }, { "GBR", "gbr" } }, current_zedmd_matrix);
-	s->addWithDescription(_("MATRIX"), _("rgb dmd order"), zedmd_matrix);
-
 	// zedmd.brightness
 	auto zedmd_brightness = std::make_shared< OptionListComponent<std::string> >(window, _("BRIGHTNESS"), false);
 	std::string current_zedmd_brightness = SystemConf::getInstance()->get("dmd.zedmd.brightness");
 	zedmd_brightness->addRange({ { _("AUTO"), "" }, { "0", "0" }, { "1", "1" }, { "2", "2" }, { "3", "3" }, { "4", "4" }, { "5", "5" }, { "6", "6" }, { "7", "7" }, { "8", "8" }, { "9", "9" }, { "10", "10" }, { "11", "11" }, { "12", "12" }, { "13", "13" }, { "14", "14" }, { "15", "15" } }, current_zedmd_brightness);
 	s->addWithLabel(_("BRIGHTNESS"), zedmd_brightness);
 
-	s->addSaveFunc([window, server, format, zedmd_matrix, zedmd_brightness, current_server, current_format, current_zedmd_matrix, current_zedmd_brightness] {
+	s->addSaveFunc([window, server, format, zedmd_brightness, current_server, current_format, current_zedmd_brightness] {
 	  bool needRestart = false;
 	  bool needSave    = false;
 
 	  if(current_format != format->getSelected()) {
 	    SystemConf::getInstance()->set("dmd.format", format->getSelected());
-	    needSave = true;
-	  }
-	  if(current_zedmd_matrix != zedmd_matrix->getSelected()) {
-	    SystemConf::getInstance()->set("dmd.zedmd.matrix", zedmd_matrix->getSelected());
-	    needRestart = true;
 	    needSave = true;
 	  }
 	  if(current_zedmd_brightness != zedmd_brightness->getSelected()) {
@@ -1926,7 +1915,7 @@ void GuiMenu::openSystemSettings()
 	}
 
 // Do not show on S922X devices yet.
-#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM8250)
+#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM8250) || defined(SM8550)
 	// Allow user control over how the device sleeps
 	s->addGroup(_("SUSPEND"));
 	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
@@ -2604,7 +2593,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	GuiSettings* guiSystemOptions = new GuiSettings(mWindow, _("SYSTEM OPTIONS").c_str());
 	bool cfound = false;
 
-#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SM8250)
+#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SM8250) || defined(SM8550)
 	// Core chooser
 	auto cores_used = std::make_shared<OptionListComponent<std::string>>(mWindow, _("CORES USED"));
 	cores_used->addRange({ {("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));
@@ -4687,6 +4676,17 @@ void GuiMenu::openSoundSettings()
 	s->addSaveFunc([batteryWarning] {
 		bool batteryWarningEnabled = batteryWarning->getState();
 		SystemConf::getInstance()->set("system.battery.warning", batteryWarningEnabled ? "1" : "0");
+	});
+
+	auto batteryWarningThreshold = std::make_shared<SliderComponent>(mWindow, 0.f, 50.f, 1.f, "%");
+	if (SystemConf::getInstance()->get("system.battery.warning_threshold").length() == 0) {
+		SystemConf::getInstance()->set("system.battery.warning_threshold", "25");
+	}
+	float batteryWarningThresholdValue = (float)atoi(SystemConf::getInstance()->get("system.battery.warning_threshold").c_str());
+	batteryWarningThreshold->setValue(batteryWarningThresholdValue);
+	s->addWithLabel(_("BATTERY WARNING THRESHOLD"), batteryWarningThreshold);
+	s->addSaveFunc([batteryWarningThreshold] {
+		SystemConf::getInstance()->set("system.battery.warning_threshold", std::to_string((int)round(batteryWarningThreshold->getValue())));
 	});
 
 	s->addSwitch(_("ENABLE VIDEO PREVIEW AUDIO"), "VideoAudio", true);

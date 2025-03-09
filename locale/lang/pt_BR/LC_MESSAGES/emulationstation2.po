@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.4.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 msgid "SCANNING BLUETOOTH"
@@ -550,27 +550,6 @@ msgstr "PERSONALIZAR"
 msgid "CUSTOM RELAY SERVER"
 msgstr "SERVIDOR PERSONALIZADO"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
-
-msgid "PLAYER PASSWORD"
-msgstr "SENHA DO JOGADOR"
-
-msgid "VIEWER PASSWORD"
-msgstr "SENHA DE ESPECTADOR"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr "MOSTRAR OPÇÕES DE NETPLAY AO INICIAR O JOGO"
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr "Permite a escolha de jogar online, offline ou entrar em outro jogo."
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "MOSTRAR APENAS JOGOS DO SERVIDOR"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr "Os jogos em servidor têm uma chance maior de entrada bem-sucedida."
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "EXIBIR JOGOS INDISPONÍVEIS"
 
@@ -1078,12 +1057,6 @@ msgstr "AUTOMÁTICO"
 
 msgid "dmd matrix size"
 msgstr "tamanho da matriz dmd"
-
-msgid "MATRIX"
-msgstr "MATRIZ"
-
-msgid "rgb dmd order"
-msgstr "ordem dmd rgb"
 
 msgid "BRIGHTNESS"
 msgstr "BRILHO"
@@ -1719,7 +1692,8 @@ msgid "REWIND"
 msgstr "REBOBINAR"
 
 msgid "Store past states to rewind to in realtime, if the core supports it."
-msgstr "Armazena estados passados para rebobinar em tempo real, se o núcleo suportar."
+msgstr ""
+"Armazena estados passados para rebobinar em tempo real, se o núcleo suportar."
 
 msgid "INTEGER SCALING (PIXEL PERFECT)"
 msgstr "ESCALA INTEIRA (PIXEL PERFEITO)"
@@ -2214,6 +2188,15 @@ msgstr "INICIAR JOGO"
 msgid "HOST A NETPLAY GAME"
 msgstr "ORGANIZAR JOGO EM REDE"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
+
+msgid "PLAYER PASSWORD"
+msgstr "SENHA DO JOGADOR"
+
+msgid "VIEWER PASSWORD"
+msgstr "SENHA DE ESPECTADOR"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "JOGOS SEMELHANTES..."
 
@@ -2582,11 +2565,11 @@ msgstr "CONECTE-SE AOS JOGOS EM REDE"
 msgid "Select a game lobby to join"
 msgstr "Seleciona uma sala de jogo para juntar-se"
 
-msgid "Select a game lobby to create or join"
-msgstr "Selecione uma sala de jogo para criar ou entrar"
-
 msgid "FAILED"
 msgstr "FALHOU"
+
+msgid "NO GAMES FOUND"
+msgstr "NENHUM JOGO ENCONTRADO"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "VERSÃO DE ROM DESCONHECIDA"
@@ -2600,14 +2583,8 @@ msgstr "MESMA ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "NÚCLEO INDISPONÍVEL"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr "JOGAR ONLINE COMO HOST"
-
-msgid "PLAY OFFLINE"
-msgstr "JOGAR OFFLINE"
-
-msgid "JOIN EXISTING GAME"
-msgstr "ENTRAR NUM JOGO EXISTENTE"
+msgid "ONLINE GAMES"
+msgstr "JOGOS ONLINE"
 
 msgid "AVAILABLE GAMES"
 msgstr "JOGOS DISPONÍVEIS"
@@ -2615,8 +2592,8 @@ msgstr "JOGOS DISPONÍVEIS"
 msgid "UNAVAILABLE GAMES"
 msgstr "JOGOS INDISPONÍVEIS"
 
-msgid "NO GAMES FOUND"
-msgstr "NENHUM JOGO ENCONTRADO"
+msgid "LAN GAMES"
+msgstr "JOGOS EM LAN"
 
 msgid "JOIN GAME"
 msgstr "ENTRAR NO JOGO"
@@ -2692,6 +2669,12 @@ msgstr "EXIBIR NÍVEL DA BATERIA DO CONTROLE"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "DESENHAR A MIRA DA ARMA"
+
+msgid "BEHAVIOR"
+msgstr "COMPORTAMENTO"
+
+msgid "RESTRICT HOTKEYS TO EXIT"
+msgstr "RESTRINGIR ATALHOS PARA SAIR"
 
 msgid "default"
 msgstr "padrão"
@@ -2869,6 +2852,15 @@ msgstr "USAR O LEITOR OMX PARA A PROTEÇÃO DE TELA"
 
 msgid "SHOW GAME INFO"
 msgstr "EXIBIR INFORMAÇÃO DO JOGO"
+
+msgid "SHOW DATE TIME"
+msgstr "MOSTRAR RELÓGIO"
+
+msgid "DATE FORMAT"
+msgstr "FORMATO DE DATA"
+
+msgid "TIME FORMAT"
+msgstr "FORMATO DE TEMPO"
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "USAR LETREIRO COMO INFORMAÇÃO DO JOGO"
@@ -3144,6 +3136,9 @@ msgstr "ESTÁ FALTANDO NÚCLEO"
 
 msgid "UKNOWN ERROR"
 msgstr "ERRO DESCONHECIDO"
+
+msgid "Interlaced"
+msgstr "Interlaced"
 
 msgid "all games"
 msgstr "todos os jogos"
@@ -3590,6 +3585,36 @@ msgid ""
 msgstr ""
 "CALIBRANDO ARMA\n"
 "Atire nos alvos para calibrar"
+
+#~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+#~ msgstr "MOSTRAR OPÇÕES DE NETPLAY AO INICIAR O JOGO"
+
+#~ msgid "Allows choice of online, offline, or joining another game."
+#~ msgstr "Permite a escolha de jogar online, offline ou entrar em outro jogo."
+
+#~ msgid "SHOW RELAY SERVER GAMES ONLY"
+#~ msgstr "MOSTRAR APENAS JOGOS DO SERVIDOR"
+
+#~ msgid "Relay server games have a higher chance of successful entry."
+#~ msgstr "Os jogos em servidor têm uma chance maior de entrada bem-sucedida."
+
+#~ msgid "Select a game lobby to create or join"
+#~ msgstr "Selecione uma sala de jogo para criar ou entrar"
+
+#~ msgid "PLAY ONLINE AS HOST"
+#~ msgstr "JOGAR ONLINE COMO HOST"
+
+#~ msgid "PLAY OFFLINE"
+#~ msgstr "JOGAR OFFLINE"
+
+#~ msgid "JOIN EXISTING GAME"
+#~ msgstr "ENTRAR NUM JOGO EXISTENTE"
+
+#~ msgid "MATRIX"
+#~ msgstr "MATRIZ"
+
+#~ msgid "rgb dmd order"
+#~ msgstr "ordem dmd rgb"
 
 #~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 #~ msgstr ""

@@ -549,27 +549,6 @@ msgstr "ANPASSAD"
 msgid "CUSTOM RELAY SERVER"
 msgstr "ANPASSAD RELÄSERVER"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANNONSERA SPELET OFFENTLIGT"
-
-msgid "PLAYER PASSWORD"
-msgstr "LÖSENORD FÖR SPELARE"
-
-msgid "VIEWER PASSWORD"
-msgstr "LÖSENORD FÖR ÅSKÅDARE"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr ""
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr ""
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "VISA OTILLGÄNGLIGA SPEL"
 
@@ -1070,12 +1049,6 @@ msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "DMD-matris storlek"
-
-msgid "MATRIX"
-msgstr "MATRIS"
-
-msgid "rgb dmd order"
-msgstr "RGB-DMD-ordning"
 
 msgid "BRIGHTNESS"
 msgstr "LJUSSTYRKA"
@@ -2196,6 +2169,15 @@ msgstr "STARTA SPEL"
 msgid "HOST A NETPLAY GAME"
 msgstr "ARRANGERA ETT NETPLAY-SPEL"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANNONSERA SPELET OFFENTLIGT"
+
+msgid "PLAYER PASSWORD"
+msgstr "LÖSENORD FÖR SPELARE"
+
+msgid "VIEWER PASSWORD"
+msgstr "LÖSENORD FÖR ÅSKÅDARE"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "HITTA LIKNANDE SPEL..."
 
@@ -2563,11 +2545,11 @@ msgstr "ANSLUT TILL NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Välj en spellobby att ansluta till"
 
-msgid "Select a game lobby to create or join"
-msgstr ""
-
 msgid "FAILED"
 msgstr "MISSLYCKADES"
+
+msgid "NO GAMES FOUND"
+msgstr "INGA SPEL HITTADES"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "OKÄND ROM-VERSION"
@@ -2581,13 +2563,7 @@ msgstr "SAMMA ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "OTILLGÄNGLIG KÄRNA"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr ""
-
-msgid "PLAY OFFLINE"
-msgstr ""
-
-msgid "JOIN EXISTING GAME"
+msgid "ONLINE GAMES"
 msgstr ""
 
 msgid "AVAILABLE GAMES"
@@ -2596,8 +2572,8 @@ msgstr "TILLGÄNGLIGA SPEL"
 msgid "UNAVAILABLE GAMES"
 msgstr "OTILLGÄNGLIGA SPEL"
 
-msgid "NO GAMES FOUND"
-msgstr "INGA SPEL HITTADES"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "ANSLUT TILL SPEL"
@@ -2670,6 +2646,12 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "VISA BATTERINIVÅ FÖR SPELKONTROLL"
 
 msgid "DRAW GUN CROSSHAIR"
+msgstr ""
+
+msgid "BEHAVIOR"
+msgstr ""
+
+msgid "RESTRICT HOTKEYS TO EXIT"
 msgstr ""
 
 msgid "default"
@@ -2848,6 +2830,15 @@ msgstr "ANVÄND OMX-SPELARE FÖR SKÄRMSLÄCKARE"
 
 msgid "SHOW GAME INFO"
 msgstr "VISA SPELINFORMATION"
+
+msgid "SHOW DATE TIME"
+msgstr ""
+
+msgid "DATE FORMAT"
+msgstr ""
+
+msgid "TIME FORMAT"
+msgstr ""
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "ANVÄND MARQUEE SOM SPELINFORMATION"
@@ -3123,6 +3114,9 @@ msgstr "KÄRNA SAKNAS"
 
 msgid "UKNOWN ERROR"
 msgstr "OKÄNT FEL"
+
+msgid "Interlaced"
+msgstr ""
 
 msgid "all games"
 msgstr "alla spel"
@@ -3568,6 +3562,12 @@ msgid ""
 msgstr ""
 "KALIBRERAR PISTOL\n"
 "Skjut på mål för att kalibera"
+
+#~ msgid "MATRIX"
+#~ msgstr "MATRIS"
+
+#~ msgid "rgb dmd order"
+#~ msgstr "RGB-DMD-ordning"
 
 #~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 #~ msgstr ""

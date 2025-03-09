@@ -549,27 +549,6 @@ msgstr "PERSONNALISÉ"
 msgid "CUSTOM RELAY SERVER"
 msgstr "SERVEUR RELAI PERSONNALISÉ"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANNONCER PUBLIQUEMENT LA PARTIE"
-
-msgid "PLAYER PASSWORD"
-msgstr "MOT DE PASSE JOUEUR"
-
-msgid "VIEWER PASSWORD"
-msgstr "MOT DE PASSE SPECTATEUR"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr "OPTIONS DES PARTIES EN RÉSEAU AU LANCEMENT D'UN JEU"
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr "Permettre de choisir de jouer en ligne, hors ligne."
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "AFFICHER SEUELEMENT LE SERVEUR RELAIS DES JEUX"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr "Le serveur de relais des jeux à généralement davantage d'entrées."
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "AFFICHER LES JEUX NON DISPONIBLES"
 
@@ -1075,12 +1054,6 @@ msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "taille de la matrice dmd"
-
-msgid "MATRIX"
-msgstr "MATRICE"
-
-msgid "rgb dmd order"
-msgstr "ordre des couleurs du dmd"
 
 msgid "BRIGHTNESS"
 msgstr "LUMINOSITÉ"
@@ -2206,6 +2179,15 @@ msgstr "DÉMARRER LE JEU"
 msgid "HOST A NETPLAY GAME"
 msgstr "HÉBERGER UNE PARTIE EN RÉSEAU"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANNONCER PUBLIQUEMENT LA PARTIE"
+
+msgid "PLAYER PASSWORD"
+msgstr "MOT DE PASSE JOUEUR"
+
+msgid "VIEWER PASSWORD"
+msgstr "MOT DE PASSE SPECTATEUR"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "TROUVER LES JEUX SIMILAIRES…"
 
@@ -2573,11 +2555,11 @@ msgstr "REJOINDRE UNE PARTIE EN RÉSEAU"
 msgid "Select a game lobby to join"
 msgstr "Choisir la partie à rejoindre"
 
-msgid "Select a game lobby to create or join"
-msgstr "Choisir la partie à créer ou rejoindre"
-
 msgid "FAILED"
 msgstr "ÉCHEC"
+
+msgid "NO GAMES FOUND"
+msgstr "AUCUN JEU TROUVÉ"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "VERSION DE ROM INCONNUE"
@@ -2591,14 +2573,8 @@ msgstr "ROM IDENTIQUE"
 msgid "UNAVAILABLE CORE"
 msgstr "CŒUR NON DISPONIBLE"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr "JOUER EN LIGNE EN HÔTE"
-
-msgid "PLAY OFFLINE"
-msgstr "JOUER HORS LIGNE"
-
-msgid "JOIN EXISTING GAME"
-msgstr "REJOINDRE UNE PARTIE EXISTANTE"
+msgid "ONLINE GAMES"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "JEUX DISPONIBLES"
@@ -2606,8 +2582,8 @@ msgstr "JEUX DISPONIBLES"
 msgid "UNAVAILABLE GAMES"
 msgstr "JEUX NON DISPONIBLES"
 
-msgid "NO GAMES FOUND"
-msgstr "AUCUN JEU TROUVÉ"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "REJOINDRE LE JEU"
@@ -2682,6 +2658,12 @@ msgstr "AFFICHER LE NIVEAU DE BATTERIE DES MANETTES"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "DESSINER LA MIRE DU PISTOLET"
+
+msgid "BEHAVIOR"
+msgstr "COMPORTEMENT"
+
+msgid "RESTRICT HOTKEYS TO EXIT"
+msgstr "RESTREINDRE LES HOTKEYS À EXIT"
 
 msgid "default"
 msgstr "par défaut"
@@ -2859,6 +2841,15 @@ msgstr "UTILISER OMX POUR L'ÉCRAN DE VEILLE"
 
 msgid "SHOW GAME INFO"
 msgstr "AFFICHER LES INFORMATIONS DU JEU"
+
+msgid "SHOW DATE TIME"
+msgstr ""
+
+msgid "DATE FORMAT"
+msgstr ""
+
+msgid "TIME FORMAT"
+msgstr ""
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "UTILISER LES LOGOS POUR LES INFOS JEU"
@@ -3135,6 +3126,9 @@ msgstr "LE CŒUR EST MANQUANT"
 
 msgid "UKNOWN ERROR"
 msgstr "ERREUR INCONNUE"
+
+msgid "Interlaced"
+msgstr ""
 
 msgid "all games"
 msgstr "tous les jeux"
@@ -3580,6 +3574,36 @@ msgid ""
 msgstr ""
 "CALIBRATION DU PISTOLET\n"
 "Tirer sur les cibles pour calibrer"
+
+#~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+#~ msgstr "OPTIONS DES PARTIES EN RÉSEAU AU LANCEMENT D'UN JEU"
+
+#~ msgid "Allows choice of online, offline, or joining another game."
+#~ msgstr "Permettre de choisir de jouer en ligne, hors ligne."
+
+#~ msgid "SHOW RELAY SERVER GAMES ONLY"
+#~ msgstr "AFFICHER SEUELEMENT LE SERVEUR RELAIS DES JEUX"
+
+#~ msgid "Relay server games have a higher chance of successful entry."
+#~ msgstr "Le serveur de relais des jeux à généralement davantage d'entrées."
+
+#~ msgid "Select a game lobby to create or join"
+#~ msgstr "Choisir la partie à créer ou rejoindre"
+
+#~ msgid "PLAY ONLINE AS HOST"
+#~ msgstr "JOUER EN LIGNE EN HÔTE"
+
+#~ msgid "PLAY OFFLINE"
+#~ msgstr "JOUER HORS LIGNE"
+
+#~ msgid "JOIN EXISTING GAME"
+#~ msgstr "REJOINDRE UNE PARTIE EXISTANTE"
+
+#~ msgid "MATRIX"
+#~ msgstr "MATRICE"
+
+#~ msgid "rgb dmd order"
+#~ msgstr "ordre des couleurs du dmd"
 
 #~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 #~ msgstr ""

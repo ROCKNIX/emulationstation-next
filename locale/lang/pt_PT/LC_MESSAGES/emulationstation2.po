@@ -549,29 +549,6 @@ msgstr "PERSONALIZADO"
 msgid "CUSTOM RELAY SERVER"
 msgstr "SERVIDOR DE RELÉ PERSONALIZADO"
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
-
-msgid "PLAYER PASSWORD"
-msgstr "PASSWORD DO JOGADOR"
-
-msgid "VIEWER PASSWORD"
-msgstr "PASSWORD DO ESPECTADOR"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr "MOSTRAR OPÇÕES DE NETPLAY AO INICIAR O JOGO"
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr "Permite escolher entre online, offline ou aderir a outro jogo."
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "MOSTRAR APENAS JOGOS DO SERVIDOR RELAY"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-"Os jogos de servidor relay têm uma maior probabilidade de entrada bem-"
-"sucedida."
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "MOSTRAR JOGOS INDISPONÍVEIS"
 
@@ -1078,12 +1055,6 @@ msgstr "AUTOMÁTICO"
 
 msgid "dmd matrix size"
 msgstr "tamanho da matriz dmd"
-
-msgid "MATRIX"
-msgstr "MATRIZ"
-
-msgid "rgb dmd order"
-msgstr "ordem rgb dmd"
 
 msgid "BRIGHTNESS"
 msgstr "BRILHO"
@@ -2207,6 +2178,15 @@ msgstr "INICIAR JOGO"
 msgid "HOST A NETPLAY GAME"
 msgstr "ORGANIZAR JOGO EM REDE"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
+
+msgid "PLAYER PASSWORD"
+msgstr "PASSWORD DO JOGADOR"
+
+msgid "VIEWER PASSWORD"
+msgstr "PASSWORD DO ESPECTADOR"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "JOGOS SEMELHANTES..."
 
@@ -2575,11 +2555,11 @@ msgstr "CONECTAR-SE AOS JOGOS EM REDE"
 msgid "Select a game lobby to join"
 msgstr "Selecione uma sala de jogo para se juntar"
 
-msgid "Select a game lobby to create or join"
-msgstr "Selecione um lobby de jogo para criar ou participar"
-
 msgid "FAILED"
 msgstr "FALHOU"
+
+msgid "NO GAMES FOUND"
+msgstr "NENHUM JOGO ENCONTRADO"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "VERSÃO DA ROM DESCONHECIDA"
@@ -2593,14 +2573,8 @@ msgstr "MESMA ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "CORE INDISPONÍVEL"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr "JOGAR ONLINE COMO HOST"
-
-msgid "PLAY OFFLINE"
-msgstr "JOGAR OFFLINE"
-
-msgid "JOIN EXISTING GAME"
-msgstr "JUNTAR-SE AO JOGO EXISTENTE"
+msgid "ONLINE GAMES"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "JOGOS DISPONÍVEIS"
@@ -2608,8 +2582,8 @@ msgstr "JOGOS DISPONÍVEIS"
 msgid "UNAVAILABLE GAMES"
 msgstr "JOGOS INDISPONÍVEIS"
 
-msgid "NO GAMES FOUND"
-msgstr "NENHUM JOGO ENCONTRADO"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "ENTRAR NO JOGO"
@@ -2683,6 +2657,12 @@ msgstr "MOSTRAR NÍVEL DA BATERIA DO COMANDO"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "DESENHAR ARMA CROSSHAIR"
+
+msgid "BEHAVIOR"
+msgstr "COMPORTAMENTO"
+
+msgid "RESTRICT HOTKEYS TO EXIT"
+msgstr "RESTRINGIR TECLAS DE ATALHO PARA SAIR"
 
 msgid "default"
 msgstr "predefinição"
@@ -2860,6 +2840,15 @@ msgstr "USAR O LEITOR OMX NA PROTEÇÃO DE ECRÃ"
 
 msgid "SHOW GAME INFO"
 msgstr "MOSTRAR INFORMAÇÃO DO JOGO"
+
+msgid "SHOW DATE TIME"
+msgstr "MOSTRAR DATA HORA"
+
+msgid "DATE FORMAT"
+msgstr "FORMATO DE DATA"
+
+msgid "TIME FORMAT"
+msgstr "FORMATO DE HORA"
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "USAR LETREIRO COM INFORMAÇÃO DO JOGO"
@@ -3133,6 +3122,9 @@ msgstr "O CORE ESTÁ EM FALTA"
 
 msgid "UKNOWN ERROR"
 msgstr "ERRO DESCONHECIDO"
+
+msgid "Interlaced"
+msgstr "Entrelaçado"
 
 msgid "all games"
 msgstr "todos os jogos"
@@ -3578,8 +3570,6 @@ msgid ""
 msgstr ""
 "CALIBRAR ARMA\n"
 "Atire nos alvos para calibrar"
-
-
 
 #~ msgid ""
 #~ "YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION "

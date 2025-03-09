@@ -549,27 +549,6 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "PUBLICLY ANNOUNCE GAME"
-
-msgid "PLAYER PASSWORD"
-msgstr "PLAYER PASSWORD"
-
-msgid "VIEWER PASSWORD"
-msgstr "VIEWER PASSWORD"
-
-msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr ""
-
-msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr ""
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
-
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "SHOW UNAVAILABLE GAMES"
 
@@ -1069,12 +1048,6 @@ msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "dmd matrix size"
-
-msgid "MATRIX"
-msgstr "MATRIX"
-
-msgid "rgb dmd order"
-msgstr "rgb dmd order"
 
 msgid "BRIGHTNESS"
 msgstr "BRIGHTNESS"
@@ -2187,6 +2160,15 @@ msgstr "START GAME"
 msgid "HOST A NETPLAY GAME"
 msgstr "HOST A NETPLAY GAME"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "PUBLICLY ANNOUNCE GAME"
+
+msgid "PLAYER PASSWORD"
+msgstr "PLAYER PASSWORD"
+
+msgid "VIEWER PASSWORD"
+msgstr "VIEWER PASSWORD"
+
 msgid "FIND SIMILAR GAMES..."
 msgstr "FIND SIMILAR GAMES..."
 
@@ -2554,11 +2536,11 @@ msgstr "CONNECT TO NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Select a game lobby to join"
 
-msgid "Select a game lobby to create or join"
-msgstr ""
-
 msgid "FAILED"
 msgstr "FAILED"
+
+msgid "NO GAMES FOUND"
+msgstr "NO GAMES FOUND"
 
 msgid "UNKNOWN ROM VERSION"
 msgstr "UNKNOWN ROM VERSION"
@@ -2572,13 +2554,7 @@ msgstr "SAME ROM"
 msgid "UNAVAILABLE CORE"
 msgstr "UNAVAILABLE CORE"
 
-msgid "PLAY ONLINE AS HOST"
-msgstr ""
-
-msgid "PLAY OFFLINE"
-msgstr ""
-
-msgid "JOIN EXISTING GAME"
+msgid "ONLINE GAMES"
 msgstr ""
 
 msgid "AVAILABLE GAMES"
@@ -2587,8 +2563,8 @@ msgstr "AVAILABLE GAMES"
 msgid "UNAVAILABLE GAMES"
 msgstr "UNAVAILABLE GAMES"
 
-msgid "NO GAMES FOUND"
-msgstr "NO GAMES FOUND"
+msgid "LAN GAMES"
+msgstr ""
 
 msgid "JOIN GAME"
 msgstr "JOIN GAME"
@@ -2661,6 +2637,12 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "SHOW CONTROLLER BATTERY LEVEL"
 
 msgid "DRAW GUN CROSSHAIR"
+msgstr ""
+
+msgid "BEHAVIOR"
+msgstr ""
+
+msgid "RESTRICT HOTKEYS TO EXIT"
 msgstr ""
 
 msgid "default"
@@ -2839,6 +2821,15 @@ msgstr "USE OMX PLAYER FOR SCREENSAVER"
 
 msgid "SHOW GAME INFO"
 msgstr "SHOW GAME INFO"
+
+msgid "SHOW DATE TIME"
+msgstr ""
+
+msgid "DATE FORMAT"
+msgstr ""
+
+msgid "TIME FORMAT"
+msgstr ""
 
 msgid "USE MARQUEE AS GAME INFO"
 msgstr "USE MARQUEE AS GAME INFO"
@@ -3114,6 +3105,9 @@ msgstr "CORE IS MISSING"
 
 msgid "UKNOWN ERROR"
 msgstr "UKNOWN ERROR"
+
+msgid "Interlaced"
+msgstr ""
 
 msgid "all games"
 msgstr "all games"
@@ -3559,6 +3553,12 @@ msgid ""
 msgstr ""
 "CALIBRATING GUN\n"
 "Fire on targets to calibrate"
+
+#~ msgid "MATRIX"
+#~ msgstr "MATRIX"
+
+#~ msgid "rgb dmd order"
+#~ msgstr "rgb dmd order"
 
 #~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 #~ msgstr "Reset values of GameTime, PlayCount and LastPlayed metadatas."
