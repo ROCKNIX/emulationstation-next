@@ -230,6 +230,7 @@ bool MoonlightClient::UpdateMoonlightGames() {
       std::ofstream app_file("/storage/roms/moonlight/" + filename + ".sh");
       app_file << "#!/bin/sh" << std::endl;
       app_file << ". /etc/profile" << std::endl;
+      app_file << "/usr/bin/controller-layout moonlight \"" << filename + ".sh" << "\" /storage/.config/moonlight/gamecontrollerdb.txt" << std::endl;
       app_file << "jslisten set \"moonlight\"" << std::endl;
       app_file << "QT_QPA_PLATFORM=wayland moonlight stream " << server_ip_ << " \"" << title << "\" --quit-after" << std::endl;
       app_file.close();
@@ -237,6 +238,7 @@ bool MoonlightClient::UpdateMoonlightGames() {
       std::ofstream app_file("/storage/roms/moonlight/" + filename + ".sh");
       app_file << "#!/bin/sh" << std::endl;
       app_file << ". /etc/profile" << std::endl;
+      app_file << "/usr/bin/controller-layout moonlight \"" << filename + ".sh" << "\" /storage/.config/moonlight/gamecontrollerdb.txt" << std::endl;
       app_file << "jslisten set \"moonlight\"" << std::endl;
       app_file << "moonlight stream -app \"" << title << "\" -platform sdl " << server_ip_ << std::endl;
       app_file.close();
