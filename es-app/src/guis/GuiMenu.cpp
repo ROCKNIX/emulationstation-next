@@ -1328,6 +1328,7 @@ void GuiMenu::openUpdatesSettings()
 
 		auto updatesBranchList = std::make_shared<OptionListComponent<std::string> >(mWindow, _("UPDATE BRANCH"), false);
 		std::string updatesBranch = SystemConf::getInstance()->get("updates.branch");
+		updatesBranchList->add("auto", "auto", updatesBranch == "auto");
 		updatesBranchList->add("release", "stable", updatesBranch == "stable");
 		updatesBranchList->add("nightly", "nightly", updatesBranch == "nightly");
 		updateGui->addWithLabel(_("UPDATE BRANCH"), updatesBranchList);

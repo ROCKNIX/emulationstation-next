@@ -25,7 +25,8 @@ SystemConf *SystemConf::sInstance = NULL;
 
 static std::set<std::string> dontRemoveValue
 {
-	{ "audio.device" }
+	{ "audio.device" },
+	{ "updates.branch" }
 };
 
 static std::map<std::string, std::string> defaults =
