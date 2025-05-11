@@ -184,16 +184,35 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 							ViewController::get()->launch(game, options);
 							msgBox->close();
 						});
+					msgBox->addEntry(_U("\uF144 ") + _("JOIN A NETPLAY GAME"), false, [window, msgBox, game]
+						{
+							if (ApiSystem::getInstance()->getIpAddress() == "NOT CONNECTED")
+							{
+								window->pushGui(new GuiMsgBox(window, _("YOU ARE NOT CONNECTED TO A NETWORK"), _("OK"), nullptr));
+								return;
+							}
+							LaunchGameOptions options;
+							options.netPlayMode = CLIENT;
+							ViewController::get()->launch(game, options);
+							msgBox->close();
+						});
 					msgBox->addGroup(_("OPTIONS"));
-					// pubic announce
-					auto public_announce = std::make_shared<SwitchComponent>(mWindow);
-					public_announce->setState(SystemConf::getInstance()->getBool("global.netplay_public_announce"));
-					msgBox->addWithLabel(_("PUBLICLY ANNOUNCE GAME"), public_announce);
-					msgBox->addSaveFunc([public_announce] { SystemConf::getInstance()->setBool("global.netplay_public_announce", public_announce->getState()); });
-
-					// passwords
+					msgBox->addInputTextRow(_("NETPLAY NICKNAME"), "global.netplay.nickname", false);
 					msgBox->addInputTextRow(_("PLAYER PASSWORD"), "global.netplay.password", false);
-					msgBox->addInputTextRow(_("VIEWER PASSWORD"), "global.netplay.spectatepassword", false);
+
+					bool adhocEnabled = SystemConf::getInstance()->getBool("wifi.adhoc.enabled");
+					if (!adhocEnabled)
+					{
+						// pubic announce
+						auto public_announce = std::make_shared<SwitchComponent>(mWindow);
+						public_announce->setState(SystemConf::getInstance()->getBool("global.netplay_public_announce"));
+						msgBox->addWithLabel(_("PUBLICLY ANNOUNCE GAME"), public_announce);
+						msgBox->addSaveFunc([public_announce] { SystemConf::getInstance()->setBool("global.netplay_public_announce", public_announce->getState()); });
+
+						msgBox->addInputTextRow(_("NETPLAY HOST"), "global.netplay.host", false);
+						msgBox->addInputTextRow(_("NETPLAY PORT"), "global.netplay.port", false);
+					}
+
 					mWindow->pushGui(msgBox);
 					close();
 				});

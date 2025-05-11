@@ -239,6 +239,9 @@ public:
     /* Sleep modes */
     std::vector<std::string> getSleepModes();
 
+    /* Wifi channels */
+    std::vector<std::string> getAvailableChannels();
+
     /* audio card */
     bool setAudioOutputDevice(std::string device);
     std::vector<std::string> getAvailableAudioOutputDevices();

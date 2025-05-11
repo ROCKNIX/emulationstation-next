@@ -27,13 +27,18 @@ GuiNetPlaySettings::GuiNetPlaySettings(Window* window, int selectItem) : GuiSett
 
 	addGroup(_("OPTIONS"));
 
-	addInputTextRow(_("PORT"), "global.netplay.port", false);
+	bool adhocEnabled = SystemConf::getInstance()->getBool("wifi.adhoc.enabled");
+	if (!adhocEnabled)
+	{
+		addInputTextRow(_("HOST"), "global.netplay.host", false);
+		addInputTextRow(_("PORT"), "global.netplay.port", false);
 
-	addRelayServerOptions(selectItem);
+		addRelayServerOptions(selectItem);
 
-	addSwitch(_("AUTOMATICALLY CREATE LOBBY"), _("Automatically creates a Netplay lobby when starting a game."), "NetPlayAutomaticallyCreateLobby", true, nullptr);
-	addSwitch(_("SHOW RELAY SERVER GAMES ONLY"), _("Relay server games have a higher chance of successful entry."), "NetPlayShowOnlyRelayServerGames", true, nullptr);
-	addSwitch(_("SHOW UNAVAILABLE GAMES"), _("Show rooms for games not present on this machine."), "NetPlayShowMissingGames", true, nullptr);
+		addSwitch(_("AUTOMATICALLY CREATE LOBBY"), _("Automatically creates a Netplay lobby when starting a game."), "NetPlayAutomaticallyCreateLobby", true, nullptr);
+		addSwitch(_("SHOW RELAY SERVER GAMES ONLY"), _("Relay server games have a higher chance of successful entry."), "NetPlayShowOnlyRelayServerGames", true, nullptr);
+		addSwitch(_("SHOW UNAVAILABLE GAMES"), _("Show rooms for games not present on this machine."), "NetPlayShowMissingGames", true, nullptr);
+	}
 
 	addGroup(_("GAME INDEXES"));
 

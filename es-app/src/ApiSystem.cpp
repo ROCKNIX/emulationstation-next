@@ -717,6 +717,11 @@ std::vector<std::string> ApiSystem::getAvailableAudioOutputDevices()
 	return executeEnumerationScript("set-audio list");
 }
 
+std::vector<std::string> ApiSystem::getAvailableChannels()
+{
+	return executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wifictl channels\"");
+}
+
 std::vector<std::string> ApiSystem::getAvailableGovernors()
 {
 	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" < /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors\" | grep \[a-z\]");

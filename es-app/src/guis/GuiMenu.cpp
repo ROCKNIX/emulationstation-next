@@ -4804,9 +4804,10 @@ void GuiMenu::openWifiSettings(Window* win, std::string title, std::string data,
 	win->pushGui(new GuiWifi(win, title, data, onsave));
 }
 
-void GuiMenu::openNetworkSettings(bool selectWifiEnable)
+void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 {
 	bool baseWifiEnabled = SystemConf::getInstance()->getBool("wifi.enabled");
+	bool baseAdhocEnabled = SystemConf::getInstance()->getBool("wifi.adhoc.enabled");
 
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;
@@ -4865,26 +4866,73 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 	const std::string baseCountry = SystemConf::getInstance()->get("wifi.country");
 #endif
 
+	// Adhoc mode options
+	auto enable_adhoc = std::make_shared<SwitchComponent>(mWindow);
+	enable_adhoc->setState(baseAdhocEnabled);
+
 	if (baseWifiEnabled)
 	{
-		s->addInputTextRow(_("WIFI SSID"), "wifi.ssid", false, false, &openWifiSettings);
-		s->addInputTextRow(_("WIFI KEY"), "wifi.key", true);
+		if (!baseAdhocEnabled)
+		{
+			s->addInputTextRow(_("WIFI SSID"), "wifi.ssid", false, false, &openWifiSettings);
+			s->addInputTextRow(_("WIFI KEY"), "wifi.key", true);
 
 #if !WIN32
-        // Batocera-specific WIFI COUNTRY option
-        auto country_codes = getCountryCodes();
-        auto country = std::make_shared<OptionListComponent<std::string>>(mWindow, _("WIFI COUNTRY"), false);
+		        // Batocera-specific WIFI COUNTRY option
+		        auto country_codes = getCountryCodes();
+		        auto country = std::make_shared<OptionListComponent<std::string>>(mWindow, _("WIFI COUNTRY"), false);
 
-        for (auto it = country_codes.cbegin(); it != country_codes.cend(); ++it)
-            country->add(it->second, it->first, baseCountry == it->first);
+		        for (auto it = country_codes.cbegin(); it != country_codes.cend(); ++it)
+		            country->add(it->second, it->first, baseCountry == it->first);
 
-        if (country->getSelectedObjects().size() == 0)
-            country->add("N/A", "", true);
+		        if (country->getSelectedObjects().size() == 0)
+		            country->add("N/A", "", true);
 
-        s->addWithLabel(_("WIFI COUNTRY"), country);
-        s->addSaveFunc([country] { SystemConf::getInstance()->set("wifi.country", country->getSelected()); });
+		        s->addWithLabel(_("WIFI COUNTRY"), country);
+		        s->addSaveFunc([country] { SystemConf::getInstance()->set("wifi.country", country->getSelected()); });
 #endif
+		}
+
+		if (ApiSystem::getInstance()->isWifiAPModeSupported())
+			s->addWithLabel(_("LOCAL PLAY MODE"), enable_adhoc, selectAdhocEnable);
 	}
+
+	auto optionsAdhocID = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LOCAL PLAY ID"), false);
+	std::string selectedAdhocID = SystemConf::getInstance()->get("wifi.adhoc.id");
+
+	if (selectedAdhocID.empty())
+		selectedAdhocID = "1";
+
+	optionsAdhocID->add(_("1 (HOST)"),"1", selectedAdhocID == "1");
+	optionsAdhocID->add(_("2 (CLIENT 1)"),"2", selectedAdhocID == "2");
+	optionsAdhocID->add(_("3 (CLIENT 2)"),"3", selectedAdhocID == "3");
+	optionsAdhocID->add(_("4 (CLIENT 3)"),"4", selectedAdhocID == "4");
+
+	auto optionsChannels = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LOCAL NETWORK CHANNEL"), false);
+
+	std::vector<std::string> availableChannels = ApiSystem::getInstance()->getAvailableChannels();
+	std::string selectedChannel = SystemConf::getInstance()->get("wifi.adhoc.channel");
+
+	if (selectedChannel.empty())
+		selectedChannel = "6";
+
+	bool wfound = false;
+	for (auto it = availableChannels.begin(); it != availableChannels.end(); it++)
+	{
+		optionsChannels->add((*it), (*it), selectedChannel == (*it));
+		if (selectedChannel == (*it))
+			wfound = true;
+	}
+
+	if (!wfound)
+		optionsChannels->add(selectedChannel, selectedChannel, true);
+
+	if (baseAdhocEnabled)
+	{
+		s->addWithLabel(_("LOCAL PLAY ID"), optionsAdhocID);
+		s->addWithLabel(_("LOCAL NETWORK CHANNEL"), optionsChannels);
+	}
+
 
 	s->addSaveFunc([baseWifiEnabled, baseSSID, baseKEY,
 #if !WIN32
@@ -4924,11 +4972,11 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 			ApiSystem::getInstance()->disableWifi();
 	});
 
-
-	enable_wifi->setOnChangedCallback([this, s, baseWifiEnabled, enable_wifi]()
+	enable_wifi->setOnChangedCallback([this, s, baseWifiEnabled, enable_wifi, baseAdhocEnabled, enable_adhoc]()
 	{
 		bool wifienabled = enable_wifi->getState();
-		if (baseWifiEnabled != wifienabled)
+		bool adhocenabled = enable_adhoc->getState();
+		if (baseWifiEnabled != wifienabled || baseAdhocEnabled != adhocenabled)
 		{
 			SystemConf::getInstance()->setBool("wifi.enabled", wifienabled);
 
@@ -4947,6 +4995,35 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 			delete s;
 			openNetworkSettings(true);
 		}
+	});
+
+	enable_adhoc->setOnChangedCallback([this, s, baseAdhocEnabled, baseWifiEnabled, enable_wifi, enable_adhoc, optionsAdhocID, selectedAdhocID, optionsChannels, selectedChannel]
+	{
+		bool wifienabled = enable_wifi->getState();
+		bool adhocenabled = enable_adhoc->getState();
+
+		SystemConf::getInstance()->set("wifi.adhoc.id", optionsAdhocID->getSelected());
+		SystemConf::getInstance()->set("wifi.adhoc.channel", optionsChannels->getSelected());
+
+		SystemConf::getInstance()->set("global.netplay.host", "192.168.80.1");
+		SystemConf::getInstance()->set("global.netplay.port", "55435");
+		SystemConf::getInstance()->set("global.netplay.relay", "none");
+
+		SystemConf::getInstance()->setBool("wifi.adhoc.enabled", adhocenabled);
+		SystemConf::getInstance()->saveSystemConf();
+
+		if (wifienabled)
+		{
+			ApiSystem::getInstance()->disableWifi();
+#if !WIN32
+			ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"), SystemConf::getInstance()->get("wifi.country"));
+#else
+			ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"));
+#endif
+		}
+
+		delete s;
+		openNetworkSettings(false, true);
 	});
 
 	// NETWORK SERVICES
