@@ -463,6 +463,13 @@ std::string ApiSystem::getIpAddress()
 	return result;
 }
 
+bool ApiSystem::isWifiAPModeSupported()
+{
+	LOG(LogDebug) << "ApiSystem::isWifiAPModeSupported";
+
+	return executeScript("wifictl has_ap_mode");
+}
+
 int ApiSystem::GetTotalRam()
 {
 	auto result = executeEnumerationScript("echo $(( $(awk '/MemTotal/ {print $2}' /proc/meminfo) / 1000 ))");
