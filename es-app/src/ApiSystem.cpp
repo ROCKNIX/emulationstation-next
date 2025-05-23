@@ -734,6 +734,23 @@ std::vector<std::string> ApiSystem::getAvailableGovernors()
 	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" < /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors\" | grep \[a-z\]");
 }
 
+std::vector<std::string> ApiSystem::getAvailableDisplayModes()
+{
+    // Check if wlr-randr is available
+    if (!Utils::FileSystem::exists("/usr/bin/wlr-randr")) {
+        LOG(LogWarning) << "wlr-randr not found, display mode configuration unavailable";
+        return {};
+    }
+
+    auto result = executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wlr-randr | awk '/Modes/{flag=1;next}/Position/{flag=0}flag'\"");
+
+    if (result.empty()) {
+        LOG(LogWarning) << "No display modes found from wlr-randr";
+    }
+
+    return result;
+}
+
 std::vector<std::string> ApiSystem::getAvailableColors()
 {
 	return executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/ledcontrol list\"");
