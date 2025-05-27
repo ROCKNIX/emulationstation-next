@@ -1579,7 +1579,8 @@ void GuiMenu::openSystemSettings()
 	}
 
     // Default Display mode
-    if (std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes()){
+    std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
+    if (! availableDisplayModes.empty()){
         auto optionsDisplayModes = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DISPLAY MODE"), false);
         std::string selectedDisplayMode = SystemConf::getInstance()->get("system.display_mode");
         for (auto it = availableDisplayModes.begin(); it != availableDisplayModes.end(); it++)
@@ -2712,10 +2713,10 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	});
 
     // Per game/core/emu Display mode
-    if (std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes()){
+    std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
+    if (! availableDisplayModes.empty()){
         auto optionsDisplayModes = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DISPLAY MODE"), false);
 
-        availableDisplayModes.insert(availableDisplayModes.begin(), "default");
         std::string selectedDisplayMode = SystemConf::getInstance()->get(configName + ".display_mode");
         for (auto it = availableDisplayModes.begin(); it != availableDisplayModes.end(); it++)
         {
@@ -2729,6 +2730,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
             (*it) = (*it).substr((*it).find("px, ") + 4);
             (*it) = (*it).substr(0, (*it).find(" Hz") + 3);
         }
+        availableDisplayModes.insert(availableDisplayModes.begin(), "default");
 
         cfound = false;
         for (auto it = availableDisplayModes.begin(); it != availableDisplayModes.end(); it++)
