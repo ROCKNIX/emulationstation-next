@@ -32,6 +32,7 @@ Misc APIS
 GET  /caps                                                      -> capability info
 GET  /restart
 GET  /quit
+GET  /shutdown
 GET  /emukill
 GET  /reloadgames
 POST /messagebox												-> body must contain the message text as text/plain
@@ -234,6 +235,14 @@ void HttpServerThread::run()
 		}
 
 		Utils::Platform::quitES();
+	});
+
+	mHttpServer->Get("/shutdown", [this](const httplib::Request& req, httplib::Response& res)
+	{
+		if (!isAllowed(req, res))
+			return;
+
+		Utils::Platform::quitES(Utils::Platform::QuitMode::SHUTDOWN);
 	});
 
 	mHttpServer->Get("/restart", [](const httplib::Request& req, httplib::Response& res)
