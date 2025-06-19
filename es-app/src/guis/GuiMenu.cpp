@@ -1954,9 +1954,8 @@ void GuiMenu::openSystemSettings()
 		});
 	}
 
-// Do not show on S922X devices yet.
-#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM8250) || defined(SM8550)
-	// Allow user control over how the device sleeps
+#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM8250)
+	// Allow user control over how the device sleeps - only show for devices with real suspend enabled
 	s->addGroup(_("SUSPEND"));
 	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
 	std::vector<std::string> availableSleepModes = ApiSystem::getInstance()->getSleepModes();
@@ -1979,6 +1978,47 @@ void GuiMenu::openSystemSettings()
 			SystemConf::getInstance()->set("system.suspendmode", optionsSleep->getSelected());
 			Utils::Platform::runSystemCommand("/usr/bin/suspendmode " + optionsSleep->getSelected(), "", nullptr);
 		}
+	});
+#else
+	// Allow user control over a timed shutdown after fake suspend
+	s->addGroup(_("SUSPEND"));
+	
+	// Shutdown delay after suspend
+	auto ctlShutdownDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
+
+	// Read system config value (seconds)
+	std::string shutdownDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay");
+	float shutdownDelayValue = 0.f;
+
+	if(shutdownDelayValueString.length() > 0) {
+		shutdownDelayValue = (float)atoi(shutdownDelayValueString.c_str());
+	}
+
+	// Convert to minutes for UI
+	ctlShutdownDelay->setValue((float)(shutdownDelayValue / 60));
+	s->addWithLabel(_("SHUTDOWN DELAY"), ctlShutdownDelay);
+	s->addSaveFunc([ctlShutdownDelay]
+	{
+	    SystemConf::getInstance()->set("system.shutdown_delay", std::to_string((int)(round(ctlShutdownDelay->getValue()) * 60)));
+	});
+
+	// Shutdown delay after suspend (in game)
+	auto ctlShutdownInGameDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
+
+	// Read system config value (seconds)
+	std::string shutdownInGameDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay_running_game");
+	float shutdownInGameDelayValue = 0.f;
+
+	if(shutdownInGameDelayValueString.length() > 0) {
+		shutdownInGameDelayValue = (float)atoi(shutdownInGameDelayValueString.c_str());
+	}
+
+	// Convert to minutes for UI
+	ctlShutdownInGameDelay->setValue((float)(shutdownInGameDelayValue / 60));
+	s->addWithLabel(_("SHUTDOWN DELAY (IN GAME)"), ctlShutdownInGameDelay);
+	s->addSaveFunc([ctlShutdownInGameDelay]
+	{
+	    SystemConf::getInstance()->set("system.shutdown_delay_running_game", std::to_string((int)(round(ctlShutdownInGameDelay->getValue()) * 60)));
 	});
 #endif
 
