@@ -5133,26 +5133,18 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	bool tsUp = SystemConf::getInstance()->get("tailscale.up") == "1";
 	tailscale->setState(tsUp);
 	s->addWithLabel(_("TAILSCALE VPN"), tailscale);
-	tailscale->setOnChangedCallback([tailscale] {
+	tailscale->setOnChangedCallback([this, tailscale] {
 		bool tsEnabled = tailscale->getState();
 		if (tsEnabled) {
 			Utils::Platform::runSystemCommand("systemctl start tailscaled", "", nullptr);
 			Utils::Platform::runSystemCommand("tailscale up --timeout=7s", "", nullptr);
-			tsEnabled = IsTailscaleUp();
+			tsEnabled = IsTailscaleUp(mWindow);
 		} else {
 			Utils::Platform::runSystemCommand("tailscale down", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl stop tailscaled", "", nullptr);
 		}
-		SystemConf::getInstance()->set("tailscale.up", tsEnabled ? "1" : "0");
 	});
 
-	std::string tsUrl;
-	if ( tsUp == true) {
-		if (!IsTailscaleUp(&tsUrl) && !tsUrl.empty()) {
-			s->addGroup("TAILSCALE REAUTHENTICATE:");
-			s->addGroup(tsUrl);
-		}
-	}
 
 	auto zerotier = std::make_shared<SwitchComponent>(mWindow);
 	bool ztUp = SystemConf::getInstance()->get("zerotier.up") == "1";
@@ -5172,16 +5164,23 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	mWindow->pushGui(s);
 }
 
-bool GuiMenu::IsTailscaleUp(std::string* loginUrl) {
-	bool loggedOut = false;
-	ApiSystem::executeScriptLegacy("tailscale status", [loginUrl, &loggedOut](std::string line) {
-		 const std::string prompt = "Log in at: ";
-		 if (loginUrl && line.find(prompt) == 0)
-			 *loginUrl = line.substr(prompt.length());
-
-		 if (line.find("Logged out.") != std::string::npos) loggedOut = true;
-	});
-	return !loggedOut;
+bool GuiMenu::IsTailscaleUp(Window* window) {
+  bool loggedOut = false;
+  std::string tempUrl;
+  ApiSystem::executeScriptLegacy("tailscale status", [&](const std::string& line) {
+    const std::string prompt = "Log in at: ";
+    if (line.find(prompt) == 0) {
+      tempUrl = line.substr(prompt.length());
+    }
+    if (line.find("Logged out.") != std::string::npos) {
+      loggedOut = true;
+    }
+  });
+  if (loggedOut && window && !tempUrl.empty()) {
+    std::string msg = _("TAILSCALE REAUTHENTICATE:\n") + tempUrl;
+    window->pushGui(new GuiMsgBox(window, msg));
+  }
+  return !loggedOut;
 }
 
 bool GuiMenu::IsZeroTierUp(std::string* networkId) {
