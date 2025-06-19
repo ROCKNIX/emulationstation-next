@@ -98,7 +98,7 @@ private:
 	static void saveSubsetSettings();
 	static void loadSubsetSettings(const std::string themeName);
 
-	static bool IsTailscaleUp(std::string* loginUrl = nullptr);
+	static bool IsTailscaleUp(Window* window);
 	static bool IsZeroTierUp(std::string* networkId = nullptr);
 
 public:

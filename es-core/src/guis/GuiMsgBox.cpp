@@ -72,7 +72,11 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 		break;
 	}
 
-	if (!imageFile.empty() && ResourceManager::getInstance()->fileExists(imageFile) && !Renderer::isSmallScreen())
+  // ensure the tailscale message doesn't wrap, and no icon (for more room)
+	if (text.find("tailscale.com") != std::string::npos)
+	{
+			width = Renderer::getScreenWidth() * 0.9f; // max width
+	} else if (!imageFile.empty() && ResourceManager::getInstance()->fileExists(imageFile) && !Renderer::isSmallScreen())
 	{
 		mImage = std::make_shared<ImageComponent>(window);
 		mImage->setImage(imageFile);
