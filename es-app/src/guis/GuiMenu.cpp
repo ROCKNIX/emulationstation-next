@@ -2663,7 +2663,7 @@ void GuiMenu::dtbOverlayItem(Window* mWindow, GuiSettings *s, const std::string 
 				"extlinux/extlinux.conf on the ROCKNIX partition from a PC, by "
 				"removing the whole line starting with: FDTOVERLAYS. \n "
 				"The changes will be applied on next reboot"),
-				_("Reboot now"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT); },
+				_("Reboot now"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::REBOOT); },
 				_("later"), nullptr));
 			}
 	});
