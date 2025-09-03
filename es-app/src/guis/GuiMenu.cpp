@@ -1542,7 +1542,22 @@ void GuiMenu::openSystemSettings()
 			}
 		}
 	});
-
+#if defined(ROCKNIX)
+        // Add option to toggle mangohud
+        auto mangohud_toggle = std::make_shared<SwitchComponent>(mWindow);
+        bool internalmoduleEnabled = SystemConf::getInstance()->get("rocknix.mangohud.enabled") == "1";
+        mangohud_toggle->setState(internalmoduleEnabled);
+        s->addWithLabel(_("ENABLE MANGOHUD OVERLAY"), mangohud_toggle);
+        mangohud_toggle->setOnChangedCallback([mangohud_toggle] {
+                if (mangohud_toggle->getState() == false) {
+                        Utils::Platform::runSystemCommand("/usr/bin/mangohud_set disable", "", nullptr);
+                } else {
+                        Utils::Platform::runSystemCommand("/usr/bin/mangohud_set enable", "", nullptr);
+                }
+                bool mangohud_state = mangohud_toggle->getState();
+                SystemConf::getInstance()->set("rocknix.mangohud.enabled", mangohud_state ? "1" : "0");
+        });
+#endif
 	// KODI SETTINGS
 #ifdef _ENABLE_KODI_
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::KODI))
