@@ -2769,6 +2769,16 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 		}
 	});
 
+#if defined(ROCKNIX)
+	// Per game/core/emu Mangohud
+	if (Utils::Platform::GetEnv("DEVICE_MANGOHUD_SUPPORT") == "true"){
+		auto mangohud = std::make_shared<OptionListComponent<std::string>>(mWindow, _("MANGOHUD OVERLAY"));
+		mangohud->addRange({ {("DEFAULT"), "" }, { _("ENABLED"), "1" },{ _("DISABLED") , "0" } }, SystemConf::getInstance()->get(configName + ".rocknix.mangohud.enabled"));
+		guiSystemOptions->addWithLabel(_("MANGOHUD OVERLAY"), mangohud);
+		guiSystemOptions->addSaveFunc([mangohud, configName] { SystemConf::getInstance()->set(configName + ".rocknix.mangohud.enabled", mangohud->getSelected()); });
+	}
+#endif
+
     // Per game/core/emu Display mode
     std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
     if (! availableDisplayModes.empty()){
