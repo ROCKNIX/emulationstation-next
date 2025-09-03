@@ -1559,6 +1559,23 @@ void GuiMenu::openSystemSettings()
                 SystemConf::getInstance()->set("rocknix.mangohud.enabled", mangohud_state ? "1" : "0");
         });
       }
+
+      // Add option to toggle touchscreen keyboard
+      if (Utils::Platform::GetEnv("DEVICE_HAS_TOUCHSCREEN") == "true"){
+        auto touchscreen_keyboard_toggle = std::make_shared<SwitchComponent>(mWindow);
+        bool internalmoduleEnabled = SystemConf::getInstance()->get("rocknix.touchscreen-keyboard.enabled") == "1";
+        touchscreen_keyboard_toggle->setState(internalmoduleEnabled);
+        s->addWithLabel(_("ENABLE TOUCHSCREEN KEYBOARD"), touchscreen_keyboard_toggle);
+        touchscreen_keyboard_toggle->setOnChangedCallback([touchscreen_keyboard_toggle] {
+                if (touchscreen_keyboard_toggle->getState() == false) {
+                        Utils::Platform::runSystemCommand("systemctl stop touchkeyboard", "", nullptr);
+                } else {
+                        Utils::Platform::runSystemCommand("systemctl start touchkeyboard", "", nullptr);
+                }
+                bool touchscreen_keyboard_state = touchscreen_keyboard_toggle->getState();
+                SystemConf::getInstance()->set("rocknix.touchscreen-keyboard.enabled", touchscreen_keyboard_state ? "1" : "0");
+        });
+      }
 #endif
 	// KODI SETTINGS
 #ifdef _ENABLE_KODI_
