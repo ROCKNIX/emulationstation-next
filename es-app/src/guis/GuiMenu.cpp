@@ -1874,6 +1874,26 @@ void GuiMenu::openSystemSettings()
 	}
 
 	if (Utils::Platform::GetEnv("DEVICE_GPU_OVERCLOCK") == "true"){
+#if defined(SM8250)
+		// Add option to set gpu overclock speed
+		auto optionsGpuSpeed = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU OVERCLOCK SPEED"), false);
+		std::string selectedGpuSpeed = SystemConf::getInstance()->get("gpu-overclock-speed");
+		if (selectedGpuSpeed.empty())
+			selectedGpuSpeed = "0";
+		optionsGpuSpeed->add(_("DISABLED"),"0", selectedGpuSpeed == "0");
+		optionsGpuSpeed->add(_("650 MHZ"),"650", selectedGpuSpeed == "650");
+		optionsGpuSpeed->add(_("700 MHZ"),"700", selectedGpuSpeed == "700");
+		optionsGpuSpeed->add(_("750 MHZ"),"750", selectedGpuSpeed == "750");
+		optionsGpuSpeed->add(_("800 MHZ"),"800", selectedGpuSpeed == "800");
+		s->addWithLabel(_("GPU OVERCLOCK SPEED"), optionsGpuSpeed);
+		s->addSaveFunc([this, optionsGpuSpeed, selectedGpuSpeed]
+		{
+			if (optionsGpuSpeed->changed()) {
+				SystemConf::getInstance()->set("gpu-overclock-speed", optionsGpuSpeed->getSelected());
+				Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/${HW_DEVICE}/bin/gpu_overclock " + optionsGpuSpeed->getSelected(), "", nullptr);
+			}
+		});
+#else
 		// Add option to enable gpu overclocking
 		auto gpu_overclock = std::make_shared<SwitchComponent>(mWindow);
 		bool internalmoduleEnabled = SystemConf::getInstance()->get("enable.gpu-overclock") == "1";
@@ -1888,8 +1908,8 @@ void GuiMenu::openSystemSettings()
 			bool gpuoverclock = gpu_overclock->getState();
 			SystemConf::getInstance()->set("enable.gpu-overclock", gpuoverclock ? "1" : "0");
 		});
+#endif
 	}
-
 	const std::string gpuDriverScript = "/usr/bin/gpudriver";
 	if (Utils::FileSystem::exists(gpuDriverScript)) {
 		auto optionsGpuDriver = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU DRIVER"), false);
