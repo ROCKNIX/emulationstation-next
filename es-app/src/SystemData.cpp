@@ -328,7 +328,7 @@ void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::stri
 				continue;
 
 			// Skip windows folder for the same reason as ports folder
-			if (fileInfo.path.rfind("windows") != std:string:npos)
+			if (fileInfo.path.rfind("windows") != std::string::npos)
 				continue;
 
 			FolderData* newFolder = new FolderData(filePath, this);
