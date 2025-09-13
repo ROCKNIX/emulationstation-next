@@ -237,6 +237,7 @@ void HttpServerThread::run()
 		Utils::Platform::quitES();
 	});
 
+#if defined(ROCKNIX)
 	mHttpServer->Get("/shutdown", [this](const httplib::Request& req, httplib::Response& res)
 	{
 		if (!isAllowed(req, res))
@@ -244,6 +245,7 @@ void HttpServerThread::run()
 
 		Utils::Platform::quitES(Utils::Platform::QuitMode::SHUTDOWN);
 	});
+#endif
 
 	mHttpServer->Get("/restart", [](const httplib::Request& req, httplib::Response& res)
 	{
