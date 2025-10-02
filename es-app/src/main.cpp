@@ -648,6 +648,23 @@ int main(int argc, char* argv[])
 
 	window.closeSplashScreen();
 
+	// Check if the device serial number is the same as stored in system.cfg.
+	Utils::Platform::runSystemCommand("/usr/bin/serial_number_check", "Check Serial Number Script", &window);
+
+	std::string markerFile = "/storage/serial_number_check_status";
+	std::ifstream f(markerFile);
+	std::string val;
+	if (f.is_open())
+	{
+		std::getline(f, val);
+		f.close();
+
+		if (val == "1")
+		window.pushGui(new GuiMsgBox(&window, "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!", _("AGREE")));
+
+		std::remove(markerFile.c_str());
+	}
+
 	// Create a flag in  temporary directory to signal READY state
 	ApiSystem::getInstance()->setReadyFlag();
 
