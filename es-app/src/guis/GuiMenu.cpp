@@ -1843,8 +1843,8 @@ void GuiMenu::openSystemSettings()
 	auto gpuPerformance = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU PERFORMANCE PROFILE"), false);
 	std::string gpu_performance = SystemConf::getInstance()->get("system.gpuperf");
 	if (gpu_performance.empty())
-		gpu_performance = "auto";
-	gpuPerformance->add(_("Balanced"), "auto", gpu_performance == "auto");
+		gpu_performance = "profile_standard";
+	gpuPerformance->add(_("Balanced"), "profile_standard", gpu_performance == "profile_standard");
 	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
 	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
 	s->addWithLabel(_("GPU PERFORMANCE PROFILE"), gpuPerformance);
@@ -2793,7 +2793,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 		gpu_performance = "default";
 
 	gpuPerformance->add(_("DEFAULT"), "default", gpu_performance == "default");
-	gpuPerformance->add(_("Balanced"), "auto", gpu_performance == "auto");
+	gpuPerformance->add(_("Balanced"), "profile_standard", gpu_performance == "profile_standard");
 	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
 	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
 

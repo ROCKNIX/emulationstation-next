@@ -130,7 +130,7 @@ bool SystemConf::saveSystemConf()
 		filein.close();
 	}
 
-	static std::string removeID = "$^é(p$^mpv$êrpver$^vper$vper$^vper$vper$vper$^vperv^pervncvizn";
+	static std::string removeID = "$^ï¿½(p$^mpv$ï¿½rpver$^vper$vper$^vper$vper$vper$^vperv^pervncvizn";
 
 	int lastTime = SDL_GetTicks();
 
@@ -158,7 +158,7 @@ bool SystemConf::saveSystemConf()
 			if (idx == 0 || (idx == 1 && (fc == ';' || fc == '#')))
 			{
 				std::string val = confMap[it];
-				if ((!val.empty() && val != "auto") || dontRemoveValue.find(it) != dontRemoveValue.cend())
+				if ((!val.empty() && val != "auto" && val != "default") || dontRemoveValue.find(it) != dontRemoveValue.cend())
 				{
 					auto defaultValue = defaults.find(key);
 					if (defaultValue != defaults.cend() && defaultValue->second == val)
