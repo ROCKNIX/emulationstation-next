@@ -1,5 +1,33 @@
 project("emulationstation")
 
+if(WIN32)
+
+	option(INJECT_VERSION "Inject Version" OFF)
+
+	if(INJECT_VERSION)
+	
+		# Main version number
+		set(VERSION_MAJOR 42)
+	
+		# Create version.h at configure/build time
+		string(TIMESTAMP BUILD_YEAR   "%Y")
+		string(TIMESTAMP BUILD_MONTH  "%m")
+		string(TIMESTAMP BUILD_DAY    "%d")
+		string(TIMESTAMP BUILD_HOUR   "%H")
+		string(TIMESTAMP BUILD_MINUTE "%M")
+
+		# Format into your desired scheme		
+		set(VERSION_DATE   "${BUILD_MONTH}${BUILD_DAY}") # e.g. 1004
+		set(VERSION_TIME   "${BUILD_HOUR}${BUILD_MINUTE}") # e.g. 2041
+
+		configure_file(
+			${CMAKE_CURRENT_SOURCE_DIR}/EmulationStation.h.in
+			${CMAKE_CURRENT_SOURCE_DIR}/src/EmulationStation.h
+			@ONLY
+		)
+	endif()
+endif()
+
 set(ES_HEADERS	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EmulationStation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FileData.h
@@ -40,8 +68,7 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGeneralScreensaverOptions.h 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMenu.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSettings.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.h	
-	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperSettings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.h		
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiHashStart.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGamelistFilter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCollectionSystemsOptions.h
@@ -74,13 +101,15 @@ set(ES_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGameAchievements.h		
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSaveState.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiFileBrowser.h	
-	
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiFavoriteMusicSelector.h	
+
     # Scrapers
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/Scraper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/GamesDBJSONScraper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/GamesDBJSONScraperResources.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ArcadeDBJSONScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/HfsDBScraper.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.h    
 
     # Views
@@ -145,8 +174,7 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGeneralScreensaverOptions.cpp    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSettings.cpp    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.cpp	
-	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperSettings.cpp	
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.cpp		
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiHashStart.cpp	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGamelistFilter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCollectionSystemsOptions.cpp
@@ -175,6 +203,7 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGameAchievements.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSaveState.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiFileBrowser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiFavoriteMusicSelector.cpp
 
     # Scrapers
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/Scraper.cpp
@@ -182,6 +211,7 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/GamesDBJSONScraperResources.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ArcadeDBJSONScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/HfsDBScraper.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.cpp	
 
     # Views

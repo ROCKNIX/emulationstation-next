@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: batocera-es v42b(2025/03/01)\n"
+"Project-Id-Version: batocera-es v42(2025/10/21)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-19 06:02+0900\n"
+"PO-Revision-Date: 2025-10-21 05:26+0900\n"
 "Last-Translator: mikakunin\n"
 "Language-Team: mikakunin\n"
 "Language: ja\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.8\n"
 
 msgid "SCANNING BLUETOOTH"
 msgstr "BLUETOOTH 検出中"
@@ -504,11 +504,23 @@ msgstr "データ使用量/容量"
 msgid "SYSTEM DISK USAGE"
 msgstr "システムデータ使用量/容量"
 
+msgid "DISK USAGE"
+msgstr "データ使用量/容量"
+
 msgid "SYSTEM"
 msgstr "システム"
 
 msgid "VIDEO DRIVER"
 msgstr "ビデオ ドライバ"
+
+msgid "PARIS"
+msgstr "パリ"
+
+msgid "OSAKA"
+msgstr "大阪"
+
+msgid "SEOUL"
+msgstr "ソウル"
 
 msgid "NETPLAY SETTINGS"
 msgstr "ネットプレイ設定"
@@ -527,30 +539,6 @@ msgstr "設定"
 
 msgid "PORT"
 msgstr "ポート"
-
-msgid "USE RELAY SERVER"
-msgstr "リレーサーバーを使用"
-
-msgid "NONE"
-msgstr "無し"
-
-msgid "NEW YORK"
-msgstr "ニューヨーク"
-
-msgid "MADRID"
-msgstr "マドリッド"
-
-msgid "MONTREAL"
-msgstr "モントリオール"
-
-msgid "SAO PAULO"
-msgstr "サンパウロ"
-
-msgid "CUSTOM"
-msgstr "カスタム"
-
-msgid "CUSTOM RELAY SERVER"
-msgstr "カスタムリレーサーバー"
 
 msgid "AUTOMATICALLY CREATE LOBBY"
 msgstr "ロビーを自動的に作成"
@@ -578,6 +566,30 @@ msgstr "起動時に新規ゲームにインデックスを付ける"
 
 msgid "INDEX GAMES"
 msgstr "ゲームにインデックスを付ける"
+
+msgid "USE RELAY SERVER"
+msgstr "リレーサーバーを使用"
+
+msgid "NONE"
+msgstr "無し"
+
+msgid "NEW YORK"
+msgstr "ニューヨーク"
+
+msgid "MADRID"
+msgstr "マドリッド"
+
+msgid "MONTREAL"
+msgstr "モントリオール"
+
+msgid "SAO PAULO"
+msgstr "サンパウロ"
+
+msgid "CUSTOM"
+msgstr "カスタム"
+
+msgid "CUSTOM RELAY SERVER"
+msgstr "カスタムリレーサーバー"
 
 msgid "INPUT"
 msgstr "入力"
@@ -666,6 +678,12 @@ msgid ""
 "earned."
 msgstr "対象となるアチーブメントを獲得できる場合、右下隅にアイコンを表示します"
 
+msgid "UNOFFICIAL ACHIEVEMENTS"
+msgstr "非公式アチーブメント"
+
+msgid "Enable unlocking of unofficial achievements."
+msgstr "非公式アチーブメントのロック解除を有効"
+
 msgid "RETROACHIEVEMENT UNLOCK SOUND"
 msgstr "RETROACHIEVEMENTロック解除効果音"
 
@@ -752,6 +770,15 @@ msgstr "更新はありません"
 msgid "SCRAPER"
 msgstr "スクレイプ"
 
+msgid "SCRAPE"
+msgstr "スクレイプ"
+
+msgid "ACCOUNTS"
+msgstr "アカウント"
+
+msgid "go back"
+msgstr "戻る"
+
 msgid "SCRAPING DATABASE"
 msgstr "スクレイプ データベース選択"
 
@@ -760,9 +787,6 @@ msgstr "ソース元"
 
 msgid "SCRAPE FROM"
 msgstr "スクレイプ元"
-
-msgid "SCRAPER SETTINGS"
-msgstr "スクレイプ 設定"
 
 msgid "FILTERS"
 msgstr "フィルター"
@@ -809,8 +833,101 @@ msgstr "取得開始"
 msgid "START"
 msgstr "スタート"
 
-msgid "go back"
-msgstr "戻る"
+msgid "IMAGE SOURCE"
+msgstr "イメージ ソース元"
+
+msgid "SCREENSHOT"
+msgstr "スクリーンショット<image>"
+
+msgid "TITLE SCREENSHOT"
+msgstr "タイトルスクリーンショット<image>"
+
+msgid "MIX V1"
+msgstr "MIX V1<image>"
+
+msgid "MIX V2"
+msgstr "MIX V2<image>"
+
+msgid "BOX 2D"
+msgstr "2D ボックス<thumbnail>"
+
+msgid "BOX 3D"
+msgstr "3D ボックス<thumbnail>"
+
+msgid "FAN ART"
+msgstr "ファンアート<fanart>"
+
+msgid "BOX SOURCE"
+msgstr "ボックス ソース元"
+
+msgid "LOGO SOURCE"
+msgstr "ロゴ(マーキー) ソース元"
+
+msgid "HD WHEEL"
+msgstr "HD ホイール"
+
+msgid "WHEEL"
+msgstr "ホイール<marquee>"
+
+msgid "MARQUEE"
+msgstr "マーキー<marquee>"
+
+msgid "PREFERED REGION"
+msgstr "ゲーム優先リージョン<region>"
+
+msgid "AUTO"
+msgstr "自動"
+
+msgid "OVERWRITE NAMES"
+msgstr "名前を上書き"
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr "説明を上書き"
+
+msgid "OVERWRITE MEDIAS"
+msgstr "メディアを上書き"
+
+msgid "SCRAPE FOR"
+msgstr "スクレイプ <gamelist項目>"
+
+msgid "SHORT NAME"
+msgstr "短名"
+
+msgid "COMMUNITY RATING"
+msgstr "コミュニティの評価<rating>"
+
+msgid "VIDEO"
+msgstr "デモ動画<video>"
+
+msgid "FANART"
+msgstr "ファンアート画像<fanart>"
+
+msgid "BEZEL (16:9)"
+msgstr "ベゼル(16:9)<bezel>(decorationsフォルダにコピー)"
+
+msgid "BOX BACKSIDE"
+msgstr "ボックス背景<boxback>"
+
+msgid "MAP"
+msgstr "マップ<map>"
+
+msgid "MANUAL"
+msgstr "マニュアル<manual>"
+
+msgid "PADTOKEY SETTINGS"
+msgstr "パッドキー設定"
+
+msgid "SCREENSCRAPER"
+msgstr "スクリーンスクレーパー"
+
+msgid "IGDB"
+msgstr "IGDB"
+
+msgid "CLIENT ID"
+msgstr "クライアントID"
+
+msgid "CLIENT SECRET"
+msgstr "隠しクライアント"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -1030,9 +1147,6 @@ msgstr "この機能は、スクレイプ実行中は無効になります"
 msgid "CHOOSE"
 msgstr "移動選択"
 
-msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
-msgstr "ユーザーインターフェイスモードのロックを解除しました"
-
 msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr "ロック解除(ボタンを順に押す)"
 
@@ -1059,9 +1173,6 @@ msgstr "DMDサーバー"
 
 msgid "FORMAT"
 msgstr "DMD 形式"
-
-msgid "AUTO"
-msgstr "自動"
 
 msgid "dmd matrix size"
 msgstr "DMDマトリクスサイズ"
@@ -1536,6 +1647,9 @@ msgstr "オーバークロック"
 msgid "LED HARDWARE"
 msgstr "LED ハードウェア"
 
+msgid "ENABLE LED"
+msgstr " LED 有効"
+
 msgid "RED"
 msgstr "赤"
 
@@ -1618,9 +1732,6 @@ msgstr "現在の設定"
 
 msgid "UPDATE GAMELISTS"
 msgstr "ゲームリストを更新"
-
-msgid "ACCOUNTS"
-msgstr "アカウント"
 
 msgid "BIOS SETTINGS"
 msgstr "BIOS 設定"
@@ -1958,6 +2069,12 @@ msgstr "システム固有のBGMを再生"
 msgid "LOWER MUSIC WHEN PLAYING VIDEO"
 msgstr "動画再生時は音量を下げる"
 
+msgid "PLAY ONLY SONGS FROM YOUR FAVORITES PLAYLIST"
+msgstr "お気に入りプレイリストの曲だけを再生する"
+
+msgid "SELECTION OF FAVORITE SONGS"
+msgstr "お気に入りの曲の選択"
+
 msgid "SOUNDS"
 msgstr "音響"
 
@@ -1991,6 +2108,9 @@ msgstr "WIFI SSID"
 msgid "WIFI KEY"
 msgstr "WIFI キー"
 
+msgid "WIFI COUNTRY"
+msgstr "WIFI 使用国"
+
 msgid "WIFI ENABLED"
 msgstr "WIFI が有効になりました"
 
@@ -2005,6 +2125,12 @@ msgstr "次の曲にスキップ"
 
 msgid "NOW PLAYING"
 msgstr "現在再生中の曲名"
+
+msgid "REMOVE CURRENT SONG FROM THE FAVORITES PLAYLIST"
+msgstr "お気に入りプレイリストから現在の曲を削除"
+
+msgid "SAVE CURRENT SONG TO THE FAVORITES PLAYLIST"
+msgstr "現在の曲をお気に入りプレイリストに保存"
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "スクリーンセーバーを起動"
@@ -2226,9 +2352,6 @@ msgstr "コレクションに追加..."
 msgid "DELETE COLLECTION"
 msgstr "コレクションを削除"
 
-msgid "SCRAPE"
-msgstr "スクレイプ"
-
 msgid "ADVANCED GAME OPTIONS"
 msgstr "このゲームの詳細設定"
 
@@ -2252,87 +2375,6 @@ msgstr "BLUETOOTH デバイスのペアリング"
 
 msgid "PAIR"
 msgstr "ペアリング中"
-
-msgid "IMAGE SOURCE"
-msgstr "イメージ ソース元"
-
-msgid "SCREENSHOT"
-msgstr "スクリーンショット<image>"
-
-msgid "TITLE SCREENSHOT"
-msgstr "タイトルスクリーンショット<image>"
-
-msgid "MIX V1"
-msgstr "MIX V1<image>"
-
-msgid "MIX V2"
-msgstr "MIX V2<image>"
-
-msgid "BOX 2D"
-msgstr "2D ボックス<thumbnail>"
-
-msgid "BOX 3D"
-msgstr "3D ボックス<thumbnail>"
-
-msgid "FAN ART"
-msgstr "ファンアート<fanart>"
-
-msgid "BOX SOURCE"
-msgstr "ボックス ソース元"
-
-msgid "LOGO SOURCE"
-msgstr "ロゴ(マーキー) ソース元"
-
-msgid "WHEEL"
-msgstr "ホイール<marquee>"
-
-msgid "MARQUEE"
-msgstr "マーキー<marquee>"
-
-msgid "PREFERED REGION"
-msgstr "ゲーム優先リージョン<region>"
-
-msgid "OVERWRITE NAMES"
-msgstr "名前を上書き"
-
-msgid "OVERWRITE DESCRIPTIONS"
-msgstr "説明を上書き"
-
-msgid "OVERWRITE MEDIAS"
-msgstr "メディアを上書き"
-
-msgid "SCRAPE FOR"
-msgstr "スクレイプ <gamelist項目>"
-
-msgid "SHORT NAME"
-msgstr "短名"
-
-msgid "COMMUNITY RATING"
-msgstr "コミュニティの評価<rating>"
-
-msgid "VIDEO"
-msgstr "デモ動画<video>"
-
-msgid "FANART"
-msgstr "ファンアート画像<fanart>"
-
-msgid "BEZEL (16:9)"
-msgstr "ベゼル(16:9)<bezel>(decorationsフォルダにコピー)"
-
-msgid "BOX BACKSIDE"
-msgstr "ボックス背景<boxback>"
-
-msgid "MAP"
-msgstr "マップ<map>"
-
-msgid "MANUAL"
-msgstr "マニュアル<manual>"
-
-msgid "PADTOKEY SETTINGS"
-msgstr "パッドキー設定"
-
-msgid "ACCOUNT"
-msgstr "アカウント(SCREENSCRAPER)"
 
 msgid "NO DEVICE FOUND"
 msgstr "デバイスが見つかりません"
@@ -2552,6 +2594,9 @@ msgstr ""
 "関連ファイルを指定フォルダ（rom/[system]/images等）に\n"
 "コピーしますか？(いいえ、はコピーせずパス指定のみ)"
 
+msgid "FAVORITE SONGS"
+msgstr "お気に入りの曲"
+
 msgid "CONNECT TO NETPLAY"
 msgstr "ネットプレイの接続"
 
@@ -2665,11 +2710,131 @@ msgstr "銃のクロスへア(照準)表示"
 msgid "BEHAVIOR"
 msgstr "動作"
 
-msgid "RESTRICT HOTKEYS TO EXIT"
-msgstr "ホットキーの機能を制限(終了以外)"
+msgid "JOYSTICKS HOTKEYS"
+msgstr "ジョイスティックホットキー"
+
+msgid "RESTRICT JOYSTICKS HOTKEYS TO EXIT"
+msgstr ""
+
+msgid "GLOBAL HOTKEYS"
+msgstr ""
 
 msgid "default"
 msgstr "標準"
+
+msgid "SOUTH"
+msgstr "S ボタン / 下位置"
+
+msgid "EAST"
+msgstr "E ボタン / 右位置"
+
+msgid "NORTH"
+msgstr "N ボタン / 上位置"
+
+msgid "WEST"
+msgstr "W ボタン / 左位置"
+
+msgid "D-PAD UP"
+msgstr "十字キー上"
+
+msgid "D-PAD DOWN"
+msgstr "十字キー下"
+
+msgid "D-PAD LEFT"
+msgstr "十字キー左"
+
+msgid "D-PAD RIGHT"
+msgstr "十字キー右"
+
+msgid "LEFT SHOULDER"
+msgstr "左 ショルダー(L1)"
+
+msgid "RIGHT SHOULDER"
+msgstr "右 ショルダー(R1)"
+
+msgid "LEFT TRIGGER"
+msgstr "左 トリガー(L2)"
+
+msgid "RIGHT TRIGGER"
+msgstr "右 トリガー(R2)"
+
+msgid "LEFT STICK PRESS"
+msgstr "左 アナログST押(L3)"
+
+msgid "RIGHT STICK PRESS"
+msgstr "右 アナログST押(R3)"
+
+msgid "OVERLAYS"
+msgstr "オーバーレイ"
+
+msgid "BRIGHTNESS CYCLE"
+msgstr "輝度サイクル"
+
+msgid "COIN"
+msgstr "コイン投入"
+
+msgid "EXIT"
+msgstr "終了"
+
+msgid "FAST FORWARD"
+msgstr "高速早送り"
+
+msgid "MENU"
+msgstr "メニュー"
+
+msgid "NEXT DISK"
+msgstr "次のディスク"
+
+msgid "NEXT SLOT"
+msgstr "次のスロット"
+
+msgid "PAUSE"
+msgstr "一時停止"
+
+msgid "PREVIOUS SLOT"
+msgstr "前のスロット"
+
+msgid "RESTORE STATE"
+msgstr "ステート復元"
+
+msgid "SAVE STATE"
+msgstr "ステートセーブ"
+
+msgid "SCREEN LAYOUT"
+msgstr "スクリーンレイアウト"
+
+msgid "SWAP SCREEN"
+msgstr "画面入れ替え"
+
+msgid "TRANSLATION"
+msgstr "AIゲーム翻訳"
+
+msgid "VOLUME DOWN"
+msgstr "音量 下"
+
+msgid "VOLUME MUTE"
+msgstr "音声ミュート"
+
+msgid "VOLUME UP"
+msgstr "音量 上"
+
+msgid "HOTKEY"
+msgstr "ホットキー"
+
+msgid "FILES"
+msgstr "ファイル"
+
+msgid "DECLARE A NEW GLOBAL HOTKEY"
+msgstr ""
+
+msgid "YOU'VE 4 SECONDS TO PRESS EXACTLY 2 TIMES THE GLOBAL HOTKEY"
+msgstr ""
+
+msgid "NO GLOBAL HOTKEY DETECTED"
+msgstr ""
+
+msgid "MORE THAN ONE GLOBAL HOTKEY DETECTED"
+msgstr ""
 
 msgid "BORDER SIZE"
 msgstr "境界サイズ"
@@ -3001,9 +3166,6 @@ msgstr[0] "ゲーム数 :%i"
 msgid "NAVIGATION BAR"
 msgstr "操作バー"
 
-msgid "FILES"
-msgstr "ファイル"
-
 msgid ""
 "WARNING: THE EMULATOR/CORE CURRENTLY SET DOES NOT SUPPORT THIS GAME'S FILE "
 "FORMAT.\n"
@@ -3028,9 +3190,6 @@ msgstr "テーマを読み込んでいます"
 
 msgid "Loading gamelists"
 msgstr "ゲームリストを読み込んでいます"
-
-msgid "MENU"
-msgstr "メニュー"
 
 msgid "GENRE"
 msgstr "ジャンル"
@@ -3085,6 +3244,9 @@ msgstr "メディア無し"
 
 msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
 msgstr "画面を切り替えますか？"
+
+msgid "INVALID CREDENTIALS"
+msgstr "無効な資格情報"
 
 msgid "SCRAPING"
 msgstr "情報を取得中"
@@ -3564,6 +3726,18 @@ msgid ""
 msgstr ""
 "銃キャリブレーション\n"
 "ターゲットに発射して較正"
+
+#~ msgid "RESTRICT HOTKEYS TO EXIT"
+#~ msgstr "ホットキーの機能を制限(終了以外)"
+
+#~ msgid "SCRAPER SETTINGS"
+#~ msgstr "スクレイプ 設定"
+
+#~ msgid "ACCOUNT"
+#~ msgstr "アカウント(SCREENSCRAPER)"
+
+#~ msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
+#~ msgstr "ユーザーインターフェイスモードのロックを解除しました"
 
 #~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
 #~ msgstr "ゲーム起動時にネットプレイ オプションを表示"

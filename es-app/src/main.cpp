@@ -639,7 +639,12 @@ int main(int argc, char* argv[])
 	TextToSpeech::getInstance()->enable(Settings::getInstance()->getBool("TTS"), false);
 	
 	if (errorMsg == NULL)
+	{
+		if (splashScreen)
+			window.renderSplashScreen(_("Loading theme"));
+
 		ViewController::get()->goToStart(true);
+	}
 
 	window.closeSplashScreen();
 
@@ -703,6 +708,22 @@ int main(int argc, char* argv[])
 			do
 			{
 				TRYCATCH("InputManager::parseEvent", InputManager::getInstance()->parseEvent(event, &window));
+
+				if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && Settings::getInstance()->getBool("Windowed"))
+				{
+					int newWidth = event.window.data1;
+					int newHeight = event.window.data2;
+
+					Renderer::OnScreenSizeChanged(newWidth, newHeight);
+					
+					window.closeSplashScreen();
+
+					while (window.peekGui() && window.peekGui() != ViewController::get())
+						delete window.peekGui();
+
+					ViewController::get()->reloadAll(&window);
+					window.closeSplashScreen();					
+				}				
 
 				if (event.type == SDL_QUIT)
 					running = false;

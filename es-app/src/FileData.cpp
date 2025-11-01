@@ -890,7 +890,7 @@ std::set<std::string> FileData::getContentFiles()
 			files.insert(path + "/" + stem + ".bin");
 			files.insert(path + "/" + stem + ".sub");
 		}
-		else if (ext == ".m3u")
+		else if (ext == ".m3u" || ext == ".xbox360")
 		{
 			std::ifstream m3u(WINSTRINGW(mPath));
 			if (m3u && m3u.is_open())
@@ -936,7 +936,15 @@ void FileData::deleteGameFiles()
 		if (mMetadata.getType(mdd.id) != MetaDataType::MD_PATH)
 			continue;
 
-		Utils::FileSystem::removeFile(mMetadata.get(mdd.id));
+		std::string path = mMetadata.get(mdd.id);
+		if (Utils::FileSystem::exists(path) && !Utils::FileSystem::isDirectory(path))
+			Utils::FileSystem::removeFile(mMetadata.get(mdd.id));
+	}
+
+	if (Utils::FileSystem::isDirectory(getPath()))
+	{
+		Utils::FileSystem::deleteDirectoryFiles(getPath(), true);
+		return;
 	}
 
 	Utils::FileSystem::removeFile(getPath());
@@ -1232,7 +1240,7 @@ void FolderData::getFilesRecursiveWithContext(std::vector<FileData*>& out, unsig
 					if (!filter->showHiddenFiles && it->getHidden())
 						continue;
 
-					if (filter->filterKidGame && it->getKidGame())
+					if (filter->filterKidGame && !it->getKidGame())
 						continue;
 
 					if (typeMask == GAME && filter->hiddenExtensions.size() > 0)
@@ -2011,9 +2019,9 @@ BindableProperty FileData::getProperty(const std::string& name)
 		return Utils::String::toFloat(finalValue);
 	case MetaDataType::MD_BOOL:
 		return finalValue == "1" || finalValue == "true";
-	case MetaDataType::MD_DATE:
 	case MetaDataType::MD_TIME:
-		return finalValue.empty() ? "" : Utils::Time::timeToString(Utils::Time::DateTime(finalValue).getTime(), Utils::Time::getSystemDateFormat());
+	case MetaDataType::MD_DATE:
+		return finalValue.empty() || finalValue == "0" ? "" : Utils::Time::timeToString(Utils::Time::DateTime(finalValue).getTime(), type == MetaDataType::MD_TIME ? "%Y%m%dT%H%M%S" : "%Y%m%d");
 	}
 
 	return finalValue;

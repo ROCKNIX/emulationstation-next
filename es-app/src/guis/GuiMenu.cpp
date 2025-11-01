@@ -19,7 +19,6 @@
 #include "guis/GuiNetPlaySettings.h"
 #include "guis/GuiRetroAchievementsSettings.h"
 #include "guis/GuiSystemInformation.h"
-#include "guis/GuiScraperSettings.h"
 #include "guis/GuiControllersSettings.h"
 #include "views/UIModeController.h"
 #include "views/ViewController.h"
@@ -37,6 +36,9 @@
 #include "ApiSystem.h"
 #include "InputManager.h"
 #include "AudioManager.h"
+#include "FavoriteMusicManager.h"
+#include "guis/GuiFavoriteMusicSelector.h"
+
 #include <LibretroRatio.h>
 #include "guis/GuiUpdate.h"
 #include "guis/GuiInstallStart.h"
@@ -59,6 +61,13 @@
 #include "Gamelist.h"
 #include "TextToSpeech.h"
 #include "Paths.h"
+#include <set> 
+
+#if !WIN32
+#include <vector>
+#include <string>
+#include <utility>
+#endif
 
 #if WIN32
 #include "Win32ApiSystem.h"
@@ -230,7 +239,6 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 			setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, Renderer::getScreenHeight() * 0.15f);
 	}
 }
-
 void GuiMenu::openScraperSettings()
 {		
 	mWindow->pushGui(new GuiScraperStart(mWindow));
@@ -372,17 +380,10 @@ class ExitKidModeMsgBox : public GuiSettings
 
 	bool input(InputConfig* config, Input input) override
 	{
+		Window* window = mWindow;
 		if (UIModeController::getInstance()->listen(config, input))
 		{
-			mWindow->pushGui(new GuiMsgBox(mWindow, _("THE USER INTERFACE MODE IS NOW UNLOCKED"),
-				_("OK"), [this] 
-				{
-					Window* window = mWindow;
-					while (window->peekGui() && window->peekGui() != ViewController::get())
-						delete window->peekGui();
-				}));
-
-
+			// window->pushGui(new GuiMsgBox(window, _("THE USER INTERFACE MODE IS NOW UNLOCKED"), _("OK")));
 			return true;
 		}
 
@@ -393,13 +394,7 @@ class ExitKidModeMsgBox : public GuiSettings
 void GuiMenu::exitKidMode()
 {
 	if (Settings::getInstance()->getString("UIMode") == "Basic")
-	{
 		Settings::getInstance()->setString("UIMode", "Full");
-
-		Window* window = mWindow;
-		while (window->peekGui() && window->peekGui() != ViewController::get())
-			delete window->peekGui();
-	}
 	else
 		mWindow->pushGui(new ExitKidModeMsgBox(mWindow, _("UNLOCK USER INTERFACE MODE"), _("ENTER THE CODE NOW TO UNLOCK")));
 }
@@ -1834,49 +1829,68 @@ void GuiMenu::openSystemSettings()
 #endif
 
 #ifdef BATOCERA
-#ifdef X86_64
 	int red, green, blue;
-	if (ApiSystem::getInstance()->getLED(red, green, blue)) {
+	bool ledSupported = ApiSystem::getInstance()->getLED(red, green, blue);
+
+	if (ledSupported) {
 		s->addGroup(_("LED HARDWARE"));
 
+		auto led_enabled_switch = std::make_shared<SwitchComponent>(mWindow);
+		bool isEnabled = ApiSystem::getInstance()->isLEDEnabled();
+		led_enabled_switch->setState(isEnabled);
+		s->addWithLabel(_("ENABLE LED"), led_enabled_switch);
+		
+		std::string colourString = SystemConf::getInstance()->get("led.colour");
+		if (colourString.empty())
+			colourString = "255 0 165";
+
+		std::stringstream ss(colourString);
+		ss >> red >> green >> blue; 
+
 		auto redLEDComponent = std::make_shared<SliderComponent>(mWindow, 0.f, 255.f, 1.f);
+		auto greenLEDComponent = std::make_shared<SliderComponent>(mWindow, 0.f, 255.f, 1.f);
+		auto blueLEDComponent = std::make_shared<SliderComponent>(mWindow, 0.f, 255.f, 1.f);
+
 		redLEDComponent->setValue(red);
-		redLEDComponent->setOnValueChanged([](const float &newVal) {
-			int red, green, blue;
-			ApiSystem::getInstance()->getLEDColours(red, green, blue);
+		redLEDComponent->setOnValueChanged([greenLEDComponent, blueLEDComponent](const float &newVal) {
 			int redInt = static_cast<int>(newVal);
-			ApiSystem::getInstance()->setLEDColours(redInt, green, blue);
-			std::string colourString = std::to_string(redInt) + " " + std::to_string(green) + " " + std::to_string(blue);
+			int greenInt = static_cast<int>(greenLEDComponent->getValue());
+			int blueInt = static_cast<int>(blueLEDComponent->getValue());
+			ApiSystem::getInstance()->setLEDColours(redInt, greenInt, blueInt);
+			std::string colourString = std::to_string(redInt) + " " + std::to_string(greenInt) + " " + std::to_string(blueInt);
 			SystemConf::getInstance()->set("led.colour", colourString);
 		});
-
 		s->addWithLabel(_("RED"), redLEDComponent);
 
-		auto greenLEDComponent = std::make_shared<SliderComponent>(mWindow, 0.f, 255.f, 1.f);
 		greenLEDComponent->setValue(green);
-		greenLEDComponent->setOnValueChanged([](const float &newVal) {
-			int red, green, blue;
-			ApiSystem::getInstance()->getLEDColours(red, green, blue);
+		greenLEDComponent->setOnValueChanged([redLEDComponent, blueLEDComponent](const float &newVal) {
+			int redInt = static_cast<int>(redLEDComponent->getValue());
 			int greenInt = static_cast<int>(newVal);
-			ApiSystem::getInstance()->setLEDColours(red, greenInt, blue);
-			std::string colourString = std::to_string(red) + " " + std::to_string(greenInt) + " " + std::to_string(blue);
+			int blueInt = static_cast<int>(blueLEDComponent->getValue());
+			ApiSystem::getInstance()->setLEDColours(redInt, greenInt, blueInt);
+			std::string colourString = std::to_string(redInt) + " " + std::to_string(greenInt) + " " + std::to_string(blueInt);
 			SystemConf::getInstance()->set("led.colour", colourString);
 		});
-
 		s->addWithLabel(_("GREEN"), greenLEDComponent);
 
-		auto blueLEDComponent = std::make_shared<SliderComponent>(mWindow, 0.f, 255.f, 1.f);
 		blueLEDComponent->setValue(blue);
-		blueLEDComponent->setOnValueChanged([](const float &newVal) {
-			int red, green, blue;
-			ApiSystem::getInstance()->getLEDColours(red, green, blue);
+		blueLEDComponent->setOnValueChanged([redLEDComponent, greenLEDComponent](const float &newVal) {
+			int redInt = static_cast<int>(redLEDComponent->getValue());
+			int greenInt = static_cast<int>(greenLEDComponent->getValue());
 			int blueInt = static_cast<int>(newVal);
-			ApiSystem::getInstance()->setLEDColours(red, green, blueInt);
-			std::string colourString = std::to_string(red) + " " + std::to_string(green) + " " + std::to_string(blueInt);
+			ApiSystem::getInstance()->setLEDColours(redInt, greenInt, blueInt);
+			std::string colourString = std::to_string(redInt) + " " + std::to_string(greenInt) + " " + std::to_string(blueInt);
 			SystemConf::getInstance()->set("led.colour", colourString);
 		});
-
 		s->addWithLabel(_("BLUE"), blueLEDComponent);
+
+		s->addSaveFunc([led_enabled_switch] {
+			bool state = led_enabled_switch->getState();
+			if (state != (SystemConf::getInstance()->get("led.enabled") != "0")) {
+				ApiSystem::getInstance()->setLEDEnabled(state);
+			}
+		});
+
 	}
 	
 	// LED brightness
@@ -1892,7 +1906,6 @@ void GuiMenu::openSystemSettings()
 
 		s->addWithLabel(_("LED BRIGHTNESS"), ledBrightnessComponent);
 	}
-#endif
 #endif
 
 #ifdef BATOCERA
@@ -2964,7 +2977,8 @@ void GuiMenu::updateGameLists(Window* window, bool confirm)
 
 	window->pushGui(new GuiMsgBox(window, _("REALLY UPDATE GAMELISTS?"), _("YES"), [window]
 		{
-		ViewController::reloadAllGames(window, true, true);
+			Scripting::fireEvent("update-gamelists");
+			ViewController::reloadAllGames(window, true, true);
 		}, 
 		_("NO"), nullptr));
 }
@@ -3947,7 +3961,7 @@ void GuiMenu::openSoundSettings()
 	});
 	
 	s->addSwitch(_("DISPLAY SONG TITLES"), "audio.display_titles", true);
-
+ 
 	// how long to display the song titles?
 	auto titles_time = std::make_shared<SliderComponent>(mWindow, 2.f, 120.f, 2.f, "s");
 	titles_time->setValue(Settings::getInstance()->getInt("audio.display_titles_time"));
@@ -3959,6 +3973,39 @@ void GuiMenu::openSoundSettings()
 	s->addSwitch(_("ONLY PLAY SYSTEM-SPECIFIC MUSIC FOLDER"), "audio.persystem", true, [] { AudioManager::getInstance()->changePlaylist(ViewController::get()->getState().getSystem()->getTheme(), true); } );
 	s->addSwitch(_("PLAY SYSTEM-SPECIFIC MUSIC"), "audio.thememusics", true, [] { AudioManager::getInstance()->changePlaylist(ViewController::get()->getState().getSystem()->getTheme(), true); });	
 	s->addSwitch(_("LOWER MUSIC WHEN PLAYING VIDEO"), "VideoLowersMusic", true);
+
+
+    auto favoriteSwitch = std::make_shared<SwitchComponent>(mWindow);
+    std::string favoritesFile = FavoriteMusicManager::getFavoriteMusicFilePath();
+    bool hasFavorites = false;
+    if (Utils::FileSystem::exists(favoritesFile))
+    {
+        auto favorites = FavoriteMusicManager::loadFavoriteSongs(favoritesFile);
+        hasFavorites = !favorites.empty();
+    }
+    bool shouldUseFavorites = Settings::getInstance()->getBool("audio.useFavoriteMusic") && hasFavorites;
+    if (Settings::getInstance()->getBool("audio.useFavoriteMusic") && !hasFavorites)
+    {
+        Settings::getInstance()->setBool("audio.useFavoriteMusic", false);
+        Settings::getInstance()->saveFile();
+    }
+    favoriteSwitch->setState(shouldUseFavorites);
+    s->addWithDescription(_("PLAY ONLY SONGS FROM YOUR FAVORITES PLAYLIST"), "", favoriteSwitch, nullptr);
+    s->addSaveFunc([favoriteSwitch, hasFavorites]() 
+    {
+        bool useFavorite = favoriteSwitch->getState();
+        if (useFavorite && !hasFavorites)
+        {
+            useFavorite = false;
+        }
+        Settings::getInstance()->setBool("audio.useFavoriteMusic", useFavorite);
+        Settings::getInstance()->saveFile();
+        AudioManager::getInstance()->playRandomMusic(useFavorite);
+    });
+
+    s->addEntry(_("SELECTION OF FAVORITE SONGS"), true, [this] {
+        GuiFavoriteMusicSelector::openSelectFavoriteSongs(mWindow, false, true);
+    });
 
 	s->addGroup(_("SOUNDS"));
 
@@ -3974,6 +4021,63 @@ void GuiMenu::openSoundSettings()
 	s->addSwitch(_("ENABLE VIDEO PREVIEW AUDIO"), "VideoAudio", true);
 	
 	mWindow->pushGui(s);
+}
+
+// Provides a complete list of ISO 3166-1 alpha-2 country codes.
+std::vector<std::pair<std::string, std::string>> getCountryCodes()
+{
+    return {
+        { "AF", "Afghanistan" }, { "AX", "Åland Islands" }, { "AL", "Albania" }, { "DZ", "Algeria" }, { "AS", "American Samoa" },
+        { "AD", "Andorra" }, { "AO", "Angola" }, { "AI", "Anguilla" }, { "AQ", "Antarctica" }, { "AG", "Antigua and Barbuda" },
+        { "AR", "Argentina" }, { "AM", "Armenia" }, { "AW", "Aruba" }, { "AU", "Australia" }, { "AT", "Austria" },
+        { "AZ", "Azerbaijan" }, { "BS", "Bahamas" }, { "BH", "Bahrain" }, { "BD", "Bangladesh" }, { "BB", "Barbados" },
+        { "BY", "Belarus" }, { "BE", "Belgium" }, { "BZ", "Belize" }, { "BJ", "Benin" }, { "BM", "Bermuda" },
+        { "BT", "Bhutan" }, { "BO", "Bolivia" }, { "BQ", "Bonaire, Sint Eustatius and Saba" }, { "BA", "Bosnia and Herzegovina" }, { "BW", "Botswana" },
+        { "BV", "Bouvet Island" }, { "BR", "Brazil" }, { "IO", "British Indian Ocean Territory" }, { "BN", "Brunei Darussalam" }, { "BG", "Bulgaria" },
+        { "BF", "Burkina Faso" }, { "BI", "Burundi" }, { "CV", "Cabo Verde" }, { "KH", "Cambodia" }, { "CM", "Cameroon" },
+        { "CA", "Canada" }, { "KY", "Cayman Islands" }, { "CF", "Central African Republic" }, { "TD", "Chad" }, { "CL", "Chile" },
+        { "CN", "China" }, { "CX", "Christmas Island" }, { "CC", "Cocos (Keeling) Islands" }, { "CO", "Colombia" }, { "KM", "Comoros" },
+        { "CG", "Congo" }, { "CD", "Congo, Democratic Republic of the" }, { "CK", "Cook Islands" }, { "CR", "Costa Rica" }, { "CI", "Côte d'Ivoire" },
+        { "HR", "Croatia" }, { "CU", "Cuba" }, { "CW", "Curaçao" }, { "CY", "Cyprus" }, { "CZ", "Czechia" },
+        { "DK", "Denmark" }, { "DJ", "Djibouti" }, { "DM", "Dominica" }, { "DO", "Dominican Republic" }, { "EC", "Ecuador" },
+        { "EG", "Egypt" }, { "SV", "El Salvador" }, { "GQ", "Equatorial Guinea" }, { "ER", "Eritrea" }, { "EE", "Estonia" },
+        { "SZ", "Eswatini" }, { "ET", "Ethiopia" }, { "FK", "Falkland Islands (Malvinas)" }, { "FO", "Faroe Islands" }, { "FJ", "Fiji" },
+        { "FI", "Finland" }, { "FR", "France" }, { "GF", "French Guiana" }, { "PF", "French Polynesia" }, { "TF", "French Southern Territories" },
+        { "GA", "Gabon" }, { "GM", "Gambia" }, { "GE", "Georgia" }, { "DE", "Germany" }, { "GH", "Ghana" },
+        { "GI", "Gibraltar" }, { "GR", "Greece" }, { "GL", "Greenland" }, { "GD", "Grenada" }, { "GP", "Guadeloupe" },
+        { "GU", "Guam" }, { "GT", "Guatemala" }, { "GG", "Guernsey" }, { "GN", "Guinea" }, { "GW", "Guinea-Bissau" },
+        { "GY", "Guyana" }, { "HT", "Haiti" }, { "HM", "Heard Island and McDonald Islands" }, { "VA", "Holy See" }, { "HN", "Honduras" },
+        { "HK", "Hong Kong" }, { "HU", "Hungary" }, { "IS", "Iceland" }, { "IN", "India" }, { "ID", "Indonesia" },
+        { "IR", "Iran" }, { "IQ", "Iraq" }, { "IE", "Ireland" }, { "IM", "Isle of Man" }, { "IL", "Israel" },
+        { "IT", "Italy" }, { "JM", "Jamaica" }, { "JP", "Japan" }, { "JE", "Jersey" }, { "JO", "Jordan" },
+        { "KZ", "Kazakhstan" }, { "KE", "Kenya" }, { "KI", "Kiribati" }, { "KP", "Korea, Democratic People's Republic of" }, { "KR", "Korea, Republic of" },
+        { "KW", "Kuwait" }, { "KG", "Kyrgyzstan" }, { "LA", "Lao People's Democratic Republic" }, { "LV", "Latvia" }, { "LB", "Lebanon" },
+        { "LS", "Lesotho" }, { "LR", "Liberia" }, { "LY", "Libya" }, { "LI", "Liechtenstein" }, { "LT", "Lithuania" },
+        { "LU", "Luxembourg" }, { "MO", "Macao" }, { "MG", "Madagascar" }, { "MW", "Malawi" }, { "MY", "Malaysia" },
+        { "MV", "Maldives" }, { "ML", "Mali" }, { "MT", "Malta" }, { "MH", "Marshall Islands" }, { "MQ", "Martinique" },
+        { "MR", "Mauritania" }, { "MU", "Mauritius" }, { "YT", "Mayotte" }, { "MX", "Mexico" }, { "FM", "Micronesia" },
+        { "MD", "Moldova" }, { "MC", "Monaco" }, { "MN", "Mongolia" }, { "ME", "Montenegro" }, { "MS", "Montserrat" },
+        { "MA", "Morocco" }, { "MZ", "Mozambique" }, { "MM", "Myanmar" }, { "NA", "Namibia" }, { "NR", "Nauru" },
+        { "NP", "Nepal" }, { "NL", "Netherlands" }, { "NC", "New Caledonia" }, { "NZ", "New Zealand" }, { "NI", "Nicaragua" },
+        { "NE", "Niger" }, { "NG", "Nigeria" }, { "NU", "Niue" }, { "NF", "Norfolk Island" }, { "MK", "North Macedonia" },
+        { "MP", "Northern Mariana Islands" }, { "NO", "Norway" }, { "OM", "Oman" }, { "PK", "Pakistan" }, { "PW", "Palau" },
+        { "PS", "Palestine, State of" }, { "PA", "Panama" }, { "PG", "Papua New Guinea" }, { "PY", "Paraguay" }, { "PE", "Peru" },
+        { "PH", "Philippines" }, { "PN", "Pitcairn" }, { "PL", "Poland" }, { "PT", "Portugal" }, { "PR", "Puerto Rico" },
+        { "QA", "Qatar" }, { "RE", "Réunion" }, { "RO", "Romania" }, { "RU", "Russian Federation" }, { "RW", "Rwanda" },
+        { "BL", "Saint Barthélemy" }, { "SH", "Saint Helena, Ascension and Tristan da Cunha" }, { "KN", "Saint Kitts and Nevis" }, { "LC", "Saint Lucia" }, { "MF", "Saint Martin (French part)" },
+        { "PM", "Saint Pierre and Miquelon" }, { "VC", "Saint Vincent and the Grenadines" }, { "WS", "Samoa" }, { "SM", "San Marino" }, { "ST", "Sao Tome and Principe" },
+        { "SA", "Saudi Arabia" }, { "SN", "Senegal" }, { "RS", "Serbia" }, { "SC", "Seychelles" }, { "SL", "Sierra Leone" },
+        { "SG", "Singapore" }, { "SX", "Sint Maarten (Dutch part)" }, { "SK", "Slovakia" }, { "SI", "Slovenia" }, { "SB", "Solomon Islands" },
+        { "SO", "Somalia" }, { "ZA", "South Africa" }, { "GS", "South Georgia and the South Sandwich Islands" }, { "SS", "South Sudan" }, { "ES", "Spain" },
+        { "LK", "Sri Lanka" }, { "SD", "Sudan" }, { "SR", "Suriname" }, { "SJ", "Svalbard and Jan Mayen" }, { "SE", "Sweden" },
+        { "CH", "Switzerland" }, { "SY", "Syrian Arab Republic" }, { "TW", "Taiwan" }, { "TJ", "Tajikistan" }, { "TZ", "Tanzania" },
+        { "TH", "Thailand" }, { "TL", "Timor-Leste" }, { "TG", "Togo" }, { "TK", "Tokelau" }, { "TO", "Tonga" },
+        { "TT", "Trinidad and Tobago" }, { "TN", "Tunisia" }, { "TR", "Turkey" }, { "TM", "Turkmenistan" }, { "TC", "Turks and Caicos Islands" },
+        { "TV", "Tuvalu" }, { "UG", "Uganda" }, { "UA", "Ukraine" }, { "AE", "United Arab Emirates" }, { "GB", "United Kingdom" },
+        { "US", "United States of America" }, { "UM", "United States Minor Outlying Islands" }, { "UY", "Uruguay" }, { "UZ", "Uzbekistan" }, { "VU", "Vanuatu" },
+        { "VE", "Venezuela" }, { "VN", "Viet Nam" }, { "VG", "Virgin Islands (British)" }, { "VI", "Virgin Islands (U.S.)" }, { "WF", "Wallis and Futuna" },
+        { "EH", "Western Sahara" }, { "YE", "Yemen" }, { "ZM", "Zambia" }, { "ZW", "Zimbabwe" }
+    };
 }
 
 void GuiMenu::openWifiSettings(Window* win, std::string title, std::string data, const std::function<void(std::string)>& onsave)
@@ -4014,43 +4118,76 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 #endif
 
 	// Wifi enable
-	auto enable_wifi = std::make_shared<SwitchComponent>(mWindow);	
+	auto enable_wifi = std::make_shared<SwitchComponent>(mWindow);
 	enable_wifi->setState(baseWifiEnabled);
 	s->addWithLabel(_("ENABLE WIFI"), enable_wifi, selectWifiEnable);
 
 	// window, title, settingstring,
 	const std::string baseSSID = SystemConf::getInstance()->get("wifi.ssid");
 	const std::string baseKEY = SystemConf::getInstance()->get("wifi.key");
+#if !WIN32
+	const std::string baseCountry = SystemConf::getInstance()->get("wifi.country");
+#endif
 
 	if (baseWifiEnabled)
 	{
 		s->addInputTextRow(_("WIFI SSID"), "wifi.ssid", false, false, &openWifiSettings);
 		s->addInputTextRow(_("WIFI KEY"), "wifi.key", true);
+
+#if !WIN32
+        // Batocera-specific WIFI COUNTRY option
+        auto country_codes = getCountryCodes();
+        auto country = std::make_shared<OptionListComponent<std::string>>(mWindow, _("WIFI COUNTRY"), false);
+
+        for (auto it = country_codes.cbegin(); it != country_codes.cend(); ++it)
+            country->add(it->second, it->first, baseCountry == it->first);
+
+        if (country->getSelectedObjects().size() == 0)
+            country->add("N/A", "", true);
+
+        s->addWithLabel(_("WIFI COUNTRY"), country);
+        s->addSaveFunc([country] { SystemConf::getInstance()->set("wifi.country", country->getSelected()); });
+#endif
 	}
-	
-	s->addSaveFunc([baseWifiEnabled, baseSSID, baseKEY, enable_wifi, window]
+
+	s->addSaveFunc([baseWifiEnabled, baseSSID, baseKEY,
+#if !WIN32
+	baseCountry,
+#endif
+	enable_wifi, window]
 	{
 		bool wifienabled = enable_wifi->getState();
 
 		SystemConf::getInstance()->setBool("wifi.enabled", wifienabled);
 
-		if (wifienabled) 
+		if (wifienabled)
 		{
 			std::string newSSID = SystemConf::getInstance()->get("wifi.ssid");
 			std::string newKey = SystemConf::getInstance()->get("wifi.key");
+#if !WIN32
+			std::string newCountry = SystemConf::getInstance()->get("wifi.country");
 
-			if (baseSSID != newSSID || baseKEY != newKey || !baseWifiEnabled)
+			if (baseSSID != newSSID || baseKEY != newKey || baseCountry != newCountry || !baseWifiEnabled)
 			{
-				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey)) 
+				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey, newCountry))
 					window->pushGui(new GuiMsgBox(window, _("WIFI ENABLED")));
-				else 
+				else
 					window->pushGui(new GuiMsgBox(window, _("WIFI CONFIGURATION ERROR")));
 			}
+#else
+			if (baseSSID != newSSID || baseKEY != newKey || !baseWifiEnabled)
+			{
+				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey))
+					window->pushGui(new GuiMsgBox(window, _("WIFI ENABLED")));
+				else
+					window->pushGui(new GuiMsgBox(window, _("WIFI CONFIGURATION ERROR")));
+			}
+#endif
 		}
 		else if (baseWifiEnabled)
 			ApiSystem::getInstance()->disableWifi();
 	});
-	
+
 
 	enable_wifi->setOnChangedCallback([this, s, baseWifiEnabled, enable_wifi]()
 	{
@@ -4060,7 +4197,14 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 			SystemConf::getInstance()->setBool("wifi.enabled", wifienabled);
 
 			if (wifienabled)
+			{
+#if !WIN32
+				std::string country = SystemConf::getInstance()->get("wifi.country");
+				ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"), country);
+#else
 				ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"));
+#endif
+			}
 			else
 				ApiSystem::getInstance()->disableWifi();
 
@@ -4090,26 +4234,84 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	auto s = new GuiSettings(window, (quickAccessMenu ? _("QUICK ACCESS") : _("QUIT")).c_str());
 	s->setCloseButton("select");
 
+	
 	if (quickAccessMenu)
 	{
-		s->addGroup(_("QUICK ACCESS"));
+    		s->addGroup(_("QUICK ACCESS"));
+            if (AudioManager::getInstance()->isSongPlaying())
+            {
+                std::string songName = AudioManager::getInstance()->getSongName();
+                std::string currentSongPath = AudioManager::getInstance()->getCurrentSongPath();
 
-		// Don't like one of the songs? Press next
-		if (AudioManager::getInstance()->isSongPlaying())
-		{
-			auto sname = AudioManager::getInstance()->getSongName();
-			if (!sname.empty())
-			{
-				s->addWithDescription(_("SKIP TO THE NEXT SONG"), _("NOW PLAYING") + ": " + sname, nullptr, [s, window]
-					{
-						Window* w = window;
-						AudioManager::getInstance()->playRandomMusic(false);
-						delete s;
-						openQuitMenu_static(w, true, false);
-					}, "iconSound");
-			}
-		}
+                if (!songName.empty())
+                {
+                    s->addWithDescription(_("SKIP TO THE NEXT SONG"),
+                                          _("NOW PLAYING") + ": " + songName,
+                                          nullptr,
+                                          [s, window]()
+                                          {
+                                              Window* w = window;
+                                              AudioManager::getInstance()->playRandomMusic(false);
+                                              delete s;
+                                              GuiMenu::openQuitMenu_static(w, true, false);
+                                          },
+                                          "iconSound");
 
+                    std::string favoritesFile = FavoriteMusicManager::getFavoriteMusicFilePath();
+                    auto favorites = FavoriteMusicManager::loadFavoriteSongs(favoritesFile);
+
+                    bool inFavorites = false;
+                    for (const auto& fav : favorites)
+                    {
+                        if (fav.first == currentSongPath)
+                        {
+                            inFavorites = true;
+                            break;
+                        }
+                    }
+
+                    std::string fileNameWithoutExt = Utils::FileSystem::getFileName(currentSongPath);
+                    size_t lastDot = fileNameWithoutExt.find_last_of('.');
+                    if (lastDot != std::string::npos) {
+                        fileNameWithoutExt = fileNameWithoutExt.substr(0, lastDot);
+                    }
+
+                    if (inFavorites)
+                    {
+                        s->addWithDescription(_("REMOVE CURRENT SONG FROM THE FAVORITES PLAYLIST"), "",
+                                          nullptr,
+                                          [s, window, currentSongPath, fileNameWithoutExt]()
+                                          {
+                                              Window* w = window;
+                                              if (FavoriteMusicManager::getInstance().removeSongFromFavorites(currentSongPath, fileNameWithoutExt, window))
+                                              {
+                                                  AudioManager::getInstance()->playRandomMusic(true);
+                                                  delete s;
+                                                  GuiMenu::openQuitMenu_static(w, true, false);
+                                              }
+                                          },
+                                          "iconSound");
+                    }
+                    else
+                    {
+                        s->addWithDescription(_("SAVE CURRENT SONG TO THE FAVORITES PLAYLIST"), "",
+                                          nullptr,
+                                          [s, window, currentSongPath, fileNameWithoutExt]()
+                                          {
+                                              Window* w = window;
+                                              if (FavoriteMusicManager::getInstance().saveSongToFavorites(currentSongPath, fileNameWithoutExt, window))
+                                              {
+                                                  Settings::getInstance()->saveFile();
+                                                  AudioManager::getInstance()->playRandomMusic(true);
+                                                  delete s;
+                                                  GuiMenu::openQuitMenu_static(w, true, false);
+                                              }
+                                          },
+                                          "iconSound");
+                    }
+                }
+            }
+					
 		s->addEntry(_("LAUNCH SCREENSAVER"), false, [s, window]
 			{
 				Window* w = window;
@@ -4151,7 +4353,7 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			}
 		}
 	}
-
+	
 	if (quickAccessMenu)
 		s->addGroup(_("QUIT"));
 
@@ -4176,7 +4378,7 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			_("NO"), nullptr));
 	}, "iconShutdown");
 
-	s->addWithDescription(_("FAST SHUTDOWN SYSTEM"), _("Shutdown without saving metadata."), nullptr, [window] {
+	s->addWithDescription(_("FAST SHUTDOWN SYSTEM"),_("Shutdown without saving metadata."), nullptr, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN WITHOUT SAVING METADATA?"), 
 			_("YES"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::FAST_SHUTDOWN); },
 			_("NO"), nullptr));

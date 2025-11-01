@@ -88,9 +88,30 @@ struct Service
   bool enabled;
 };
 
+struct Hotkey
+{
+  std::string button;
+  std::string action;
+  std::string default_action;
+};
+
+struct GlobalHotkey
+{
+  std::string device_fancy_name;
+  std::string device_config;
+  std::string key;
+  std::string action;
+};
+
 class ApiSystem : public IPdfHandler, public IExternalActivity
 {
 public:
+	enum LED_TYPE {
+		LED_TYPE_NONE,
+		LED_TYPE_UNIFIED,
+		LED_TYPE_ADDRESSABLE
+	};
+
 	enum ScriptId : unsigned int
 	{
 		WIFI = 0,
@@ -163,24 +184,27 @@ public:
     virtual bool launchKodi(Window *window);
     bool launchFileManager(Window *window);
 
-    bool enableWifi(std::string ssid, std::string key);
+#if !WIN32
+	bool enableWifi(std::string ssid, std::string key, std::string country);
+#else
+	bool enableWifi(std::string ssid, std::string key);
+#endif
     bool disableWifi();
 
 	virtual std::string getIpAddress();
 
-	bool enableBluetooth();
-	bool disableBluetooth();
-	void startBluetoothLiveDevices(const std::function<void(const std::string)>& func);
-	void stopBluetoothLiveDevices();
-	bool pairBluetoothDevice(const std::string& deviceName);
-	bool connectBluetoothDevice(const std::string& deviceName);
-	bool disconnectBluetoothDevice(const std::string& deviceName);
-	bool removeBluetoothDevice(const std::string& deviceName);
-
-	std::vector<std::string> getPairedBluetoothDeviceList();
-
-	// Obsolete
-    bool scanNewBluetooth(const std::function<void(const std::string)>& func = nullptr);
+	// BlueTooth methods
+	virtual bool enableBluetooth();
+	virtual bool disableBluetooth();
+	virtual void startBluetoothLiveDevices(const std::function<void(const std::string)>& func);
+	virtual void stopBluetoothLiveDevices();
+	virtual bool pairBluetoothDevice(const std::string& deviceName);
+	virtual bool connectBluetoothDevice(const std::string& deviceName);
+	virtual bool disconnectBluetoothDevice(const std::string& deviceName);
+	virtual bool removeBluetoothDevice(const std::string& deviceName);
+	virtual bool forgetBluetoothControllers();
+	virtual std::vector<std::string> getPairedBluetoothDeviceList();	
+    virtual bool scanNewBluetooth(const std::function<void(const std::string)>& func = nullptr); // Obsolete
 
     std::vector<std::string> getAvailableBackupDevices();
     std::vector<std::string> getAvailableInstallDevices();
@@ -201,9 +225,7 @@ public:
 
 	bool setButtonColorGameForce(std::string basic_string);
 
-	bool setPowerLedGameForce(std::string basic_string);
-
-    bool forgetBluetoothControllers();
+	bool setPowerLedGameForce(std::string basic_string);    
 
     /* audio card */
     bool setAudioOutputDevice(std::string device);
@@ -253,6 +275,10 @@ public:
 	void getLEDColours(int& red, int& green, int& blue);
 	void setLEDColours(int red, int green, int blue);
 
+	// LED Enabled?
+	bool isLEDEnabled();
+	void setLEDEnabled(bool enabled);
+
 	// LED Brightness
 	bool getLEDBrightness(int& value);
 	void setLEDBrightness(int value);
@@ -292,6 +318,16 @@ public:
 	virtual std::vector<Service> getServices();
 	virtual bool enableService(std::string name, bool enable);
 
+  	virtual std::vector<Hotkey> getJoysticksHotkeys();
+        virtual std::vector<std::string> getJoysticksHotkeysValues();
+        virtual void setJoysticksHotkeys(const std::vector<Hotkey>& hotkeys);
+
+      	virtual std::vector<GlobalHotkey> detectGlobalHotkeys();
+      	virtual std::vector<std::string> getGlobalHotkeysValues();
+    	virtual std::vector<GlobalHotkey> getGlobalHotkeys();
+      	virtual void removeGlobalHotkey(const std::string& config, const std::string& key);
+    	virtual void setGlobalHotkey(const std::string& config, const std::string& key, const std::string& action);
+
 	virtual std::vector<std::string> backglassThemes();
 	virtual void restartBackglass();
 
@@ -311,7 +347,9 @@ protected:
 
     void launchExternalWindow_before(Window *window);
     void launchExternalWindow_after(Window *window);
+
+private:
+	static LED_TYPE mSystemLedType;
 };
 
 #endif
-

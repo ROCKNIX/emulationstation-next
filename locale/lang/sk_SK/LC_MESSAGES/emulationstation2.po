@@ -506,11 +506,23 @@ msgstr "Využitie disku používateľa"
 msgid "SYSTEM DISK USAGE"
 msgstr "Využitie disku systému"
 
+msgid "DISK USAGE"
+msgstr ""
+
 msgid "SYSTEM"
 msgstr "Systém"
 
 msgid "VIDEO DRIVER"
 msgstr "Video ovládač"
+
+msgid "PARIS"
+msgstr ""
+
+msgid "OSAKA"
+msgstr ""
+
+msgid "SEOUL"
+msgstr ""
 
 msgid "NETPLAY SETTINGS"
 msgstr "Nastavenia netplay"
@@ -529,30 +541,6 @@ msgstr "Voľby"
 
 msgid "PORT"
 msgstr "Port"
-
-msgid "USE RELAY SERVER"
-msgstr "Použiť Relay server"
-
-msgid "NONE"
-msgstr "Žiadne"
-
-msgid "NEW YORK"
-msgstr "NEW YORK"
-
-msgid "MADRID"
-msgstr "MADRID"
-
-msgid "MONTREAL"
-msgstr "MONTREAL"
-
-msgid "SAO PAULO"
-msgstr "SAO PAULO"
-
-msgid "CUSTOM"
-msgstr "Vlastné"
-
-msgid "CUSTOM RELAY SERVER"
-msgstr "Vlastný relay server"
 
 msgid "AUTOMATICALLY CREATE LOBBY"
 msgstr ""
@@ -580,6 +568,30 @@ msgstr "Indexovať nové hry pri spustení"
 
 msgid "INDEX GAMES"
 msgstr "Indexovať hry"
+
+msgid "USE RELAY SERVER"
+msgstr "Použiť Relay server"
+
+msgid "NONE"
+msgstr "Žiadne"
+
+msgid "NEW YORK"
+msgstr "NEW YORK"
+
+msgid "MADRID"
+msgstr "MADRID"
+
+msgid "MONTREAL"
+msgstr "MONTREAL"
+
+msgid "SAO PAULO"
+msgstr "SAO PAULO"
+
+msgid "CUSTOM"
+msgstr "Vlastné"
+
+msgid "CUSTOM RELAY SERVER"
+msgstr "Vlastný relay server"
 
 msgid "INPUT"
 msgstr "Vstup"
@@ -667,6 +679,12 @@ msgid ""
 "earned."
 msgstr "Zobrazí ikony v pravom dolnom rohu, ak sa dajú získať vhodné úspechy."
 
+msgid "UNOFFICIAL ACHIEVEMENTS"
+msgstr ""
+
+msgid "Enable unlocking of unofficial achievements."
+msgstr ""
+
 msgid "RETROACHIEVEMENT UNLOCK SOUND"
 msgstr "RetroAchievement odomknúť zvuk"
 
@@ -750,6 +768,15 @@ msgstr "Nie je dostupná aktualizácia"
 msgid "SCRAPER"
 msgstr "Vyhľadávač"
 
+msgid "SCRAPE"
+msgstr "Vyhľadať"
+
+msgid "ACCOUNTS"
+msgstr "Účty"
+
+msgid "go back"
+msgstr "späť"
+
 msgid "SCRAPING DATABASE"
 msgstr "Databáza vyhľadávača"
 
@@ -758,9 +785,6 @@ msgstr "Zdroj"
 
 msgid "SCRAPE FROM"
 msgstr "Vyhľadať v"
-
-msgid "SCRAPER SETTINGS"
-msgstr "Nastavenia vyhľadávača"
 
 msgid "FILTERS"
 msgstr "Filtre"
@@ -807,8 +831,101 @@ msgstr "Vyhľadať teraz"
 msgid "START"
 msgstr "Spustiť"
 
-msgid "go back"
-msgstr "späť"
+msgid "IMAGE SOURCE"
+msgstr "Zdroj obrázku"
+
+msgid "SCREENSHOT"
+msgstr "Snímka obrazovky"
+
+msgid "TITLE SCREENSHOT"
+msgstr "Titulná obrazovka"
+
+msgid "MIX V1"
+msgstr "Mix v1"
+
+msgid "MIX V2"
+msgstr "Mix v2"
+
+msgid "BOX 2D"
+msgstr "Krabica 2D"
+
+msgid "BOX 3D"
+msgstr "Krabica 3D"
+
+msgid "FAN ART"
+msgstr "Fan art"
+
+msgid "BOX SOURCE"
+msgstr "Zdroj krabice"
+
+msgid "LOGO SOURCE"
+msgstr "Zdroj loga"
+
+msgid "HD WHEEL"
+msgstr ""
+
+msgid "WHEEL"
+msgstr "Koliesko"
+
+msgid "MARQUEE"
+msgstr "Markíza"
+
+msgid "PREFERED REGION"
+msgstr "Preferovaný región"
+
+msgid "AUTO"
+msgstr "Auto"
+
+msgid "OVERWRITE NAMES"
+msgstr "Prepísať mená"
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr "Prepísať popisy"
+
+msgid "OVERWRITE MEDIAS"
+msgstr "Prepísať médiá"
+
+msgid "SCRAPE FOR"
+msgstr "Vyhľadať pre"
+
+msgid "SHORT NAME"
+msgstr "Krátky názov"
+
+msgid "COMMUNITY RATING"
+msgstr "Hodnotenie komunity"
+
+msgid "VIDEO"
+msgstr "Video"
+
+msgid "FANART"
+msgstr "Fanart"
+
+msgid "BEZEL (16:9)"
+msgstr "Okraj (16:9)"
+
+msgid "BOX BACKSIDE"
+msgstr "Krabica z druhej strany"
+
+msgid "MAP"
+msgstr "Mapa"
+
+msgid "MANUAL"
+msgstr "Ručné"
+
+msgid "PADTOKEY SETTINGS"
+msgstr "Nastavenia PadToKey"
+
+msgid "SCREENSCRAPER"
+msgstr ""
+
+msgid "IGDB"
+msgstr ""
+
+msgid "CLIENT ID"
+msgstr ""
+
+msgid "CLIENT SECRET"
+msgstr ""
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -1028,9 +1145,6 @@ msgstr "Táto funkcia je nedostupná počas behu vyhľadávača"
 msgid "CHOOSE"
 msgstr "Vybrať"
 
-msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
-msgstr "Režim používateľského rozhrania je teraz odomknutý"
-
 msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr "Zadajte teraz kód na odomknutie"
 
@@ -1057,9 +1171,6 @@ msgstr "dmd server"
 
 msgid "FORMAT"
 msgstr "Formát"
-
-msgid "AUTO"
-msgstr "Auto"
 
 msgid "dmd matrix size"
 msgstr "veľkosť matice dmd"
@@ -1532,6 +1643,9 @@ msgstr "Pretaktovanie"
 msgid "LED HARDWARE"
 msgstr "LED hardvér"
 
+msgid "ENABLE LED"
+msgstr ""
+
 msgid "RED"
 msgstr "červená"
 
@@ -1616,9 +1730,6 @@ msgstr "Aktuálne nastavenie"
 
 msgid "UPDATE GAMELISTS"
 msgstr "Aktualizovať zoznamy hier"
-
-msgid "ACCOUNTS"
-msgstr "Účty"
 
 msgid "BIOS SETTINGS"
 msgstr "Nastavenia BIOSu"
@@ -1957,6 +2068,12 @@ msgstr "Hrať hudbu špecifickú k systému"
 msgid "LOWER MUSIC WHEN PLAYING VIDEO"
 msgstr "Stíšiť hudbu pri prehrávaní videa"
 
+msgid "PLAY ONLY SONGS FROM YOUR FAVORITES PLAYLIST"
+msgstr "PREHRÁVAŤ IBA PESNIČKY Z TVOJHO ZOZNAMU OBĽÚBENÝCH"
+
+msgid "SELECTION OF FAVORITE SONGS"
+msgstr "VÝBER OBĽÚBENÝCH PESNIČIEK"
+
 msgid "SOUNDS"
 msgstr "Zvuky"
 
@@ -1990,6 +2107,9 @@ msgstr "Názov siete"
 msgid "WIFI KEY"
 msgstr "Wi-Fi heslo"
 
+msgid "WIFI COUNTRY"
+msgstr ""
+
 msgid "WIFI ENABLED"
 msgstr "Wi-Fi povolené"
 
@@ -2004,6 +2124,12 @@ msgstr "Preskočiť na ďalšiu skladbu"
 
 msgid "NOW PLAYING"
 msgstr "Teraz hrá"
+
+msgid "REMOVE CURRENT SONG FROM THE FAVORITES PLAYLIST"
+msgstr "ODSTRÁNIŤ AKTUÁLNU PESNIČKU ZO ZOZNAMU OBĽÚBENÝCH"
+
+msgid "SAVE CURRENT SONG TO THE FAVORITES PLAYLIST"
+msgstr "ULOŽIŤ AKTUÁLNU PESNIČKU DO ZOZNAMU OBĽÚBENÝCH"
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "Spustiť šetrič obrazovky"
@@ -2226,9 +2352,6 @@ msgstr "Pridať do vlastnej kolekcie..."
 msgid "DELETE COLLECTION"
 msgstr "Vymazať kolekciu"
 
-msgid "SCRAPE"
-msgstr "Vyhľadať"
-
 msgid "ADVANCED GAME OPTIONS"
 msgstr "Pokročilé voľby hry"
 
@@ -2252,87 +2375,6 @@ msgstr "Spárovať Bluetooth zariadenie"
 
 msgid "PAIR"
 msgstr "Spárovať"
-
-msgid "IMAGE SOURCE"
-msgstr "Zdroj obrázku"
-
-msgid "SCREENSHOT"
-msgstr "Snímka obrazovky"
-
-msgid "TITLE SCREENSHOT"
-msgstr "Titulná obrazovka"
-
-msgid "MIX V1"
-msgstr "Mix v1"
-
-msgid "MIX V2"
-msgstr "Mix v2"
-
-msgid "BOX 2D"
-msgstr "Krabica 2D"
-
-msgid "BOX 3D"
-msgstr "Krabica 3D"
-
-msgid "FAN ART"
-msgstr "Fan art"
-
-msgid "BOX SOURCE"
-msgstr "Zdroj krabice"
-
-msgid "LOGO SOURCE"
-msgstr "Zdroj loga"
-
-msgid "WHEEL"
-msgstr "Koliesko"
-
-msgid "MARQUEE"
-msgstr "Markíza"
-
-msgid "PREFERED REGION"
-msgstr "Preferovaný región"
-
-msgid "OVERWRITE NAMES"
-msgstr "Prepísať mená"
-
-msgid "OVERWRITE DESCRIPTIONS"
-msgstr "Prepísať popisy"
-
-msgid "OVERWRITE MEDIAS"
-msgstr "Prepísať médiá"
-
-msgid "SCRAPE FOR"
-msgstr "Vyhľadať pre"
-
-msgid "SHORT NAME"
-msgstr "Krátky názov"
-
-msgid "COMMUNITY RATING"
-msgstr "Hodnotenie komunity"
-
-msgid "VIDEO"
-msgstr "Video"
-
-msgid "FANART"
-msgstr "Fanart"
-
-msgid "BEZEL (16:9)"
-msgstr "Okraj (16:9)"
-
-msgid "BOX BACKSIDE"
-msgstr "Krabica z druhej strany"
-
-msgid "MAP"
-msgstr "Mapa"
-
-msgid "MANUAL"
-msgstr "Ručné"
-
-msgid "PADTOKEY SETTINGS"
-msgstr "Nastavenia PadToKey"
-
-msgid "ACCOUNT"
-msgstr "Účet"
 
 msgid "NO DEVICE FOUND"
 msgstr "Nenašlo sa zariadenie"
@@ -2552,6 +2594,9 @@ msgstr ""
 "hier.\n"
 "Chcete použiť kópiu týchto súborov relatívnú k zoznamu hier?"
 
+msgid "FAVORITE SONGS"
+msgstr "OBĽÚBENÉ PESNIČKY"
+
 msgid "CONNECT TO NETPLAY"
 msgstr "Pripojiť k sieťovej hre"
 
@@ -2664,11 +2709,131 @@ msgstr ""
 msgid "BEHAVIOR"
 msgstr ""
 
-msgid "RESTRICT HOTKEYS TO EXIT"
+msgid "JOYSTICKS HOTKEYS"
+msgstr ""
+
+msgid "RESTRICT JOYSTICKS HOTKEYS TO EXIT"
+msgstr ""
+
+msgid "GLOBAL HOTKEYS"
 msgstr ""
 
 msgid "default"
 msgstr "predvolené"
+
+msgid "SOUTH"
+msgstr ""
+
+msgid "EAST"
+msgstr ""
+
+msgid "NORTH"
+msgstr ""
+
+msgid "WEST"
+msgstr ""
+
+msgid "D-PAD UP"
+msgstr ""
+
+msgid "D-PAD DOWN"
+msgstr ""
+
+msgid "D-PAD LEFT"
+msgstr ""
+
+msgid "D-PAD RIGHT"
+msgstr ""
+
+msgid "LEFT SHOULDER"
+msgstr ""
+
+msgid "RIGHT SHOULDER"
+msgstr ""
+
+msgid "LEFT TRIGGER"
+msgstr ""
+
+msgid "RIGHT TRIGGER"
+msgstr ""
+
+msgid "LEFT STICK PRESS"
+msgstr ""
+
+msgid "RIGHT STICK PRESS"
+msgstr ""
+
+msgid "OVERLAYS"
+msgstr ""
+
+msgid "BRIGHTNESS CYCLE"
+msgstr ""
+
+msgid "COIN"
+msgstr ""
+
+msgid "EXIT"
+msgstr ""
+
+msgid "FAST FORWARD"
+msgstr ""
+
+msgid "MENU"
+msgstr "Ponuka"
+
+msgid "NEXT DISK"
+msgstr ""
+
+msgid "NEXT SLOT"
+msgstr ""
+
+msgid "PAUSE"
+msgstr ""
+
+msgid "PREVIOUS SLOT"
+msgstr ""
+
+msgid "RESTORE STATE"
+msgstr ""
+
+msgid "SAVE STATE"
+msgstr ""
+
+msgid "SCREEN LAYOUT"
+msgstr ""
+
+msgid "SWAP SCREEN"
+msgstr ""
+
+msgid "TRANSLATION"
+msgstr ""
+
+msgid "VOLUME DOWN"
+msgstr ""
+
+msgid "VOLUME MUTE"
+msgstr ""
+
+msgid "VOLUME UP"
+msgstr ""
+
+msgid "HOTKEY"
+msgstr ""
+
+msgid "FILES"
+msgstr "Súbory"
+
+msgid "DECLARE A NEW GLOBAL HOTKEY"
+msgstr ""
+
+msgid "YOU'VE 4 SECONDS TO PRESS EXACTLY 2 TIMES THE GLOBAL HOTKEY"
+msgstr ""
+
+msgid "NO GLOBAL HOTKEY DETECTED"
+msgstr ""
+
+msgid "MORE THAN ONE GLOBAL HOTKEY DETECTED"
+msgstr ""
 
 msgid "BORDER SIZE"
 msgstr "Veľkosť okraja"
@@ -3006,9 +3171,6 @@ msgstr[2] "%i hier"
 msgid "NAVIGATION BAR"
 msgstr "Navigačná lišta"
 
-msgid "FILES"
-msgstr "Súbory"
-
 msgid ""
 "WARNING: THE EMULATOR/CORE CURRENTLY SET DOES NOT SUPPORT THIS GAME'S FILE "
 "FORMAT.\n"
@@ -3033,9 +3195,6 @@ msgstr "Načítavam tému"
 
 msgid "Loading gamelists"
 msgstr "Načítavam zoznamy hier"
-
-msgid "MENU"
-msgstr "Ponuka"
 
 msgid "GENRE"
 msgstr "Žáner"
@@ -3090,6 +3249,9 @@ msgstr "Chýbajúce médiá"
 
 msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
 msgstr "Chcete prepnúť obrazovku?"
+
+msgid "INVALID CREDENTIALS"
+msgstr ""
 
 msgid "SCRAPING"
 msgstr "Vyhľadávanie"
@@ -3585,6 +3747,15 @@ msgid ""
 msgstr ""
 "Kalibrácia zbrane\n"
 "Vystreľte na cieľ na kalibráciu"
+
+#~ msgid "SCRAPER SETTINGS"
+#~ msgstr "Nastavenia vyhľadávača"
+
+#~ msgid "ACCOUNT"
+#~ msgstr "Účet"
+
+#~ msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
+#~ msgstr "Režim používateľského rozhrania je teraz odomknutý"
 
 #~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
 #~ msgstr "Zobraziť voľby sieťovej hry pri spustení hry"

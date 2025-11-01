@@ -501,11 +501,23 @@ msgstr "DISQUE UTILISATEUR"
 msgid "SYSTEM DISK USAGE"
 msgstr "DISQUE SYSTÈME"
 
+msgid "DISK USAGE"
+msgstr "UTILISATION DU DISQUE"
+
 msgid "SYSTEM"
 msgstr "SYSTÈME"
 
 msgid "VIDEO DRIVER"
 msgstr "PILOTE VIDÉO"
+
+msgid "PARIS"
+msgstr "PARIS"
+
+msgid "OSAKA"
+msgstr "OSAKA"
+
+msgid "SEOUL"
+msgstr "SÉOUL"
 
 msgid "NETPLAY SETTINGS"
 msgstr "PARAMÈTRES DES PARTIES EN RÉSEAU"
@@ -524,6 +536,34 @@ msgstr "OPTIONS"
 
 msgid "PORT"
 msgstr "PORT"
+
+msgid "AUTOMATICALLY CREATE LOBBY"
+msgstr "CRÉER AUTOMATIQUEMENT UN LOBBY"
+
+msgid "Automatically creates a Netplay lobby when starting a game."
+msgstr "Créer automatiquement un lobby Netplay au démarrage d’une partie."
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr "AFFICHER UNIQUEMENT LES JEUX AVEC SERVEUR RELAIS"
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+"Les connections à des jeux sur serveur relais ont plus de chances d'aboutir."
+
+msgid "SHOW UNAVAILABLE GAMES"
+msgstr "AFFICHER LES JEUX NON DISPONIBLES"
+
+msgid "Show rooms for games not present on this machine."
+msgstr "Afficher les parties des jeux non disponibles sur cette machine."
+
+msgid "GAME INDEXES"
+msgstr "INDEXATION DES JEUX"
+
+msgid "INDEX NEW GAMES AT STARTUP"
+msgstr "INDEXER AUTOMATIQUEMENT AU DÉMARRAGE"
+
+msgid "INDEX GAMES"
+msgstr "INDEXER LES JEUX"
 
 msgid "USE RELAY SERVER"
 msgstr "UTILISER UN SERVEUR RELAIS"
@@ -548,33 +588,6 @@ msgstr "PERSONNALISÉ"
 
 msgid "CUSTOM RELAY SERVER"
 msgstr "SERVEUR RELAI PERSONNALISÉ"
-
-msgid "AUTOMATICALLY CREATE LOBBY"
-msgstr ""
-
-msgid "Automatically creates a Netplay lobby when starting a game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "AFFICHER SEUELEMENT LE SERVEUR RELAIS DES JEUX"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr "Le serveur de relais des jeux à généralement davantage d'entrées."
-
-msgid "SHOW UNAVAILABLE GAMES"
-msgstr "AFFICHER LES JEUX NON DISPONIBLES"
-
-msgid "Show rooms for games not present on this machine."
-msgstr "Afficher les parties des jeux non disponibles sur cette machine."
-
-msgid "GAME INDEXES"
-msgstr "INDEXATION DES JEUX"
-
-msgid "INDEX NEW GAMES AT STARTUP"
-msgstr "INDEXER AUTOMATIQUEMENT AU DÉMARRAGE"
-
-msgid "INDEX GAMES"
-msgstr "INDEXER LES JEUX"
 
 msgid "INPUT"
 msgstr "ÉDITER"
@@ -670,6 +683,12 @@ msgstr ""
 "Afficher les icônes dans le coin inférieur droit lorsque des succès rétro "
 "peuvent être obtenus."
 
+msgid "UNOFFICIAL ACHIEVEMENTS"
+msgstr "SUCCÈS NON OFFICIELS"
+
+msgid "Enable unlocking of unofficial achievements."
+msgstr "Activer le déverrouillage des succès non officiels."
+
 msgid "RETROACHIEVEMENT UNLOCK SOUND"
 msgstr "SON DE DÉVERROUILLAGE DES SUCCÈS RÉTRO"
 
@@ -753,6 +772,15 @@ msgstr "PAS DE MISE À JOUR DISPONIBLE"
 msgid "SCRAPER"
 msgstr "SCRAPEUR"
 
+msgid "SCRAPE"
+msgstr "SCRAPER"
+
+msgid "ACCOUNTS"
+msgstr "COMPTES"
+
+msgid "go back"
+msgstr "aller en arrière"
+
 msgid "SCRAPING DATABASE"
 msgstr "BASE DE DONNÉES DE SCRAPE"
 
@@ -761,9 +789,6 @@ msgstr "SOURCE"
 
 msgid "SCRAPE FROM"
 msgstr "SCRAPER DEPUIS"
-
-msgid "SCRAPER SETTINGS"
-msgstr "OPTIONS DU SCRAPEUR"
 
 msgid "FILTERS"
 msgstr "FILTRES"
@@ -810,8 +835,101 @@ msgstr "SCRAPER MAINTENANT"
 msgid "START"
 msgstr "DÉMARRER"
 
-msgid "go back"
-msgstr "aller en arrière"
+msgid "IMAGE SOURCE"
+msgstr "IMAGE SOURCE"
+
+msgid "SCREENSHOT"
+msgstr "IMAGE EN JEU"
+
+msgid "TITLE SCREENSHOT"
+msgstr "IMAGE TITRE"
+
+msgid "MIX V1"
+msgstr "MIX D'IMAGES V1"
+
+msgid "MIX V2"
+msgstr "MIX D'IMAGES V2"
+
+msgid "BOX 2D"
+msgstr "BOÎTE 2D"
+
+msgid "BOX 3D"
+msgstr "BOÎTE 3D"
+
+msgid "FAN ART"
+msgstr "FANART"
+
+msgid "BOX SOURCE"
+msgstr "BOÎTE SOURCE"
+
+msgid "LOGO SOURCE"
+msgstr "LOGO SOURCE"
+
+msgid "HD WHEEL"
+msgstr "ROUE HD"
+
+msgid "WHEEL"
+msgstr "LOGO"
+
+msgid "MARQUEE"
+msgstr "BANNIÈRE"
+
+msgid "PREFERED REGION"
+msgstr "RÉGION PRÉFÉRÉE"
+
+msgid "AUTO"
+msgstr "AUTO"
+
+msgid "OVERWRITE NAMES"
+msgstr "ÉCRASER LES NOMS"
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr "ÉCRASER LES DESCRIPTIONS"
+
+msgid "OVERWRITE MEDIAS"
+msgstr "ÉCRASER LES MÉDIAS"
+
+msgid "SCRAPE FOR"
+msgstr "SCRAPER"
+
+msgid "SHORT NAME"
+msgstr "NOM COURT"
+
+msgid "COMMUNITY RATING"
+msgstr "NOTES"
+
+msgid "VIDEO"
+msgstr "VIDÉO"
+
+msgid "FANART"
+msgstr "FANART"
+
+msgid "BEZEL (16:9)"
+msgstr "DÉCORATION (16:9)"
+
+msgid "BOX BACKSIDE"
+msgstr "ARRIÈRE DES BOÎTES"
+
+msgid "MAP"
+msgstr "CARTE"
+
+msgid "MANUAL"
+msgstr "MANUEL"
+
+msgid "PADTOKEY SETTINGS"
+msgstr "PARAMÈTRES PADTOKEY"
+
+msgid "SCREENSCRAPER"
+msgstr "SCREENSCRAPER"
+
+msgid "IGDB"
+msgstr "IGDB"
+
+msgid "CLIENT ID"
+msgstr "ID CLIENT"
+
+msgid "CLIENT SECRET"
+msgstr "SECRET CLIENT"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -1031,9 +1149,6 @@ msgstr "CETTE FONCTION EST DÉSACTIVÉE LORSQU'UN SCRAPE EST EN COURS"
 msgid "CHOOSE"
 msgstr "CHOISIR"
 
-msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
-msgstr "L'INTERFACE A ETE DEVERROUILLÉE"
-
 msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr "SAISIR LE CODE DE DÉVERROUILLAGE"
 
@@ -1060,9 +1175,6 @@ msgstr "serveur dmd"
 
 msgid "FORMAT"
 msgstr "FORMAT"
-
-msgid "AUTO"
-msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "taille de la matrice dmd"
@@ -1539,6 +1651,9 @@ msgstr "OVERCLOCK"
 msgid "LED HARDWARE"
 msgstr "LEDS"
 
+msgid "ENABLE LED"
+msgstr "ACTIVE DEL"
+
 msgid "RED"
 msgstr "ROUGE"
 
@@ -1623,9 +1738,6 @@ msgstr "Paramètre actuel"
 
 msgid "UPDATE GAMELISTS"
 msgstr "METTRE À JOUR LES LISTES DE JEUX"
-
-msgid "ACCOUNTS"
-msgstr "COMPTE"
 
 msgid "BIOS SETTINGS"
 msgstr "RÉGLAGES DU BIOS"
@@ -1967,6 +2079,12 @@ msgstr "JOUER LES MUSIQUES DU THÈME"
 msgid "LOWER MUSIC WHEN PLAYING VIDEO"
 msgstr "BAISSER LA MUSIQUE SI UNE VIDÉO EST EN COURS"
 
+msgid "PLAY ONLY SONGS FROM YOUR FAVORITES PLAYLIST"
+msgstr "LIRE UNIQUEMENT LES MUSIQUES DE VOTRE PLAYLIST DES FAVORIS"
+
+msgid "SELECTION OF FAVORITE SONGS"
+msgstr "SÉLECTION DE MUSIQUES FAVORITES"
+
 msgid "SOUNDS"
 msgstr "SONS"
 
@@ -2000,6 +2118,9 @@ msgstr "NOM DU RÉSEAU WIFI"
 msgid "WIFI KEY"
 msgstr "CLÉ WIFI"
 
+msgid "WIFI COUNTRY"
+msgstr "WIFI PAYS"
+
 msgid "WIFI ENABLED"
 msgstr "WIFI ACTIVÉ"
 
@@ -2014,6 +2135,12 @@ msgstr "PASSER A LA MUSIQUE SUIVANTE"
 
 msgid "NOW PLAYING"
 msgstr "A L’ÉCOUTE"
+
+msgid "REMOVE CURRENT SONG FROM THE FAVORITES PLAYLIST"
+msgstr "SUPPRIMER LA MUSIQUE ACTUELLE DE LA PLAYLIST DES FAVORIS"
+
+msgid "SAVE CURRENT SONG TO THE FAVORITES PLAYLIST"
+msgstr "ENREGISTRER LA MUSIQUE ACTUELLE DANS LA PLAYLIST DES FAVORIS"
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "LANCER L'ÉCONOMISEUR D'ÉCRAN"
@@ -2236,9 +2363,6 @@ msgstr "AJOUTER À UNE COLLECTION..."
 msgid "DELETE COLLECTION"
 msgstr "SUPPRIMER LA COLLECTION"
 
-msgid "SCRAPE"
-msgstr "SCRAPER"
-
 msgid "ADVANCED GAME OPTIONS"
 msgstr "CONFIGURATION AVANCÉE DU JEU"
 
@@ -2262,87 +2386,6 @@ msgstr "ASSOCIER UN PÉRIPHÉRIQUE BLUETOOTH"
 
 msgid "PAIR"
 msgstr "ASSOCIER"
-
-msgid "IMAGE SOURCE"
-msgstr "IMAGE SOURCE"
-
-msgid "SCREENSHOT"
-msgstr "IMAGE EN JEU"
-
-msgid "TITLE SCREENSHOT"
-msgstr "IMAGE TITRE"
-
-msgid "MIX V1"
-msgstr "MIX D'IMAGES V1"
-
-msgid "MIX V2"
-msgstr "MIX D'IMAGES V2"
-
-msgid "BOX 2D"
-msgstr "BOÎTE 2D"
-
-msgid "BOX 3D"
-msgstr "BOÎTE 3D"
-
-msgid "FAN ART"
-msgstr "FANART"
-
-msgid "BOX SOURCE"
-msgstr "BOÎTE SOURCE"
-
-msgid "LOGO SOURCE"
-msgstr "LOGO SOURCE"
-
-msgid "WHEEL"
-msgstr "LOGO"
-
-msgid "MARQUEE"
-msgstr "BANNIÈRE"
-
-msgid "PREFERED REGION"
-msgstr "RÉGION PRÉFÉRÉE"
-
-msgid "OVERWRITE NAMES"
-msgstr "ÉCRASER LES NOMS"
-
-msgid "OVERWRITE DESCRIPTIONS"
-msgstr "ÉCRASER LES DESCRIPTIONS"
-
-msgid "OVERWRITE MEDIAS"
-msgstr "ÉCRASER LES MÉDIAS"
-
-msgid "SCRAPE FOR"
-msgstr "SCRAPER"
-
-msgid "SHORT NAME"
-msgstr "NOM COURT"
-
-msgid "COMMUNITY RATING"
-msgstr "NOTES"
-
-msgid "VIDEO"
-msgstr "VIDÉO"
-
-msgid "FANART"
-msgstr "FANART"
-
-msgid "BEZEL (16:9)"
-msgstr "DÉCORATION (16:9)"
-
-msgid "BOX BACKSIDE"
-msgstr "ARRIÈRE DES BOÎTES"
-
-msgid "MAP"
-msgstr "CARTE"
-
-msgid "MANUAL"
-msgstr "MANUEL"
-
-msgid "PADTOKEY SETTINGS"
-msgstr "PARAMÈTRES PADTOKEY"
-
-msgid "ACCOUNT"
-msgstr "COMPTE"
 
 msgid "NO DEVICE FOUND"
 msgstr "PAS DE PÉRIPHÉRIQUE TROUVÉ"
@@ -2561,6 +2604,9 @@ msgstr ""
 "CERTAINS FICHIERS LIÉS SONT SITUÉS EN DEHORS DU CHEMIN DE LA LISTE DE JEUX.\n"
 "VOULEZ-VOUS UTILISER UNE COPIE DE CES FICHIERS RELATIFS À LA LISTE DE JEUX ?"
 
+msgid "FAVORITE SONGS"
+msgstr "MUSIQUES FAVORITES"
+
 msgid "CONNECT TO NETPLAY"
 msgstr "REJOINDRE UNE PARTIE EN RÉSEAU"
 
@@ -2674,11 +2720,131 @@ msgstr "DESSINER LA MIRE DU PISTOLET"
 msgid "BEHAVIOR"
 msgstr "COMPORTEMENT"
 
-msgid "RESTRICT HOTKEYS TO EXIT"
-msgstr "RESTREINDRE LES HOTKEYS À EXIT"
+msgid "JOYSTICKS HOTKEYS"
+msgstr "RACCOURCIS MANETTE"
+
+msgid "RESTRICT JOYSTICKS HOTKEYS TO EXIT"
+msgstr ""
+
+msgid "GLOBAL HOTKEYS"
+msgstr ""
 
 msgid "default"
 msgstr "par défaut"
+
+msgid "SOUTH"
+msgstr "SUD"
+
+msgid "EAST"
+msgstr "EST"
+
+msgid "NORTH"
+msgstr "NORD"
+
+msgid "WEST"
+msgstr "OUEST"
+
+msgid "D-PAD UP"
+msgstr "PAD DIRECTIONNEL HAUT"
+
+msgid "D-PAD DOWN"
+msgstr "PAD DIRECTIONNEL BAS"
+
+msgid "D-PAD LEFT"
+msgstr "PAD DIRECTIONNEL GAUCHE"
+
+msgid "D-PAD RIGHT"
+msgstr "PAD DIRECTIONNEL DROITE"
+
+msgid "LEFT SHOULDER"
+msgstr "L1"
+
+msgid "RIGHT SHOULDER"
+msgstr "R1"
+
+msgid "LEFT TRIGGER"
+msgstr "L2"
+
+msgid "RIGHT TRIGGER"
+msgstr "R2"
+
+msgid "LEFT STICK PRESS"
+msgstr "PRESSION MANETTE GAUCHE"
+
+msgid "RIGHT STICK PRESS"
+msgstr "PRESSION MANETTE DROITE"
+
+msgid "OVERLAYS"
+msgstr "DÉCORATIONS"
+
+msgid "BRIGHTNESS CYCLE"
+msgstr "CYCLE DE LUMINOSITÉ"
+
+msgid "COIN"
+msgstr "PIÈCE"
+
+msgid "EXIT"
+msgstr "SORTIE"
+
+msgid "FAST FORWARD"
+msgstr "AVANCE RAPIDE"
+
+msgid "MENU"
+msgstr "MENU"
+
+msgid "NEXT DISK"
+msgstr "DISQUE SUIVANT"
+
+msgid "NEXT SLOT"
+msgstr "EMPLACEMENT SUIVANT"
+
+msgid "PAUSE"
+msgstr "PAUSE"
+
+msgid "PREVIOUS SLOT"
+msgstr "EMPLACEMENT PRÉCÉDENT"
+
+msgid "RESTORE STATE"
+msgstr "RESTAURE ÉTAT"
+
+msgid "SAVE STATE"
+msgstr "ENREGISTRER ÉTAT"
+
+msgid "SCREEN LAYOUT"
+msgstr "DISPOSITION DE L'ÉCRAN"
+
+msgid "SWAP SCREEN"
+msgstr "CHANGER D'ÉCRAN"
+
+msgid "TRANSLATION"
+msgstr "TRADUCTION"
+
+msgid "VOLUME DOWN"
+msgstr "VOLUME BAS"
+
+msgid "VOLUME MUTE"
+msgstr "SOURDINE"
+
+msgid "VOLUME UP"
+msgstr "VOLUME HAUT"
+
+msgid "HOTKEY"
+msgstr "TOUCHE DE RACCOURCI"
+
+msgid "FILES"
+msgstr "FICHIERS"
+
+msgid "DECLARE A NEW GLOBAL HOTKEY"
+msgstr ""
+
+msgid "YOU'VE 4 SECONDS TO PRESS EXACTLY 2 TIMES THE GLOBAL HOTKEY"
+msgstr ""
+
+msgid "NO GLOBAL HOTKEY DETECTED"
+msgstr ""
+
+msgid "MORE THAN ONE GLOBAL HOTKEY DETECTED"
+msgstr ""
 
 msgid "BORDER SIZE"
 msgstr "ÉPAISSEUR DE LA BORDURE"
@@ -3013,9 +3179,6 @@ msgstr[1] "%i JEUX"
 msgid "NAVIGATION BAR"
 msgstr "VOLET NAVIGATION"
 
-msgid "FILES"
-msgstr "FICHIERS"
-
 msgid ""
 "WARNING: THE EMULATOR/CORE CURRENTLY SET DOES NOT SUPPORT THIS GAME'S FILE "
 "FORMAT.\n"
@@ -3042,9 +3205,6 @@ msgstr "Chargement du thème"
 
 msgid "Loading gamelists"
 msgstr "Chargement des listes de jeux"
-
-msgid "MENU"
-msgstr "MENU"
 
 msgid "GENRE"
 msgstr "GENRE"
@@ -3099,6 +3259,9 @@ msgstr "MEDIAS MANQUANTS"
 
 msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
 msgstr "VOULEZ-VOUS CHANGER D'ÉCRAN ?"
+
+msgid "INVALID CREDENTIALS"
+msgstr "IDENTIFIANTS INVALIDES"
 
 msgid "SCRAPING"
 msgstr "SCRAPE"
@@ -3586,6 +3749,18 @@ msgid ""
 msgstr ""
 "CALIBRATION DU PISTOLET\n"
 "Tirer sur les cibles pour calibrer"
+
+#~ msgid "RESTRICT HOTKEYS TO EXIT"
+#~ msgstr "RESTREINDRE LES HOTKEYS À EXIT"
+
+#~ msgid "SCRAPER SETTINGS"
+#~ msgstr "OPTIONS DU SCRAPEUR"
+
+#~ msgid "ACCOUNT"
+#~ msgstr "COMPTE"
+
+#~ msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
+#~ msgstr "L'INTERFACE A ETE DEVERROUILLÉE"
 
 #~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
 #~ msgstr "OPTIONS DES PARTIES EN RÉSEAU AU LANCEMENT D'UN JEU"

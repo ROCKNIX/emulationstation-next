@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-03 10:05+0100\n"
+"PO-Revision-Date: 2025-10-01 20:59+0200\n"
 "Last-Translator: Szoldán Albert\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.7\n"
 
 msgid "SCANNING BLUETOOTH"
 msgstr "BLUETOOTH KERESÉS"
@@ -501,11 +501,23 @@ msgstr "FELHASZNÁLÓI TÁRHELY HASZNÁLAT"
 msgid "SYSTEM DISK USAGE"
 msgstr "RENDSZER TÁRHELY HASZNÁLAT"
 
+msgid "DISK USAGE"
+msgstr ""
+
 msgid "SYSTEM"
 msgstr "RENDSZER"
 
 msgid "VIDEO DRIVER"
 msgstr "VIDEÓ ILLESZTŐPROGRAM"
+
+msgid "PARIS"
+msgstr ""
+
+msgid "OSAKA"
+msgstr ""
+
+msgid "SEOUL"
+msgstr "Szöul"
 
 msgid "NETPLAY SETTINGS"
 msgstr "NETPLAY BEÁLLÍTÁSOK"
@@ -524,6 +536,33 @@ msgstr "BEÁLLÍTÁSOK"
 
 msgid "PORT"
 msgstr "PORT"
+
+msgid "AUTOMATICALLY CREATE LOBBY"
+msgstr "AUTOMATIKUSAN LÉTREHOZZA A LOBBIT"
+
+msgid "Automatically creates a Netplay lobby when starting a game."
+msgstr "A játék indításakor automatikusan létrehoz egy Netplay-lobbit."
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr "CSAK RELAY SZERVER JÁTÉKOK MUTATÁSA"
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr "Relay szerver játékoknak nagyobb az esélyük a sikeres csatlakozáshoz."
+
+msgid "SHOW UNAVAILABLE GAMES"
+msgstr "NEM ELÉRHETŐ JÁTÉKOK MEGJELENÍTÉSE"
+
+msgid "Show rooms for games not present on this machine."
+msgstr "Mutasd meg a gépen nem található játékok szobáit."
+
+msgid "GAME INDEXES"
+msgstr "JÁTÉK INDEXEK"
+
+msgid "INDEX NEW GAMES AT STARTUP"
+msgstr "ÚJ JÁTÉKOK INDEXELÉSE INDÍTÁSKOR"
+
+msgid "INDEX GAMES"
+msgstr "INDEX JÁTÉKOK"
 
 msgid "USE RELAY SERVER"
 msgstr "RELAY SZERVER HASZNÁLATA"
@@ -548,33 +587,6 @@ msgstr "EGYEDI"
 
 msgid "CUSTOM RELAY SERVER"
 msgstr "EGYÉNI RELAY SZERVER"
-
-msgid "AUTOMATICALLY CREATE LOBBY"
-msgstr ""
-
-msgid "Automatically creates a Netplay lobby when starting a game."
-msgstr ""
-
-msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr "CSAK RELAY SZERVER JÁTÉKOK MUTATÁSA"
-
-msgid "Relay server games have a higher chance of successful entry."
-msgstr "Relay szerver játékoknak nagyobb az esélyük a sikeres csatlakozáshoz."
-
-msgid "SHOW UNAVAILABLE GAMES"
-msgstr "NEM ELÉRHETŐ JÁTÉKOK MEGJELENÍTÉSE"
-
-msgid "Show rooms for games not present on this machine."
-msgstr "Mutasd meg a gépen nem található játékok szobáit."
-
-msgid "GAME INDEXES"
-msgstr "JÁTÉK INDEXEK"
-
-msgid "INDEX NEW GAMES AT STARTUP"
-msgstr "ÚJ JÁTÉKOK INDEXELÉSE INDÍTÁSKOR"
-
-msgid "INDEX GAMES"
-msgstr "INDEX JÁTÉKOK"
 
 msgid "INPUT"
 msgstr "BEMENET"
@@ -667,6 +679,12 @@ msgid ""
 msgstr ""
 "Ikonok jelennek meg a jobb alsó sarokban, amikor eredményeket lehet szerezni."
 
+msgid "UNOFFICIAL ACHIEVEMENTS"
+msgstr "NEM HIVATALOS EREDMÉNYEK"
+
+msgid "Enable unlocking of unofficial achievements."
+msgstr "Nem hivatalos eredmények feloldásának engedélyezése."
+
 msgid "RETROACHIEVEMENT UNLOCK SOUND"
 msgstr "RETROACHIEVEMENT FELOLDÁS HANG"
 
@@ -750,6 +768,15 @@ msgstr "NINCS FRISSÍTÉS"
 msgid "SCRAPER"
 msgstr "SCRAPER"
 
+msgid "SCRAPE"
+msgstr "LEKÉRÉS"
+
+msgid "ACCOUNTS"
+msgstr "FIÓKOK"
+
+msgid "go back"
+msgstr "vissza"
+
 msgid "SCRAPING DATABASE"
 msgstr "LEKÉRŐ ADATBÁZIS"
 
@@ -758,9 +785,6 @@ msgstr "FORRÁS"
 
 msgid "SCRAPE FROM"
 msgstr "LEKÉRÉS INNEN"
-
-msgid "SCRAPER SETTINGS"
-msgstr "LEKÉRDEZÉS BEÁLLTÁS"
 
 msgid "FILTERS"
 msgstr "SZŰRŐK"
@@ -807,8 +831,101 @@ msgstr "LEKÉRÉS INDÍTÁSA"
 msgid "START"
 msgstr "START"
 
-msgid "go back"
-msgstr "vissza"
+msgid "IMAGE SOURCE"
+msgstr "KÉP FORRÁSA"
+
+msgid "SCREENSHOT"
+msgstr "KÉPERNYŐKÉP"
+
+msgid "TITLE SCREENSHOT"
+msgstr "KEZDŐKÉPERNYŐ KÉP"
+
+msgid "MIX V1"
+msgstr "MIX V1"
+
+msgid "MIX V2"
+msgstr "MIX V2"
+
+msgid "BOX 2D"
+msgstr "DOBOZ 2D"
+
+msgid "BOX 3D"
+msgstr "DOBOZ 3D"
+
+msgid "FAN ART"
+msgstr "RAJONGÓI KÉP"
+
+msgid "BOX SOURCE"
+msgstr "DOBOZ FORRÁSA"
+
+msgid "LOGO SOURCE"
+msgstr "LOGO FORRÁSA"
+
+msgid "HD WHEEL"
+msgstr "HD KERÉK"
+
+msgid "WHEEL"
+msgstr "KERÉK"
+
+msgid "MARQUEE"
+msgstr "MARQUEE"
+
+msgid "PREFERED REGION"
+msgstr "ELŐNYBEN RÉSZESÍTETT RÉGIÓ"
+
+msgid "AUTO"
+msgstr "AUTO"
+
+msgid "OVERWRITE NAMES"
+msgstr "NEVEK FELÜLÍRÁSA"
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr "A LEÍRÁSOK FELÜLÍRÁSA"
+
+msgid "OVERWRITE MEDIAS"
+msgstr "MÉDIÁK FELÜLÍRÁSA"
+
+msgid "SCRAPE FOR"
+msgstr "LEKÉRÉS"
+
+msgid "SHORT NAME"
+msgstr "RÖVID NÉV"
+
+msgid "COMMUNITY RATING"
+msgstr "KÖZÖSSÉGI ÉRTÉKELÉS"
+
+msgid "VIDEO"
+msgstr "VIDEO"
+
+msgid "FANART"
+msgstr "RAJONGÓI ALKOTÁS"
+
+msgid "BEZEL (16:9)"
+msgstr "KERET (16:9)"
+
+msgid "BOX BACKSIDE"
+msgstr "DOBOZ HÁTOLDAL"
+
+msgid "MAP"
+msgstr "TÉRKÉP"
+
+msgid "MANUAL"
+msgstr "KÉZIKÖNYV"
+
+msgid "PADTOKEY SETTINGS"
+msgstr "PADTOKEY BEÁLLÍTÁSOK"
+
+msgid "SCREENSCRAPER"
+msgstr "SCREENSCRAPER"
+
+msgid "IGDB"
+msgstr "IGDB"
+
+msgid "CLIENT ID"
+msgstr "KLIENS ID"
+
+msgid "CLIENT SECRET"
+msgstr "KLIENS JELSZÓ"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -1028,9 +1145,6 @@ msgstr "EZ A FUNKCIÓ LE VAN TILTVA, AMÍG A LEKÉRÉS FUT"
 msgid "CHOOSE"
 msgstr "VÁLASZT"
 
-msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
-msgstr "A FELHASZNÁLÓI FELÜLET MÓD MOST MÁR FEL VAN OLDVA"
-
 msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr "ÍRJA BE MOST A KÓDOT A FELOLDÁSHOZ"
 
@@ -1057,9 +1171,6 @@ msgstr "dmd szerver"
 
 msgid "FORMAT"
 msgstr "FORMÁTUM"
-
-msgid "AUTO"
-msgstr "AUTO"
 
 msgid "dmd matrix size"
 msgstr "dmd mátrix méret"
@@ -1546,6 +1657,9 @@ msgstr "OVERCLOCK"
 msgid "LED HARDWARE"
 msgstr "LED HARDWARE"
 
+msgid "ENABLE LED"
+msgstr ""
+
 msgid "RED"
 msgstr "PIROS"
 
@@ -1629,9 +1743,6 @@ msgstr "Aktuális beállítás"
 
 msgid "UPDATE GAMELISTS"
 msgstr "JÁTÉKLISTÁK FRISSÍTÉSE"
-
-msgid "ACCOUNTS"
-msgstr "FIÓKOK"
 
 msgid "BIOS SETTINGS"
 msgstr "BIOS BEÁLLÍTÁSOK"
@@ -1974,6 +2085,12 @@ msgstr "TÉMÁHOZ TARTOZÓ ZENE LEJÁTSZÁSA"
 msgid "LOWER MUSIC WHEN PLAYING VIDEO"
 msgstr "VIDEÓ LEJÁTSZÁSAKOR A ZENE HANGEREJÉNEK LEJJEBB VÉTELE"
 
+msgid "PLAY ONLY SONGS FROM YOUR FAVORITES PLAYLIST"
+msgstr "CSAK A KEDVENCEK LEJÁTSZÁSI LISTÁJÁBÓL JÁTSZON LE DALOKAT"
+
+msgid "SELECTION OF FAVORITE SONGS"
+msgstr "KEDVENC DALOK KIVÁLASZTÁSA"
+
 msgid "SOUNDS"
 msgstr "HANGOK"
 
@@ -2007,6 +2124,9 @@ msgstr "WIFI SSID"
 msgid "WIFI KEY"
 msgstr "WIFI JELSZÓ"
 
+msgid "WIFI COUNTRY"
+msgstr ""
+
 msgid "WIFI ENABLED"
 msgstr "WIFI ENGEDÉLYEZVE"
 
@@ -2021,6 +2141,12 @@ msgstr "UGRÁS A KÖVETKEZŐ DALRA"
 
 msgid "NOW PLAYING"
 msgstr "MOST JÁTSZOTT"
+
+msgid "REMOVE CURRENT SONG FROM THE FAVORITES PLAYLIST"
+msgstr "JELENLEGI DAL ELTÁVOLÍTÁSA A KEDVENCEK LEJÁTSZÁSI LISTÁJÁBÓL"
+
+msgid "SAVE CURRENT SONG TO THE FAVORITES PLAYLIST"
+msgstr "JELENLEGI DAL MENTÉSE A KEDVENCEK LEJÁTSZÁSI LISTÁJÁBA"
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "KÉPERNYŐVÉDŐ INDÍTÁSA"
@@ -2244,9 +2370,6 @@ msgstr "HOZZÁADÁS EGYEDI GYŰJTEMÉNYHEZ..."
 msgid "DELETE COLLECTION"
 msgstr "GYŰJTEMÉNY TÖRLÉSE"
 
-msgid "SCRAPE"
-msgstr "LEKÉRÉS"
-
 msgid "ADVANCED GAME OPTIONS"
 msgstr "HALADÓ JÁTÉK BEÁLLÍTÁSOK"
 
@@ -2270,87 +2393,6 @@ msgstr "BLUETOOTH-ESZKÖZ PÁROSÍTÁSA"
 
 msgid "PAIR"
 msgstr "PÁR"
-
-msgid "IMAGE SOURCE"
-msgstr "KÉP FORRÁSA"
-
-msgid "SCREENSHOT"
-msgstr "KÉPERNYŐKÉP"
-
-msgid "TITLE SCREENSHOT"
-msgstr "KEZDŐKÉPERNYŐ KÉP"
-
-msgid "MIX V1"
-msgstr "MIX V1"
-
-msgid "MIX V2"
-msgstr "MIX V2"
-
-msgid "BOX 2D"
-msgstr "DOBOZ 2D"
-
-msgid "BOX 3D"
-msgstr "DOBOZ 3D"
-
-msgid "FAN ART"
-msgstr "RAJONGÓI KÉP"
-
-msgid "BOX SOURCE"
-msgstr "DOBOZ FORRÁSA"
-
-msgid "LOGO SOURCE"
-msgstr "LOGO FORRÁSA"
-
-msgid "WHEEL"
-msgstr "KERÉK"
-
-msgid "MARQUEE"
-msgstr "MARQUEE"
-
-msgid "PREFERED REGION"
-msgstr "ELŐNYBEN RÉSZESÍTETT RÉGIÓ"
-
-msgid "OVERWRITE NAMES"
-msgstr "NEVEK FELÜLÍRÁSA"
-
-msgid "OVERWRITE DESCRIPTIONS"
-msgstr "A LEÍRÁSOK FELÜLÍRÁSA"
-
-msgid "OVERWRITE MEDIAS"
-msgstr "MÉDIÁK FELÜLÍRÁSA"
-
-msgid "SCRAPE FOR"
-msgstr "LEKÉRÉS"
-
-msgid "SHORT NAME"
-msgstr "RÖVID NÉV"
-
-msgid "COMMUNITY RATING"
-msgstr "KÖZÖSSÉGI ÉRTÉKELÉS"
-
-msgid "VIDEO"
-msgstr "VIDEO"
-
-msgid "FANART"
-msgstr "RAJONGÓI ALKOTÁS"
-
-msgid "BEZEL (16:9)"
-msgstr "KERET (16:9)"
-
-msgid "BOX BACKSIDE"
-msgstr "DOBOZ HÁTOLDAL"
-
-msgid "MAP"
-msgstr "TÉRKÉP"
-
-msgid "MANUAL"
-msgstr "KÉZIKÖNYV"
-
-msgid "PADTOKEY SETTINGS"
-msgstr "PADTOKEY BEÁLLÍTÁSOK"
-
-msgid "ACCOUNT"
-msgstr "FIÓK"
 
 msgid "NO DEVICE FOUND"
 msgstr "ESZKÖZ NEM TALÁLHATÓ"
@@ -2570,6 +2612,9 @@ msgstr ""
 "NÉHÁNY FÁJL A JÁTÉLKLISTA ELÉRHETŐSÉGI ÚTJÁN KÍVÜL TALÁLHATÓ MAG.\n"
 "AKARSZ EZEKBŐL MÁSOLATOT HASZNÁLNI, AMI RELATÍV A JÁTÉKLISTÁHOZ KÉPEST?"
 
+msgid "FAVORITE SONGS"
+msgstr "KEDVENC DALOK"
+
 msgid "CONNECT TO NETPLAY"
 msgstr "CSATLAKOZÁS NETPLAY-HEZ"
 
@@ -2683,11 +2728,131 @@ msgstr "PISZTOLY CÉLKERESZTET RAJZOLÁS"
 msgid "BEHAVIOR"
 msgstr "VISELKEDÉS"
 
-msgid "RESTRICT HOTKEYS TO EXIT"
-msgstr "A KILÉPÉSHEZ SZÜKSÉGES GYORSBILLENTYŰK KORLÁTOZÁSA"
+msgid "JOYSTICKS HOTKEYS"
+msgstr ""
+
+msgid "RESTRICT JOYSTICKS HOTKEYS TO EXIT"
+msgstr ""
+
+msgid "GLOBAL HOTKEYS"
+msgstr ""
 
 msgid "default"
 msgstr "alap"
+
+msgid "SOUTH"
+msgstr ""
+
+msgid "EAST"
+msgstr ""
+
+msgid "NORTH"
+msgstr ""
+
+msgid "WEST"
+msgstr ""
+
+msgid "D-PAD UP"
+msgstr ""
+
+msgid "D-PAD DOWN"
+msgstr ""
+
+msgid "D-PAD LEFT"
+msgstr ""
+
+msgid "D-PAD RIGHT"
+msgstr ""
+
+msgid "LEFT SHOULDER"
+msgstr ""
+
+msgid "RIGHT SHOULDER"
+msgstr ""
+
+msgid "LEFT TRIGGER"
+msgstr ""
+
+msgid "RIGHT TRIGGER"
+msgstr ""
+
+msgid "LEFT STICK PRESS"
+msgstr ""
+
+msgid "RIGHT STICK PRESS"
+msgstr ""
+
+msgid "OVERLAYS"
+msgstr ""
+
+msgid "BRIGHTNESS CYCLE"
+msgstr ""
+
+msgid "COIN"
+msgstr ""
+
+msgid "EXIT"
+msgstr ""
+
+msgid "FAST FORWARD"
+msgstr ""
+
+msgid "MENU"
+msgstr "MENÜ"
+
+msgid "NEXT DISK"
+msgstr ""
+
+msgid "NEXT SLOT"
+msgstr ""
+
+msgid "PAUSE"
+msgstr ""
+
+msgid "PREVIOUS SLOT"
+msgstr ""
+
+msgid "RESTORE STATE"
+msgstr ""
+
+msgid "SAVE STATE"
+msgstr ""
+
+msgid "SCREEN LAYOUT"
+msgstr ""
+
+msgid "SWAP SCREEN"
+msgstr ""
+
+msgid "TRANSLATION"
+msgstr ""
+
+msgid "VOLUME DOWN"
+msgstr ""
+
+msgid "VOLUME MUTE"
+msgstr ""
+
+msgid "VOLUME UP"
+msgstr ""
+
+msgid "HOTKEY"
+msgstr ""
+
+msgid "FILES"
+msgstr "FÁJLOK"
+
+msgid "DECLARE A NEW GLOBAL HOTKEY"
+msgstr ""
+
+msgid "YOU'VE 4 SECONDS TO PRESS EXACTLY 2 TIMES THE GLOBAL HOTKEY"
+msgstr ""
+
+msgid "NO GLOBAL HOTKEY DETECTED"
+msgstr ""
+
+msgid "MORE THAN ONE GLOBAL HOTKEY DETECTED"
+msgstr ""
 
 msgid "BORDER SIZE"
 msgstr "SZEGÉLY MÉRETE"
@@ -3021,9 +3186,6 @@ msgstr[1] "%i JÁTÉK"
 msgid "NAVIGATION BAR"
 msgstr "NAVIGÁCIÓS SÁV"
 
-msgid "FILES"
-msgstr "FÁJLOK"
-
 msgid ""
 "WARNING: THE EMULATOR/CORE CURRENTLY SET DOES NOT SUPPORT THIS GAME'S FILE "
 "FORMAT.\n"
@@ -3050,9 +3212,6 @@ msgstr "Téma betöltése"
 
 msgid "Loading gamelists"
 msgstr "Játéklista betöltése"
-
-msgid "MENU"
-msgstr "MENÜ"
 
 msgid "GENRE"
 msgstr "MŰFAJ"
@@ -3107,6 +3266,9 @@ msgstr "HIÁNYZÓ MÉDIÁK"
 
 msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
 msgstr "SZERETNÉ VÁLTANI A KÉPERNYŐT?"
+
+msgid "INVALID CREDENTIALS"
+msgstr "ÉRVÉNYTELEN HITELESÍTŐADATOK"
 
 msgid "SCRAPING"
 msgstr "LEKÉRDEZÉS"
@@ -3595,6 +3757,18 @@ msgid ""
 msgstr ""
 "FEGYVER KALIBRÁCIÓ\n"
 "Tűz a kalibrálandó célpontokra"
+
+#~ msgid "RESTRICT HOTKEYS TO EXIT"
+#~ msgstr "A KILÉPÉSHEZ SZÜKSÉGES GYORSBILLENTYŰK KORLÁTOZÁSA"
+
+#~ msgid "SCRAPER SETTINGS"
+#~ msgstr "LEKÉRDEZÉS BEÁLLTÁS"
+
+#~ msgid "ACCOUNT"
+#~ msgstr "FIÓK"
+
+#~ msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
+#~ msgstr "A FELHASZNÁLÓI FELÜLET MÓD MOST MÁR FEL VAN OLDVA"
 
 #~ msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
 #~ msgstr "NETPLAY BEÁLLÍTÁSOK MEGJELENÍTÉSE JÁTÉK INDÍTÁSAKOR"
