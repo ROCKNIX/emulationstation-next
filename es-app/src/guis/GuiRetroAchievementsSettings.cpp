@@ -4,6 +4,7 @@
 #include "SystemConf.h"
 #include "ApiSystem.h"
 #include "RetroAchievements.h"
+#include "utils/Platform.h"
 
 #include "guis/GuiMsgBox.h"
 #include "components/SwitchComponent.h"
@@ -56,6 +57,20 @@ GuiRetroAchievementsSettings::GuiRetroAchievementsSettings(Window* window) : Gui
 		addSaveFunc([rsounds_choices] { SystemConf::getInstance()->set("global.retroachievements.sound", rsounds_choices->getSelected()); });
 	}
 
+#if defined(ROCKNIX)
+        if (Utils::Platform::GetEnv("DEVICE_ANALOG_STICKS_LED_CONTROL") == "true") {
+                // Enable LED Notifications
+                auto cheevos_led_enabled = std::make_shared<SwitchComponent>(mWindow);
+                bool cheevosledenabled = SystemConf::getInstance()->get("global.retroachievements.leds") == "1";
+                cheevos_led_enabled->setState(SystemConf::getInstance()->getBool("global.retroachievements.leds"));
+                //s->addWithLabel(_("LED NOTIFICATIONS"), cheevos_led_enabled);
+                addWithLabel(_("LED NOTIFICATIONS"), cheevos_led_enabled);
+                cheevos_led_enabled->setOnChangedCallback([cheevos_led_enabled] {
+                        bool cheevosledenabled = cheevos_led_enabled->getState();
+                                SystemConf::getInstance()->set("global.retroachievements.leds", cheevosledenabled ? "1" : "0");
+                });
+        }
+#endif
 	// retroachievements_hardcore_mode
 	addSwitch(_("SHOW RETROACHIEVEMENTS ENTRY IN MAIN MENU"), _("View your RetroAchievement stats right from the main menu!"), "RetroachievementsMenuitem", true, nullptr);
 

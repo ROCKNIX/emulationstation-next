@@ -1576,6 +1576,16 @@ void GuiMenu::openSystemSettings()
                 SystemConf::getInstance()->set("rocknix.touchscreen-keyboard.enabled", touchscreen_keyboard_state ? "1" : "0");
         });
       }
+
+      // Add toggle to enable / disabled ROCKNIX Screenshot
+      auto rocknix_screenshot_enabled = std::make_shared<SwitchComponent>(mWindow);
+      bool rocknixscreenshotenabled = SystemConf::getInstance()->get("rocknix.screenshot.enabled") == "1";
+      rocknix_screenshot_enabled->setState(SystemConf::getInstance()->getBool("rocknix.screenshot.enabled"));
+      s->addWithLabel(_("ENABLE ROCKNIX SCREENSHOT"), rocknix_screenshot_enabled);
+      rocknix_screenshot_enabled->setOnChangedCallback([rocknix_screenshot_enabled] {
+              bool rocknixscreenshotenabled = rocknix_screenshot_enabled->getState();
+                     SystemConf::getInstance()->set("rocknix.screenshot.enabled", rocknixscreenshotenabled ? "1" : "0");
+      });
 #endif
 	// KODI SETTINGS
 #ifdef _ENABLE_KODI_
