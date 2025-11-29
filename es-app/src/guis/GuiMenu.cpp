@@ -2029,15 +2029,24 @@ void GuiMenu::openSystemSettings()
 	});
 
 	// Add option to park cores on suspend
-	auto park_cores_toggle = std::make_shared<SwitchComponent>(mWindow);
-	bool internalmoduleEnabled = SystemConf::getInstance()->get("system.suspend.park_cores") == "1";
-	park_cores_toggle->setState(internalmoduleEnabled);
-	s->addWithLabel(_("ENABLE CORE PARKING"), park_cores_toggle);
-	park_cores_toggle->setOnChangedCallback([park_cores_toggle] {
-		bool park_cores_state = park_cores_toggle->getState();
-		SystemConf::getInstance()->set("system.suspend.park_cores", park_cores_state ? "1" : "0");
+	auto optionsSuspendParkCores = std::make_shared<SwitchComponent>(mWindow);
+	bool suspendParkCoresEnabled = SystemConf::getInstance()->get("system.suspend.park_cores") == "1";
+	optionsSuspendParkCores->setState(suspendParkCoresEnabled);
+	s->addWithLabel(_("ENABLE CORE PARKING"), optionsSuspendParkCores);
+	optionsSuspendParkCores->setOnChangedCallback([optionsSuspendParkCores] {
+		bool suspendParkCoresState = optionsSuspendParkCores->getState();
+		SystemConf::getInstance()->set("system.suspend.park_cores", suspendParkCoresState ? "1" : "0");
 	});
-	
+
+	// Add option to use DPMS on suspend
+	auto optionsSuspendDpms = std::make_shared<SwitchComponent>(mWindow);
+	bool suspendDpmsEnabled = SystemConf::getInstance()->get("system.suspend.dpms") == "1";
+	optionsSuspendDpms->setState(suspendDpmsEnabled);
+	s->addWithLabel(_("ENABLE DPMS"), optionsSuspendDpms);
+	optionsSuspendDpms->setOnChangedCallback([optionsSuspendDpms] {
+		bool suspendDpmsState = optionsSuspendDpms->getState();
+		SystemConf::getInstance()->set("system.suspend.dpms", suspendDpmsState ? "1" : "0");
+	});
 #endif
 
 #ifdef BATOCERA
