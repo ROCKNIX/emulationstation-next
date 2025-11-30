@@ -338,7 +338,7 @@ GuiMoonlight::GuiMoonlight(Window* window)
 	});
 
 	addGroup(_("SETTINGS"));
-  addInputTextRow(_("SERVER IP"), "moonlight.host", false);
+  addInputTextConfigRow(_("SERVER IP"), "moonlight.host", false);
   addWithLabel(_("PAIRING PIN"), pinUI);
 }
 

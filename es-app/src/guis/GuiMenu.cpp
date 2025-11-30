@@ -2593,7 +2593,7 @@ void GuiMenu::openSystemSettings()
 		{
 			GuiSettings *securityGui = new GuiSettings(mWindow, _("SECURITY").c_str());
 			auto rootpassword = std::make_shared<TextComponent>(mWindow, SystemConf::getInstance()->get("root.password"), ThemeData::getMenuTheme()->Text.font, ThemeData::getMenuTheme()->Text.color);
-			securityGui->addInputTextRow(_("ROOT PASSWORD"), "root.password", false);
+			securityGui->addInputTextConfigRow(_("ROOT PASSWORD"), "root.password", false);
 
 			securityGui->addSaveFunc([this, rootpassword] {
 				SystemConf::getInstance()->saveSystemConf();
@@ -2887,13 +2887,13 @@ void GuiMenu::addFeatureItem(Window* window, GuiSettings* settings, const Custom
 			
 	if (feat.preset == "input")
 	{
-		settings->addInputTextRow(pgettext("game_options", feat.name.c_str()), storageName, false);
+		settings->addInputTextConfigRow(pgettext("game_options", feat.name.c_str()), storageName, false);
 		return;
 	}
 	
 	if (feat.preset == "password")
 	{
-		settings->addInputTextRow(pgettext("game_options", feat.name.c_str()), storageName, true);
+		settings->addInputTextConfigRow(pgettext("game_options", feat.name.c_str()), storageName, true);
 		return;
 	}
 	
@@ -3624,7 +3624,7 @@ void GuiMenu::openGamesSettings()
 						SystemConf::getInstance()->saveSystemConf();
 						}
 						});
-				decorations_window->addInputTextRow(_("CUSTOM .PNG IMAGE PATH"), "global.bezel.tattoo_file", false);
+				decorations_window->addInputTextConfigRow(_("CUSTOM .PNG IMAGE PATH"), "global.bezel.tattoo_file", false);
 
 				auto bezel_resize_tattoo = std::make_shared<SwitchComponent>(mWindow);
 				bezel_resize_tattoo->setState(SystemConf::getInstance()->getBool("global.bezel.resize_tattoo"));
@@ -3692,7 +3692,7 @@ void GuiMenu::openGamesSettings()
 			ai_service->addWithLabel(_("TARGET LANGUAGE"), lang_choices);
 
 			// Service  URL
-			ai_service->addInputTextRow(_("AI TRANSLATION SERVICE URL"), "global.ai_service_url", false);
+			ai_service->addInputTextConfigRow(_("AI TRANSLATION SERVICE URL"), "global.ai_service_url", false);
 
 			// Pause game for translation?
 			auto ai_service_pause = std::make_shared<SwitchComponent>(mWindow);
@@ -4995,7 +4995,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 
 #if !WIN32
 	// Hostname
-	s->addInputTextRow(_("HOSTNAME"), "system.hostname", false);
+	s->addInputTextConfigRow(_("HOSTNAME"), "system.hostname", false);
 #endif
 
 	// Wifi enable
@@ -5035,8 +5035,8 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	{
 		if (!baseAdhocEnabled)
 		{
-			s->addInputTextRow(_("WIFI SSID"), "wifi.ssid", false, false, &openWifiSettings);
-			s->addInputTextRow(_("WIFI KEY"), "wifi.key", true);
+			s->addInputTextConfigRow(_("WIFI SSID"), "wifi.ssid", false, false, &openWifiSettings);
+			s->addInputTextConfigRow(_("WIFI KEY"), "wifi.key", true);
 
 #if !WIN32
 		        // Batocera-specific WIFI COUNTRY option
@@ -5889,7 +5889,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 
 				std::string tatpath = configName + ".bezel.tattoo_file";
 				const char *bezelpath = const_cast<char*>(tatpath.data());
-				decorations_window->addInputTextRow(_("CUSTOM .PNG IMAGE PATH"), bezelpath, false);
+				decorations_window->addInputTextConfigRow(_("CUSTOM .PNG IMAGE PATH"), bezelpath, false);
 
 				mWindow->pushGui(decorations_window);
 			});

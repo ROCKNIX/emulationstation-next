@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2025-11-02 15:13+0000\n"
+"PO-Revision-Date: 2025-11-17 10:12+0000\n"
 "Last-Translator: THa MuSHeR\n"
 "Language-Team: Dutch (Netherlands)\n"
 "Language: nl-NL\n"
@@ -945,6 +945,98 @@ msgstr "BEZIG MET SCRAPEN. WILT U DIT STOPPEN?"
 msgid "NO GAMES FIT THAT CRITERIA."
 msgstr "GEEN SPELLEN DIE AAN DIE CRITERIA VOLDOEN."
 
+msgid "KEYBOARDTOPADS"
+msgstr "KEYBOARDTOPADS"
+
+msgid "HOTKEYS"
+msgstr "SNELTOETSEN"
+
+msgid "KEYS DEFINED BUT JOYSTICK NOT NAMED"
+msgstr "TOETSEN GEDEFINIEERD MAAR JOYSTICK GEEN NAAM"
+
+msgid "JOYSTICK NAMED BUT NO KEYS DEFINED"
+msgstr "JOYSTICK MET NAAM MAAR GEEN TOETSEN GEDEFINIEERD"
+
+msgid "UNPLUG AND REPLUG THE DEVICE TO APPLY"
+msgstr ""
+"HAAL DE STEKKER UIT HET APPARAAT EN SLUIT HET DAARNA WEER AAN OM TOE TE "
+"PASSEN"
+
+msgid "JOYSTICK NAME"
+msgstr "JOYSTICK NAAM"
+
+msgid "PRESS A KEY OR WAIT 4 SECONDS TO CLEAR"
+msgstr "DRUK OP EEN TOETS OF WACHT 4 SECONDEN OM TE WISSEN"
+
+msgid "OVERLAYS"
+msgstr "OVERLAYS"
+
+msgid "BRIGHTNESS CYCLE"
+msgstr "HELDERHEIDSCYCLUS"
+
+msgid "COIN"
+msgstr "COIN"
+
+msgid "EXIT"
+msgstr "AFSLUITEN"
+
+msgid "FAST FORWARD"
+msgstr "SNEL VOORUIT"
+
+msgid "MENU"
+msgstr "MENU"
+
+msgid "FILES"
+msgstr "BESTANDEN"
+
+msgid "NEXT DISK"
+msgstr "VOLGENDE SCHIJF"
+
+msgid "NEXT SLOT"
+msgstr "VOLGENDE SLOT"
+
+msgid "PAUSE"
+msgstr "PAUZE"
+
+msgid "PREVIOUS SLOT"
+msgstr "VORIG SLOT"
+
+msgid "RESET"
+msgstr "RESET"
+
+msgid "RESTORE STATE"
+msgstr "HERSTEL STAAT"
+
+msgid "REWIND"
+msgstr "TERUGSPOELEN"
+
+msgid "SAVE STATE"
+msgstr "STAAT OPSLAAN"
+
+msgid "SCREEN LAYOUT"
+msgstr "SCHERM LAY-OUT"
+
+msgid "SWAP SCREEN"
+msgstr "SWAP SCHERM"
+
+msgid "TRANSLATION"
+msgstr "VERTALING"
+
+msgid "VOLUME DOWN"
+msgstr "VOLUME ONLAAG"
+
+msgid "VOLUME MUTE"
+msgstr "VOLUME MUTE"
+
+msgid "VOLUME UP"
+msgstr "VOLUME OMHOOG"
+
+msgid "CONTROL CENTER"
+msgstr "CONTROLE CENTRUM"
+
+msgid "KEY ASSIGNED TWICE"
+msgstr "TOETS TWEE KEER TOEGEWEZEN"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALLEER OP EEN NIEUWE SCHIJF"
 
@@ -1815,9 +1907,6 @@ msgstr ""
 msgid "SMOOTH GAMES (BILINEAR FILTERING)"
 msgstr "SPELLEN GLADDER MAKEN (BILINEAR FILTERING)"
 
-msgid "REWIND"
-msgstr "TERUGSPOELEN"
-
 msgid "Store past states to rewind to in realtime, if the core supports it."
 msgstr ""
 "Bewaar eerdere toestand om in realtime naar terug te spoelen, als de core "
@@ -2385,9 +2474,6 @@ msgstr "BEWERK DE METADATA VAN DIT SPEL"
 msgid "VIEW PAD TO KEYBOARD INFORMATION"
 msgstr "BEKIJK PAD-TO-KEY INFORMATIE"
 
-msgid "RESET"
-msgstr "RESET"
-
 msgid "ADD COMBINATION KEY"
 msgstr "COMBINATIE KNOP TOEVOEGEN"
 
@@ -2436,8 +2522,11 @@ msgstr "ALFABETISCH"
 msgid "BY MANUFACTURER"
 msgstr "OP FABRIKANT"
 
-msgid "BY HARDWARE TYPE"
-msgstr "OP HARDWARE TYPE"
+msgid "BY HARDWARE TYPE THEN ALPHABETICALLY"
+msgstr "OP HARDWARETYPE EN DAN ALFABETISCH"
+
+msgid "BY HARDWARE TYPE THEN YEAR"
+msgstr "OP HARDWARETYPE EN DAN JAAR"
 
 msgid "BY MANUFACTURER AND TYPE"
 msgstr "PER FABRIKANT EN TYPE"
@@ -2784,65 +2873,11 @@ msgstr "LINKER STICK DRUKKEN"
 msgid "RIGHT STICK PRESS"
 msgstr "RECHTER STICK DRUKKEN"
 
-msgid "OVERLAYS"
-msgstr "OVERLAYS"
-
-msgid "BRIGHTNESS CYCLE"
-msgstr "HELDERHEIDSCYCLUS"
-
-msgid "COIN"
-msgstr "COIN"
-
-msgid "EXIT"
-msgstr "AFSLUITEN"
-
-msgid "FAST FORWARD"
-msgstr "SNEL VOORUIT"
-
-msgid "MENU"
-msgstr "MENU"
-
-msgid "NEXT DISK"
-msgstr "VOLGENDE SCHIJF"
-
-msgid "NEXT SLOT"
-msgstr "VOLGENDE SLOT"
-
-msgid "PAUSE"
-msgstr "PAUZE"
-
-msgid "PREVIOUS SLOT"
-msgstr "VORIG SLOT"
-
-msgid "RESTORE STATE"
-msgstr "HERSTEL STAAT"
-
-msgid "SAVE STATE"
-msgstr "STAAT OPSLAAN"
-
-msgid "SCREEN LAYOUT"
-msgstr "SCHERM LAY-OUT"
-
-msgid "SWAP SCREEN"
-msgstr "SWAP SCHERM"
-
-msgid "TRANSLATION"
-msgstr "VERTALING"
-
-msgid "VOLUME DOWN"
-msgstr "VOLUME ONLAAG"
-
-msgid "VOLUME MUTE"
-msgstr "VOLUME MUTE"
-
-msgid "VOLUME UP"
-msgstr "VOLUME OMHOOG"
-
 msgid "HOTKEY"
 msgstr "SNELTOETS"
 
-msgid "FILES"
-msgstr "BESTANDEN"
+msgid "NO DEVICE FOUND (JAMMASD, IPAC, ...)"
+msgstr "GEEN APPARAAT GEVONDEN (JAMMASD, IPAC, ...)"
 
 msgid "DECLARE A NEW GLOBAL HOTKEY"
 msgstr "WIJS EEN NIEUWE GLOBALE SNELTOETS AAN"

@@ -197,8 +197,8 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 							msgBox->close();
 						});
 					msgBox->addGroup(_("OPTIONS"));
-					msgBox->addInputTextRow(_("NETPLAY NICKNAME"), "global.netplay.nickname", false);
-					msgBox->addInputTextRow(_("PLAYER PASSWORD"), "global.netplay.password", false);
+					msgBox->addInputTextConfigRow(_("NETPLAY NICKNAME"), "global.netplay.nickname", false);
+					msgBox->addInputTextConfigRow(_("PLAYER PASSWORD"), "global.netplay.password", false);
 
 					bool adhocEnabled = SystemConf::getInstance()->getBool("wifi.adhoc.enabled");
 					if (!adhocEnabled)
@@ -209,8 +209,8 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 						msgBox->addWithLabel(_("PUBLICLY ANNOUNCE GAME"), public_announce);
 						msgBox->addSaveFunc([public_announce] { SystemConf::getInstance()->setBool("global.netplay_public_announce", public_announce->getState()); });
 
-						msgBox->addInputTextRow(_("NETPLAY HOST"), "global.netplay.host", false);
-						msgBox->addInputTextRow(_("NETPLAY PORT"), "global.netplay.port", false);
+						msgBox->addInputTextConfigRow(_("NETPLAY HOST"), "global.netplay.host", false);
+						msgBox->addInputTextConfigRow(_("NETPLAY PORT"), "global.netplay.port", false);
 					}
 
 					mWindow->pushGui(msgBox);
