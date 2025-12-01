@@ -437,7 +437,13 @@ bool ApiSystem::launchFileManager(Window *window)
 #if !WIN32
 bool ApiSystem::enableWifi(std::string ssid, std::string key, std::string country) 
 {
-	return executeScript("wifictl enable \"" + ssid + "\" \"" + key + "\" \"" + country + "\"");
+	bool ret;
+
+	ret = executeScript("wifictl enable");
+	if (!ret)
+		return ret;
+	
+	return executeScript("wifictl connect \"" + ssid + "\" \"" + key + "\" \"" + country + "\"");
 }
 #else
 bool ApiSystem::enableWifi(std::string ssid, std::string key) 
