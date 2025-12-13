@@ -140,7 +140,8 @@ void Settings::setDefaults()
 	mBoolMap["SplashScreenProgress"] = true;
 	mBoolMap["StartupOnGameList"] = false;
 	mStringMap["StartupSystem"] = "lastsystem";
-
+	mStringMap["ShowTags"] = "";
+	
 #if WIN32
 	mBoolMap["HidJoysticks"] = true;
 	mBoolMap["ShowOnlyExit"] = true;

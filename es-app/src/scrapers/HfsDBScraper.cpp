@@ -274,14 +274,14 @@ void HfsDBScraper::generateRequests(const ScraperSearchParams& params, std::queu
 					if (it != hfsdb_platformids.cend())
 					{
 						for (auto plaformId : Utils::String::split(it->second, ',', true))
-							urls.push_back(path + "games?search=" + HttpReq::urlEncode(cleanName) + "&system=" + HttpReq::urlEncode(Utils::String::trim(plaformId)) + "&limit=5");
+							urls.push_back(path + "games?search=" + HttpReq::urlEncode(cleanName) + "&system=" + HttpReq::urlEncode(Utils::String::trim(plaformId)) + "&limit=25");
 					}
 				}
 			}
 		}
 
 		if (urls.size() == 0)
-			urls.push_back(path + "games?search=" + HttpReq::urlEncode(cleanName) + "&limit=5");
+			urls.push_back(path + "games?search=" + HttpReq::urlEncode(cleanName) + "&limit=25");
 	}
 	
 	HttpReqOptions tokenAuth;
@@ -573,17 +573,18 @@ static void processGame(const Value& game, std::vector<ScraperSearchResult>& res
 			result.urls[MetaDataId::BoxBack] = ScraperSearchItem(art);
 	}
 
+	if (result.mdl.get(MetaDataId::Desc).empty() && result.urls.size() == 0)
+		return;
+
 	results.push_back(result);
 }
 } // namespace
 
   // Process should return false only when we reached a maximum scrap by minute, to retry
-bool HfsDBRequest::process(HttpReq* request, std::vector<ScraperSearchResult>& results)
+bool HfsDBRequest::process(const std::string& response, std::vector<ScraperSearchResult>& results)
 {
-	assert(request->status() == HttpReq::REQ_SUCCESS);
-
 	Document doc;
-	doc.Parse(request->getContent().c_str());
+	doc.Parse(response.c_str());
 
 	if (doc.HasParseError())
 	{
@@ -617,7 +618,7 @@ bool HfsDBRequest::process(HttpReq* request, std::vector<ScraperSearchResult>& r
 		{
 			processGame(v, results, mIsArcade);
 
-			if (request->getUrl().find("medias__description=") != std::string::npos)
+			if (mUrl.find("medias__description=") != std::string::npos)
 				break;
 		}
 		catch (std::runtime_error& e)

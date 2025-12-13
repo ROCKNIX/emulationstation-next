@@ -126,7 +126,7 @@
 #define fake_gettext_resolution_max_1K  _("maximum 1920x1080")
 #define fake_gettext_resolution_max_640 _("maximum 640x480")
 
-GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(window, _("MAIN MENU").c_str()), mVersion(window)
+GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(window, _("MAIN MENU").c_str())
 {
 	// MAIN MENU
 	bool isFullUI = !UIModeController::getInstance()->isUIModeKid() && !UIModeController::getInstance()->isUIModeKiosk();
@@ -357,10 +357,11 @@ void GuiMenu::addVersionInfo()
 
 	auto theme = ThemeData::getMenuTheme();
 
-	mVersion.setFont(theme->Footer.font);
-	mVersion.setColor(theme->Footer.color);
+	mVersion = std::make_shared<TextComponent>(mWindow);
+	mVersion->setFont(theme->Footer.font);
+	mVersion->setColor(theme->Footer.color);
 
-	mVersion.setLineSpacing(0);
+	mVersion->setLineSpacing(0);
 
 	std::string label;
 
@@ -384,13 +385,12 @@ void GuiMenu::addVersionInfo()
 		}
 		else
 		{
-			mVersion.setText(label);
+			mVersion->setHorizontalAlignment(ALIGN_CENTER);
+			mVersion->setVerticalAlignment(ALIGN_CENTER);
+			mVersion->setText(label);
+			mMenu.setButtonGrid(mVersion);
 		}
 	}
-
-	mVersion.setHorizontalAlignment(ALIGN_CENTER);
-	mVersion.setVerticalAlignment(ALIGN_CENTER);
-	addChild(&mVersion);
 }
 
 void GuiMenu::openScreensaverOptions() 
@@ -407,16 +407,6 @@ void GuiMenu::openCollectionSystemSettings()
 	}
 
 	mWindow->pushGui(new GuiCollectionSystemsOptions(mWindow));
-}
-
-void GuiMenu::onSizeChanged()
-{
-	GuiComponent::onSizeChanged();
-
-	float h = mMenu.getButtonGridHeight();
-
-	mVersion.setSize(mSize.x(), h);
-	mVersion.setPosition(0, mSize.y() - h);
 }
 
 void GuiMenu::addEntry(const std::string& name, bool add_arrow, const std::function<void()>& func, const std::string iconName)
@@ -2541,6 +2531,35 @@ void GuiMenu::openSystemSettings()
 
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::INSTALL))
 		s->addEntry(_("INSTALL ON A NEW DISK"), true, [this] { mWindow->pushGui(new GuiInstallStart(mWindow)); });
+
+	s->addEntry(_("EJECT AN EXTERNAL DISK"), true, [this] { openUnmountDriveSettings(); });
+
+    auto diskFormat = std::make_shared<OptionListComponent<std::string>>(window, _("EXTERNAL DRIVE FILESYSTEM TYPE"), false);
+    
+    // Load saved preference (default to btrfs)
+    std::string selectedFormat = SystemConf::getInstance()->get("system.external_disk_format");
+    
+    if (selectedFormat.empty()) selectedFormat = "btrfs";
+
+    std::vector<std::string> fstypes = ApiSystem::getInstance()->getFormatFileSystems();
+    if (fstypes.empty()) fstypes = { "ext4", "btrfs", "exfat" };
+
+    for (const auto& fs : fstypes) {
+        diskFormat->add(Utils::String::toUpper(fs), fs, selectedFormat == fs);
+    }
+    
+    if (!diskFormat->hasSelection()) {
+         diskFormat->selectFirstItem();
+    }
+
+    s->addWithLabel(_("EXTERNAL DRIVE FILESYSTEM TYPE"), diskFormat);
+    
+    s->addSaveFunc([diskFormat] {
+        if (diskFormat->changed()) {
+            SystemConf::getInstance()->set("system.external_disk_format", diskFormat->getSelected());
+            SystemConf::getInstance()->saveSystemConf();
+        }
+    });
 	
 	s->addGroup(_("ADVANCED"));
 
@@ -4237,8 +4256,30 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				themeconfig->setVariable("reloadAll", true);
 		});
 
-		// Show flags
+		themeconfig->addGroup(_("ICONS"));
 
+		// Tags
+		auto defShowTag = Settings::getInstance()->getString("ShowTags");
+		if (defShowTag == "1")
+			defShowTag = _("AFTER NAME");
+		else if (defShowTag == "2")
+			defShowTag = _("NO");
+		else
+			defShowTag = _("BEFORE NAME");
+
+		auto curShowTag = Settings::getInstance()->getString(system->getName() + ".ShowTags");
+		auto showTags = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SHOW TAGS ICONS"), false);
+		showTags->addRange({ { _("AUTO"), "auto" }, { _("BEFORE NAME"), "0" }, { _("AFTER NAME"), "1" }, { _("NO") , "2" } }, curShowTag);
+
+		themeconfig->addWithDescription(_("SHOW TAGS ICONS"), _("DEFAULT VALUE") + " : " + defShowTag, showTags);
+		themeconfig->addSaveFunc([themeconfig, showTags, system]
+			{
+				if (Settings::getInstance()->setString(system->getName() + ".ShowTags", showTags->getSelected()))
+					themeconfig->setVariable("reloadAll", true);
+			});
+
+
+		// Show flags
 		auto defSF = Settings::getInstance()->getString("ShowFlags");
 		if (defSF == "1")
 			defSF = _("BEFORE NAME");
@@ -4263,7 +4304,7 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 			if (Settings::getInstance()->setString(system->getName() + ".ShowFlags", showRegionFlags->getSelected()))
 				themeconfig->setVariable("reloadAll", true);
 		});
-		
+
 		// Show SaveStates
 		auto defSS = Settings::getInstance()->getBool("ShowSaveStates") ? _("YES") : _("NO");
 		auto curSS = Settings::getInstance()->getString(system->getName() + ".ShowSaveStates");
@@ -4738,6 +4779,18 @@ void GuiMenu::openUISettings()
 	s->addOptionList(_("SHOW FOLDERS"), { { _("always"), "always" },{ _("never") , "never" },{ _("having multiple games"), "having multiple games" } }, "FolderViewMode", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW FOLDERS FIRST"), "ShowFoldersFirst", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW '..' PARENT FOLDER"), "ShowParentFolder", true, [s] { s->setVariable("reloadAll", true); });
+	s->addSwitch(_("SHOW FILENAMES INSTEAD"), "ShowFilenames", true, [s]
+		{
+			SystemData::resetSettings();
+			FileData::resetSettings();
+
+			s->setVariable("reloadCollections", true);
+			s->setVariable("reloadAll", true);
+		});
+	s->addSwitch(_("IGNORE LEADING ARTICLES WHEN SORTING"), _("Ignore 'The' and 'A' if at the start."), "IgnoreLeadingArticles", true, [s] { s->setVariable("reloadAll", true); });
+
+	s->addGroup(_("ICONS"));
+	s->addOptionList(_("SHOW TAGS ICONS"), { { _("BEFORE NAME"), "auto" },{ _("AFTER NAME") , "1" },{ _("NO"), "2" } }, "ShowTags", true, [s] { s->setVariable("reloadAll", true); });
 	s->addOptionList(_("SHOW REGION FLAG"), { { _("NO"), "auto" },{ _("BEFORE NAME") , "1" },{ _("AFTER NAME"), "2" } }, "ShowFlags", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW SAVESTATE ICON"), "ShowSaveStates", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW MANUAL ICON"), "ShowManualIcon", true, [s] { s->setVariable("reloadAll", true); });	
@@ -4748,16 +4801,6 @@ void GuiMenu::openUISettings()
 	s->addSwitch(_("SHOW TRACKBALL ICON"), "ShowTrackballIconOnGames", true, [s] { s->setVariable("reloadAll", true); });
 	s->addSwitch(_("SHOW SPINNER ICON"), "ShowSpinnerIconOnGames", true, [s] { s->setVariable("reloadAll", true); });
 #endif
-	s->addSwitch(_("SHOW FILENAMES INSTEAD"), "ShowFilenames", true, [s] 
-		{
-			SystemData::resetSettings();
-			FileData::resetSettings();
-
-			s->setVariable("reloadCollections", true);
-			s->setVariable("reloadAll", true); 
-		});
-	s->addSwitch(_("IGNORE LEADING ARTICLES WHEN SORTING"), _("Ignore 'The' and 'A' if at the start."), "IgnoreLeadingArticles", true, [s] { s->setVariable("reloadAll", true); });
-	
 	s->onFinalize([s, pthis, window]
 	{
 		if (s->getVariable("reloadCollections"))
@@ -6496,3 +6539,77 @@ bool GuiMenu::onMouseClick(int button, bool pressed, int x, int y)
 
 	return (button == 1);
 }
+
+#ifdef BATOCERA
+void GuiMenu::openUnmountDriveSettings()
+{
+	Window *window = mWindow;
+	auto s = new GuiSettings(mWindow, _("SAFELY EJECT A DISK").c_str());
+	auto optionsStorage = std::make_shared<OptionListComponent<std::string>>(window, _("MERGED DRIVE"), false);
+
+	// Ask the manager for a list of merged drives that can be ejected
+	std::vector<std::string> merged_drives = ApiSystem::getInstance()->getEjectableDrives();
+    
+	bool found = false;
+	for(const auto& line : merged_drives)
+	{
+		size_t delimiter = line.find(":");
+		if (delimiter != std::string::npos)
+		{
+			std::string name = line.substr(0, delimiter);
+			std::string path = line.substr(delimiter + 1);
+			optionsStorage->add(name, path, false);
+			found = true;
+		}
+	}
+	
+	if (!found) {
+		optionsStorage->add(_("NO MERGED DRIVES FOUND"), "", true);
+	} else {
+		optionsStorage->selectFirstItem();
+	}
+
+	s->addWithLabel(_("MERGED DRIVE"), optionsStorage);
+
+	s->addEntry(_("EJECT"), false, [s, optionsStorage, window]
+	{
+		std::string path = optionsStorage->getSelected();
+		if (path.empty()) {
+			window->pushGui(new GuiMsgBox(window, _("NO DRIVE SELECTED")));
+			return;
+		}
+
+		window->pushGui(new GuiMsgBox(window, "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration.",
+			"YES, EJECT", [s, window, path]
+			{
+				auto* ac = window->createAsyncNotificationComponent();
+				ac->updateText(_("Ejecting..."));
+
+				window->postToUiThread([window, ac, path, s]() {
+					bool success = ApiSystem::getInstance()->ejectDrive(path);
+					
+					window->postToUiThread([window, ac, success, s]() {
+						ac->close();
+
+						if (success) {
+							window->pushGui(new GuiMsgBox(window, "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK.", "OK", [window, s] {
+								s->close(); 
+                                if (ViewController::get()) {
+                                    if (ThreadedScraper::isRunning() || ThreadedHasher::isRunning()) {
+                                        return;
+                                    }
+                                    Scripting::fireEvent("update-gamelists");
+                                    ViewController::reloadAllGames(window, true, true);
+                                }
+							}));
+						} else {
+							window->pushGui(new GuiMsgBox(window, "FAILED TO EJECT DEVICE.", "OK"));
+						}
+					});
+				});
+			}, "NO", nullptr));
+	});
+
+	mWindow->pushGui(s);
+}
+#endif

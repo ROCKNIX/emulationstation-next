@@ -25,6 +25,9 @@
 #include "Splash.h"
 #include "PowerSaver.h"
 #include "renderers/Renderer.h"
+#include <thread>
+#include "../es-app/src/ApiSystem.h"
+#include "utils/StringUtil.h"
 
 #if WIN32
 #include <SDL_syswm.h>
@@ -1426,4 +1429,109 @@ bool Window::processMouseButton(int button, bool down, int x, int y)
 			return true;
 
 	return false;
+}
+
+void Window::setReloadGamelistsCallback(const std::function<void()>& func)
+{
+    mReloadGamelistsCallback = func;
+}
+
+void Window::processStorageRequest(std::string line)
+{
+	LOG(LogInfo) << "Storage Request Received via API: " << line;
+
+	std::vector<std::string> parts = Utils::String::split(line, ':');
+	if (parts.empty()) return;
+
+	std::string type = parts[0];
+
+	if (type == "REQUEST_MERGE" && parts.size() >= 2)
+	{
+		std::string argument = parts[1];
+		for (size_t i = 2; i < parts.size(); ++i) argument += ":" + parts[i];
+
+		auto* msg = new GuiMsgBox(this, _("GAME DRIVE DETECTED") + "\n\n" + _("Merge games from this drive now?") + "\n" + _("(This will also apply on future boots)"),
+			_("YES"), [this, argument] {
+				
+                this->displayNotificationMessage(_("Merging drive... Please wait."));
+				this->displayNotificationMessage(_("New drive content will be available after games list is refreshed..."));
+
+                std::thread([this, argument]() {
+                    bool success = ApiSystem::getInstance()->mergeDrive(argument);
+                    this->postToUiThread([this, success]() {
+                        if (success) {
+                            if (mReloadGamelistsCallback) {
+                                this->postToUiThread([this]() {
+                                    if (mReloadGamelistsCallback) {
+                                        mReloadGamelistsCallback();
+										this->displayNotificationMessage(_("Reloaded the games list..."));
+                                    }
+                                });
+                            }
+                        } else {
+                            this->pushGui(new GuiMsgBox(this, _("MERGE FAILED") + "\n" + _("Please check the logs."), _("OK"), nullptr));
+                        }
+                    });
+                }).detach();
+
+			}, _("NO"), nullptr);
+		pushGui(msg);
+	} 
+else if (type == "REQUEST_FORMAT" && parts.size() >= 2)
+	{
+		std::string deviceName = parts[1];
+		std::string deviceModel = (parts.size() > 2 && !parts[2].empty()) ? parts[2] : _("N/A");
+		std::string deviceSize = (parts.size() > 3 && !parts[3].empty()) ? parts[3] : _("N/A");
+		std::string uniqueId = (parts.size() > 4 && !parts[4].empty()) ? parts[4] : "";
+
+		std::string message = _("NEW DRIVE DETECTED") + "\n\n" +
+							_("DEVICE") + ": " + deviceName + "\n" +
+							_("MODEL") + ": " + deviceModel + "\n" +
+							_("SIZE") + ": " + deviceSize + "\n\n" +
+							_("Format and prepare this drive for game storage?") + "\n" +
+							_("(ALL EXISTING DATA WILL BE ERASED)");
+		
+		auto formatLambda = [this, deviceName] {
+			this->displayNotificationMessage(_("Starting format process..."));
+			std::thread([this, deviceName]() {
+				std::string fsType = SystemConf::getInstance()->get("system.external_disk_format");
+				if (fsType.empty()) fsType = "btrfs";
+				bool success = ApiSystem::getInstance()->prepareDrive(deviceName, fsType);
+				if (!success) {
+					this->postToUiThread([this]() {
+						this->pushGui(new GuiMsgBox(this, _("FORMAT FAILED") + "\n" + _("Please check the logs."), _("OK"), nullptr));
+					});
+				}
+			}).detach(); 
+		};
+
+		auto confirmLambda = [this, formatLambda] {
+			this->pushGui(new GuiMsgBox(this, _("ARE YOU SURE?"), 
+				_("NO"), nullptr, 
+				_("YES"), formatLambda));
+		};
+
+		if (!uniqueId.empty())
+		{
+			auto* msg = new GuiMsgBox(this, message,
+				_("NO, IGNORE THIS TIME"), nullptr,
+				_("NO, IGNORE FOREVER"), [this, uniqueId] {
+					this->displayNotificationMessage(_("Adding drive to ignore list..."));
+					std::thread([uniqueId]() {
+						ApiSystem::getInstance()->ignoreDevicePermanently(uniqueId);
+					}).detach();
+				},
+				_("YES, FORMAT & MERGE"), confirmLambda
+			);
+			pushGui(msg);
+		}
+		else
+		{
+			auto* msg = new GuiMsgBox(this, message,
+				_("NO, IGNORE"), nullptr,
+				_("YES, FORMAT & MERGE"), confirmLambda
+			);
+			pushGui(msg);
+		}
+	}
 }
