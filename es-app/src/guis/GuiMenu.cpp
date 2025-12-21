@@ -1732,26 +1732,27 @@ void GuiMenu::openSystemSettings()
 
 	if (Utils::Platform::GetEnv("DEVICE_DTB_SWITCH") == "true"){
 		s->addGroup(_("DEVICE"));
-		// Switch device dtb between the R33S & R36S
-		auto device_switch = std::make_shared<SwitchComponent>(mWindow);
-		bool deviceswitchEnabled = SystemConf::getInstance()->get("system.device-dtb-r36s") == "1";
-		device_switch->setState(deviceswitchEnabled);
-		s->addWithLabel(_("DEVICE IS R36S / R35S?"), device_switch);
-		s->addSaveFunc([this,device_switch] {
-			if (device_switch->changed()) {
-				std::string msg = _("The system will restart\n and user settings will be reset")+"\n";
-				msg += _("Do you want to continue?");
-				mWindow->pushGui(new GuiMsgBox(mWindow,msg, _("YES"),
-					[this,device_switch] {
+		// Switch device dtb between e.g. the R33S & R36S
 
-					bool dswitchenabled = device_switch->getState();
-					SystemConf::getInstance()->set("system.device-dtb-r36s", dswitchenabled ? "1" : "0");
-					if (device_switch->getState() == false) {
-						Utils::Platform::runSystemCommand("/usr/bin/device-switch R33S", "", nullptr);
-					} else {
-						Utils::Platform::runSystemCommand("/usr/bin/device-switch R36S", "", nullptr);
-					}
-				}, "NO",nullptr));
+		const std::string devSwitchScript = "/usr/bin/device-switch";
+		auto optionsDeviceSwitch = std::make_shared<OptionListComponent<std::string> >(mWindow, _("THIS DEVICE IS"), false);
+		std::string selectedDevice = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/device-switch)"));
+		if (selectedDevice.empty())
+			selectedDevice = "unknown";
+
+		std::string a;
+		for(std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/device-switch --options)")); getline(ss, a, ' '); ) {
+			optionsDeviceSwitch->add(a, a, a == selectedDevice);
+		}
+		s->addWithLabel(_("THIS DEVICE IS"), optionsDeviceSwitch);
+
+		s->addSaveFunc([this, window, devSwitchScript, optionsDeviceSwitch, selectedDevice] {
+			if (optionsDeviceSwitch->changed()) {
+				Utils::Platform::runSystemCommand(devSwitchScript + " " + optionsDeviceSwitch->getSelected(), "", nullptr);
+				window->pushGui(new GuiMsgBox(window, _("Device will be switched on next reboot"),
+					_("Reboot now"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::REBOOT); },
+					_("later"), nullptr)
+				);
 			}
 		});
         }
