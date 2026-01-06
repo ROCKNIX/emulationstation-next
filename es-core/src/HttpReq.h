@@ -49,6 +49,7 @@ public:
 	{
 		userAgent = HTTP_REQ_USERAGENT;
 		useCookieManager = true;
+		connectTimeout = 10000L;
 	}
 
 	HttpReqOptions(const std::string& filename)
@@ -56,6 +57,7 @@ public:
 		outputFilename = filename;
 		userAgent = HTTP_REQ_USERAGENT;
 		useCookieManager = true;
+		connectTimeout = 10000L;
 	}
 
 	std::string outputFilename;
@@ -65,6 +67,7 @@ public:
 	// Client certificate files in .pem format
 	std::string clientCert, clientKey;
 
+	long connectTimeout;
 	bool useCookieManager;
 };
 

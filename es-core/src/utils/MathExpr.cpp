@@ -68,6 +68,22 @@ namespace Utils
 		{ { "startswith", 2 },    [](const Args& args) { return Utils::String::startsWith(removeStringQuotes(args[0]), removeStringQuotes(args[1])) ? "1" : "0"; } },
 		{ { "endswith", 2 },      [](const Args& args) { return Utils::String::endsWith(removeStringQuotes(args[0]), removeStringQuotes(args[1])) ? "1" : "0"; } },
 
+		{ { "inlist", 2 },        [](const Args& args) 
+			{ 
+				auto list = Utils::String::split(Utils::String::toUpper(removeStringQuotes(args[0])), ',', true);
+				return (std::find(list.cbegin(), list.cend(), Utils::String::toUpper(removeStringQuotes(args[1]))) != list.cend()) ? "1" : "0";
+			} },
+
+		{ { "translatelist", 1 },  [](const Args& args)
+			{
+				Utils::String::stringVector ret;
+				auto list = Utils::String::split(Utils::String::toUpper(removeStringQuotes(args[0])), ',', true);
+				for (auto item : list)
+					ret.push_back(_(removeStringQuotes(args[0]).c_str()));
+
+				return addStringQuotes(Utils::String::join(ret, ","));
+			} },
+		
 		// Math
 		{ { "min", 2 },           [](const Args& args) { return std::to_string(Math::min(Utils::String::toFloat(removeStringQuotes(args[0])), Utils::String::toFloat(removeStringQuotes(args[1])))); } },
 		{ { "max", 2 },           [](const Args& args) { return std::to_string(Math::max(Utils::String::toFloat(removeStringQuotes(args[0])), Utils::String::toFloat(removeStringQuotes(args[1])))); } },
@@ -564,7 +580,7 @@ namespace Utils
 		return evalxp;
 	}
 
-	float MathExpr::Value::toNumber()
+	double MathExpr::Value::toNumber()
 	{
 		if (isToken()) return 0;
 		if (isNumber()) return number;
@@ -617,8 +633,8 @@ namespace Utils
 
 		return Utils::HtmlColor::isHtmlColor(colorEndPos);		
 	}
-
-	MathExpr::ValuePtrQueue MathExpr::toRPN(const char* expr, ValueMap* vars)
+	
+	MathExpr::ValuePtrQueue MathExpr::toRPN(const char* expr, ValueMap* vars, bool asColor)
 	{
 		ValuePtrQueue rpnQueue; std::stack<std::string> operatorStack;
 		bool lastTokenWasOp = true;
@@ -630,10 +646,10 @@ namespace Utils
 		while (*expr)
 		{
 			char* colorEnd;
-			if (iscolor(expr, &colorEnd))
+			if (asColor && iscolor(expr, &colorEnd))
 			{
 				const char* colorEndPos = strstr(expr, colorEnd);
-				int color = (int) Utils::HtmlColor::parse(colorEndPos);
+				int color = (int)Utils::HtmlColor::parse(colorEndPos);
 				rpnQueue.push(new Value(color));
 				expr = colorEnd;
 				lastTokenWasOp = false;
@@ -642,12 +658,12 @@ namespace Utils
 			{
 				// If the token is a number, add it to the output queue.
 				char* nextChar = 0;
-				float digit = strtod(expr, &nextChar);
+				double digit = strtod(expr, &nextChar);
 
 				rpnQueue.push(new Value(digit));
 				expr = nextChar;
 				lastTokenWasOp = false;
-			}
+			}			
 			else if (isvariablechar(*expr) || *expr == '{' || *expr == '$')
 			{
 				// If the function is a variable, resolve it and
@@ -790,7 +806,7 @@ namespace Utils
 		return rpnQueue;
 	}
 
-	MathExpr::Value MathExpr::evaluate(const char* expr, ValueMap* vars)
+	MathExpr::Value MathExpr::evaluate(const char* expr, ValueMap* vars, bool asColor)
 	{
 		std::string evalxp = evaluateMethods(expr, vars);
 		
@@ -804,7 +820,7 @@ namespace Utils
 			return MathExpr::Value("");
 
 		// Convert to RPN with Dijkstra's Shunting-yard algorithm.
-		ValuePtrQueue rpn = toRPN(evalxp.c_str(), vars);
+		ValuePtrQueue rpn = toRPN(evalxp.c_str(), vars, asColor);
 
 		// Evaluate the expression in RPN form.
 		ValueStack evaluation;
@@ -834,7 +850,7 @@ namespace Utils
 					evaluation.push(left.toNumber() - right.toNumber());
 				else if (!str.compare("/"))
 				{
-					float r = right.toNumber();
+					double r = right.toNumber();
 					if (r == 0)
 						evaluation.push(0);
 					else
