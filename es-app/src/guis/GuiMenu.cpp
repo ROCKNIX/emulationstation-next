@@ -29,6 +29,12 @@
 #include "Scripting.h"
 #include "SystemData.h"
 #include "VolumeControl.h"
+
+#include <rapidjson/document.h>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <array>
 #include <SDL_events.h>
 #include <algorithm>
 #include "utils/Platform.h"
@@ -1810,6 +1816,107 @@ void GuiMenu::openSystemSettings()
 	}
 
 	s->addGroup(_("PERFORMANCE"));
+
+	// --- ROCKNIX MEMORY MANAGER ---
+	// Helper lambda to fetch status
+	auto getMemState = []() -> std::map<std::string, std::string> {
+		std::map<std::string, std::string> map;
+		std::string json;
+		std::array<char, 128> buf;
+		std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("rocknix-memory-manager --json", "r"), pclose);
+		if (pipe) {
+			while (fgets(buf.data(), buf.size(), pipe.get())) json += buf.data();
+			rapidjson::Document doc;
+			doc.Parse(json.c_str());
+			if (!doc.HasParseError() && doc.IsObject()) {
+				if (doc.HasMember("zram") && doc["zram"].IsObject()) {
+					if(doc["zram"].HasMember("size_mb") && doc["zram"]["size_mb"].IsInt())
+						map["zram_size"] = std::to_string(doc["zram"]["size_mb"].GetInt());
+					if(doc["zram"].HasMember("algo") && doc["zram"]["algo"].IsString())
+						map["zram_algo"] = doc["zram"]["algo"].GetString();
+				}
+				if (doc.HasMember("swap") && doc["swap"].IsObject()) {
+					if(doc["swap"].HasMember("size_mb") && doc["swap"]["size_mb"].IsInt())
+						map["swap_size"] = std::to_string(doc["swap"]["size_mb"].GetInt());
+					if(doc["swap"].HasMember("priority") && doc["swap"]["priority"].IsString())
+						map["swap_prio"] = doc["swap"]["priority"].GetString();
+				}
+				if (doc.HasMember("ksm") && doc["ksm"].IsObject()) {
+					map["ksm"] = "Auto"; // Default for menu
+				}
+			}
+		}
+		return map;
+	};
+
+	auto openMemorySettings = [window, getMemState] {
+		auto p = new GuiSettings(window, _("MEMORY SETTINGS").c_str());
+		auto current = getMemState();
+
+		// ZRAM Size
+		auto zram_size = std::make_shared< OptionListComponent<std::string> >(window, _("ZRAM SIZE"), false);
+		std::string currZ = current["zram_size"];
+		if (currZ.empty()) currZ = "0";
+		zram_size->add(_("DISABLE"), "0", currZ == "0");
+		zram_size->add(_("AUTO (RECOMMENDED)"), "Auto", currZ != "0" && currZ != "512" && currZ != "1024" && currZ != "2048" && currZ != "4096" && currZ != "6144" && currZ != "8192"); 
+		zram_size->add(_("512 MB"), "512", currZ == "512");
+		zram_size->add(_("1024 MB"), "1024", currZ == "1024");
+		zram_size->add(_("2048 MB"), "2048", currZ == "2048");
+		zram_size->add(_("4096 MB"), "4096", currZ == "4096");
+		zram_size->add(_("6144 MB"), "6144", currZ == "6144");
+		zram_size->add(_("8192 MB"), "8192", currZ == "8192");
+		p->addWithLabel(_("ZRAM SIZE"), zram_size);
+		p->addSaveFunc([zram_size] { system(("rocknix-memory-manager --zram-size \"" + zram_size->getSelected() + "\"").c_str()); });
+
+		// ZRAM Algo
+		auto zram_algo = std::make_shared< OptionListComponent<std::string> >(window, _("ZRAM ALGORITHM"), false);
+		std::string currAlgo = current["zram_algo"];
+		if (currAlgo.empty()) currAlgo = "zstd";
+		zram_algo->add(_("ZSTD (BALANCED + TIERING)"), "zstd", currAlgo == "zstd");
+		zram_algo->add(_("LZO-RLE (FASTEST)"), "lzo-rle", currAlgo == "lzo-rle");
+		zram_algo->add(_("LZ4 (FAST)"), "lz4", currAlgo == "lz4");
+		p->addWithLabel(_("ZRAM ALGORITHM"), zram_algo);
+		p->addSaveFunc([zram_algo] { system(("rocknix-memory-manager --zram-algo \"" + zram_algo->getSelected() + "\"").c_str()); });
+
+		// Swap File
+		auto swap_size = std::make_shared< OptionListComponent<std::string> >(window, _("DISK SWAP SIZE"), false);
+		std::string currSwap = current["swap_size"];
+		if (currSwap.empty()) currSwap = "0";
+		swap_size->add(_("DISABLE"), "0", currSwap == "0");
+		swap_size->add(_("AUTO (RAM SIZE)"), "Auto", currSwap != "0" && currSwap != "2048" && currSwap != "4096");
+		swap_size->add(_("RESUME (HIBERNATION)"), "Resume", false);
+		swap_size->add(_("2048 MB"), "2048", currSwap == "2048");
+		swap_size->add(_("4096 MB"), "4096", currSwap == "4096");
+		p->addWithLabel(_("DISK SWAP SIZE"), swap_size);
+		p->addSaveFunc([swap_size] { system(("rocknix-memory-manager --swap-size \"" + swap_size->getSelected() + "\"").c_str()); });
+
+		// Swap Priority
+		auto swap_prio = std::make_shared< OptionListComponent<std::string> >(window, _("SWAP PRIORITY"), false);
+		std::string currPrio = current["swap_prio"];
+		if (currPrio.empty()) currPrio = "Auto";
+		swap_prio->add(_("AUTO (ZRAM FIRST)"), "Auto", currPrio != "Stripe");
+		swap_prio->add(_("STRIPE (HIGH PERF)"), "Stripe", currPrio == "Stripe");
+		p->addWithLabel(_("SWAP PRIORITY"), swap_prio);
+		p->addSaveFunc([swap_prio] { system(("rocknix-memory-manager --swap-priority \"" + swap_prio->getSelected() + "\"").c_str()); });
+
+		// KSM
+		auto ksm_opt = std::make_shared< OptionListComponent<std::string> >(window, _("KERNEL SAMEPAGE MERGING"), false);
+		ksm_opt->add(_("AUTO (SMART)"), "Auto", true);
+		ksm_opt->add(_("FORCE ENABLE"), "Enable", false);
+		ksm_opt->add(_("FORCE DISABLE"), "Disable", false);
+		p->addWithLabel(_("KSM DEDUPLICATION"), ksm_opt);
+		p->addSaveFunc([ksm_opt] { system(("rocknix-memory-manager --ksm \"" + ksm_opt->getSelected() + "\"").c_str()); });
+
+		// Apply (Changed from addButton to addEntry)
+		p->addEntry(_("APPLY & RELOAD MANAGER"), false, [window] {
+			window->pushGui(new GuiMsgBox(window, _("APPLYING MEMORY SETTINGS...\nTHIS MAY TAKE A MOMENT."), _("OK"), [] {
+				if (system("rocknix-memory-manager --reload") != 0) {} // Ignore result to silence warnings
+			}));
+		});
+
+		window->pushGui(p);
+	};
+	s->addEntry(_("MEMORY SETTINGS"), true, openMemorySettings);
 	if (Utils::Platform::GetEnv("DEVICE_HAS_FAN") == "true") {
 		// Provides cooling profile switching
 		auto optionsFanProfile = std::make_shared<OptionListComponent<std::string> >(mWindow, _("COOLING PROFILE"), false);

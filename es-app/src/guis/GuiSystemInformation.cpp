@@ -5,6 +5,14 @@
 #include "ApiSystem.h"
 #include "views/UIModeController.h"
 
+#include <rapidjson/document.h>
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <array>
+#include <sstream>
+#include "components/TextComponent.h"
+
 
 GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window, _("INFORMATION").c_str())
 {
@@ -63,4 +71,56 @@ GuiSystemInformation::GuiSystemInformation(Window* window) : GuiSettings(window,
 	addGroup(_("VIDEO DRIVER"));
 	for (auto info : Renderer::getDriverInformation())
 		addWithLabel(_(info.first.c_str()), std::make_shared<TextComponent>(window, info.second, font, color));
+
+	// --- ROCKNIX MEMORY STATUS ---
+	{
+		std::string json;
+		std::array<char, 128> buf;
+		// Run status check
+		std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("rocknix-memory-manager --json", "r"), pclose);
+		
+		if (pipe) {
+			while (fgets(buf.data(), buf.size(), pipe.get())) json += buf.data();
+			
+			rapidjson::Document doc;
+			doc.Parse(json.c_str());
+			
+			if (!doc.HasParseError() && doc.IsObject()) {
+				addGroup(_("MEMORY SUBSYSTEM"));
+
+				// ZRAM
+				std::string zramText = "Inactive";
+				if (doc.HasMember("zram") && doc["zram"].IsObject() && doc["zram"]["enabled"].GetBool()) {
+					int size = doc["zram"]["size_mb"].GetInt();
+					int comp = doc["zram"]["compressed_size_mb"].GetInt();
+					std::string algo = doc["zram"]["algo"].GetString();
+					std::stringstream ss;
+					ss << "Active (" << size << "MB, " << algo << ")";
+					// Only show compression detail if space is actually used
+					if (comp > 0) ss << " [RAM: " << comp << "MB]";
+					zramText = ss.str();
+				}
+				addWithLabel(_("ZRAM STATUS"), std::make_shared<TextComponent>(window, zramText, font, color));
+
+				// Swap
+				std::string swapText = "Inactive";
+				if (doc.HasMember("swap") && doc["swap"].IsObject()) {
+					int sSize = doc["swap"]["size_mb"].GetInt();
+					if (sSize > 0) {
+						swapText = std::to_string(sSize) + " MB";
+					}
+				}
+				addWithLabel(_("SWAP FILE"), std::make_shared<TextComponent>(window, swapText, font, color));
+
+				// KSM
+				std::string ksmText = "Inactive";
+				if (doc.HasMember("ksm") && doc["ksm"].IsObject() && doc["ksm"]["enabled"].GetBool()) {
+					int saved = doc["ksm"]["saved_mb"].GetInt();
+					ksmText = "Active";
+					if (saved > 0) ksmText += " (Saved: " + std::to_string(saved) + "MB)";
+				}
+				addWithLabel(_("KSM DEDUPLICATION"), std::make_shared<TextComponent>(window, ksmText, font, color));
+			}
+		}
+	}
 }
