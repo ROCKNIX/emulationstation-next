@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-18 20:14+0100\n"
-"Last-Translator: Szoldán Albert\n"
+"PO-Revision-Date: 2026-02-03 21:47+0100\n"
+"Last-Translator: Albi\n"
 "Language-Team: \n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -45,6 +45,24 @@ msgstr "Leírás"
 
 msgid "this game's description"
 msgstr "játék leírása"
+
+msgid "Genre"
+msgstr "Műfaj"
+
+msgid "enter game genre"
+msgstr "játék műfajának megadása"
+
+msgid "Tags"
+msgstr "Címkék"
+
+msgid "tags"
+msgstr "címkék"
+
+msgid "Sort name"
+msgstr "Rövid  név"
+
+msgid "enter game sort name"
+msgstr "írja be a játék rövid nevét"
 
 msgid "Emulator"
 msgstr "Emulátor"
@@ -171,12 +189,6 @@ msgstr "Kiadó"
 
 msgid "this game's publisher"
 msgstr "játék kiadója"
-
-msgid "Genre"
-msgstr "Műfaj"
-
-msgid "enter game genre"
-msgstr "játék műfajának megadása"
 
 msgid "Game family"
 msgstr "Játék típus"
@@ -915,6 +927,12 @@ msgstr "KÉZIKÖNYV"
 msgid "PADTOKEY SETTINGS"
 msgstr "PADTOKEY BEÁLLÍTÁSOK"
 
+msgid "MANUAL SCRAPE"
+msgstr "KÉZI KAPIRGÁLÁS"
+
+msgid "INCLUDED SCRAPERS"
+msgstr "MELLÉKELT KAPIRGÁLÓK"
+
 msgid "SCREENSCRAPER"
 msgstr "SCREENSCRAPER"
 
@@ -1599,6 +1617,19 @@ msgstr "NYELV"
 msgid "LANGUAGE (REGION)"
 msgstr "NYELV (RÉGIÓ)"
 
+msgid "KEYBOARD LAYOUT"
+msgstr "BILLENTYŰZET KIOSZTÁS"
+
+msgid "KEYBOARD VARIANT"
+msgstr "BILLENTYŰZET VÁLTOZAT"
+
+msgid ""
+"Select the physical keyboard layout. A reboot may be required for changes to "
+"take full effect."
+msgstr ""
+"Válassza ki a fizikai billentyűzetkiosztást. A módosítások teljes érvénybe "
+"lépéséhez újraindításra lehet szükség."
+
 msgid "SELECT YOUR TIME ZONE"
 msgstr "VÁLASSZA KI AZ IDŐZÓNÁT"
 
@@ -1770,6 +1801,12 @@ msgstr "TÁROLÓ"
 
 msgid "BACKUP USER DATA"
 msgstr "FELHASZNÁLÓI ADAT MENTÉSE"
+
+msgid "EJECT AN EXTRA DISK"
+msgstr "EGY EXTRA LEMEZ KIADÁSA"
+
+msgid "EXTRA DRIVE FILESYSTEM TYPE"
+msgstr "EXTRA DRIVE FILESYSTEM TYPE"
 
 msgid "ADVANCED"
 msgstr "HALADÓ"
@@ -2045,11 +2082,17 @@ msgstr "több játék található"
 msgid "SHOW '..' PARENT FOLDER"
 msgstr "'..' SZÜLŐ KÖNYVTÁR MEGJELENÍTÉSE"
 
-msgid "BEFORE NAME"
-msgstr "NÉV ELŐTT"
+msgid "ICONS"
+msgstr "IKONOK"
 
 msgid "AFTER NAME"
 msgstr "NÉV UTÁN"
+
+msgid "BEFORE NAME"
+msgstr "NÉV ELŐTT"
+
+msgid "SHOW TAGS ICONS"
+msgstr "MUTASSA CÍMKÉK IKONJAIT"
 
 msgid "SHOW REGION FLAG"
 msgstr "NYELVI ZÁSZLÓK MEGJELENÍTÉSE A LISTÁKBAN"
@@ -2345,6 +2388,24 @@ msgstr "A KIVÁLASZTOTT LEHETŐSÉGEK HIBÁSAK"
 msgid "ARE YOU SURE YOU WANT TO FORMAT THIS DRIVE?"
 msgstr "BIZTOS, HOGY FORMÁZNI SZERETNÉD EZT A MEGHAJTÓT?"
 
+msgid "SAFELY EJECT A DISK"
+msgstr "LEMEZ BIZTONSÁGOS KIADÁSA"
+
+msgid "MERGED DRIVE"
+msgstr "EGYESÍTETT MEGHAJTÓ"
+
+msgid "NO MERGED DRIVES FOUND"
+msgstr "NEM TALÁLHATÓ EGYESÍTETT MEGHAJTÓ"
+
+msgid "EJECT"
+msgstr "KIADÁS"
+
+msgid "NO DRIVE SELECTED"
+msgstr "NINCS KIVÁLASZTVA MEGHAJTÓ"
+
+msgid "Ejecting..."
+msgstr "Kiadás..."
+
 msgid "Points"
 msgstr "Pontok"
 
@@ -2436,6 +2497,32 @@ msgid ""
 msgstr ""
 "EZZEL LETÖRLÖD AZ AKTUÁLIS JÁTÉK FÁJLOKAT!\n"
 "BIZTOS VAGY BENNE?"
+
+msgid "NFC"
+msgstr "NFC"
+
+msgid "WRITE AN NFC TAG FOR THIS GAME"
+msgstr "ÍRJ EGY NFC TAGET ENNEK A JÁTÉKNAK"
+
+#, c-format
+msgid ""
+"IN ORDER TO WRITE THE LAUNCH COMMAND FOR\n"
+"'%s'\n"
+"PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
+msgstr ""
+"AZ INDÍTÁSI PARANCS MEGÍRÁSÁHOZ AZ\n"
+"'%s'\n"
+"AZ INDÍTÁSHOZ NYOMJA MEG AZ ÍRÁS GOMBOT, MAJD HELYEZZEN EGY NFC TAGet AZ "
+"ÍRÓRA"
+
+msgid "WRITE"
+msgstr "ÍRÁS"
+
+msgid "PLACE A TAG ON THE WRITER..."
+msgstr "HELYEZZE A TAGET AZ ÍRÓRA..."
+
+msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
+msgstr "A TAG ÍRÁSA SIKERESEN BEFEJEZŐDÖTT"
 
 msgid "COLLECTIONS"
 msgstr "GYŰJTEMÉNYEK"
@@ -2688,6 +2775,9 @@ msgstr "NAGYÍTÁS"
 
 msgid "EDIT METADATA"
 msgstr "META SZERKESZTÉSE"
+
+msgid "TAGS"
+msgstr "CÍMKÉK"
 
 msgid "GENRES"
 msgstr "MŰFAJ"
@@ -3250,6 +3340,9 @@ msgstr "Játéklista betöltése"
 msgid "GENRE"
 msgstr "MŰFAJ"
 
+msgid "TAG"
+msgstr "CÍMKE"
+
 msgid "FAMILY"
 msgstr "CSALÁD"
 
@@ -3315,6 +3408,21 @@ msgstr "LEKÉRDEZÉS BEFEJEZVE"
 
 msgid "UPDATE GAMELISTS TO APPLY CHANGES."
 msgstr "FRISSÍTSE A JÁTÉKLISTÁKAT A MÓDOSÍTÁSOK ALKALMAZÁSÁHOZ."
+
+msgid "SLOW"
+msgstr "LASSÚ"
+
+msgid "NOT WORKING"
+msgstr "NEM MŰKÖDIK"
+
+msgid "BUGGY"
+msgstr "HIBÁS"
+
+msgid "LIKED"
+msgstr "KEDVELT"
+
+msgid "DISLIKED"
+msgstr "NEMKEDVELT"
 
 msgid "Loading system config..."
 msgstr "Rendszer konfiguráció betöltése..."
@@ -3792,27 +3900,87 @@ msgstr ""
 "FEGYVER KALIBRÁCIÓ\n"
 "Tűz a kalibrálandó célpontokra"
 
-msgid "WRITE AN NFC TAG FOR THIS GAME"
-msgstr "ÍRJ EGY NFC TAGET ENNEK A JÁTÉKNAK"
+msgid "Reloaded the games list..."
+msgstr "Újratöltöttem a játékok listáját..."
 
-#, c-format
-msgid ""
-"IN ORDER TO WRITE THE LAUNCH COMMAND FOR\n"
-"'%s'\n"
-"PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
-msgstr ""
-"AZ INDÍTÁSI PARANCS MEGÍRÁSÁHOZ AZ\n"
-"'%s'\n"
-"AZ INDÍTÁSHOZ NYOMJA MEG AZ ÍRÁS GOMBOT, MAJD HELYEZZEN EGY NFC TAGet AZ ÍRÓRA"
+msgid "GAME DRIVE DETECTED"
+msgstr "JÁTÉKMEGHAJTÓ ÉSZLELVE"
 
-msgid "WRITE"
-msgstr "ÍRÁS"
+msgid "DEVICE"
+msgstr "MEGHAJTÓ"
 
-msgid "PLACE A TAG ON THE WRITER..."
-msgstr "HELYEZZE A TAGET AZ ÍRÓRA"
+msgid "MODEL"
+msgstr "MODELL"
 
-msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
-msgstr "A TAG ÍRÁSA SIKERESEN BEFEJEZŐDÖTT"
+msgid "SIZE"
+msgstr "MÉRET"
+
+msgid "MOUNT"
+msgstr "FELCSATOLÁS"
+
+msgid "Merge games from this drive partition now?"
+msgstr "Játékok egyesítése erről a meghajtópartícióról most?"
+
+msgid "(This will also apply on future boots)"
+msgstr "(Ez a jövőbeli indításokra is vonatkozik)"
+
+msgid "Merge requested... Please wait."
+msgstr "Egyesítés kérése megtörtént... Kérjük, várjon."
+
+msgid "MERGE FAILED"
+msgstr "EGYESÍTÉS SIKERTELEN"
+
+msgid "Please check the logs."
+msgstr "Kérlek, ellenőrizd a naplókat."
+
+msgid "N/A"
+msgstr "Ismeretlen"
+
+msgid "NEW DRIVE DETECTED"
+msgstr "ÚJ MEGHAJTÓ ÉRZÉKELVE"
+
+msgid "Format and prepare this drive for game storage?"
+msgstr "Formatálni és előkészíteni ezt a meghajtót játékok tárolására?"
+
+msgid "(ALL EXISTING DATA WILL BE ERASED)"
+msgstr "(MINDEN MEGLÉVŐ ADAT TÖRLŐDIK)"
+
+msgid "Starting format process..."
+msgstr "Formatálási folyamat indítása..."
+
+msgid "FORMAT FAILED"
+msgstr "FORMATÁLÁS SIKERTELEN"
+
+msgid "NO, IGNORE THIS TIME"
+msgstr "NEM, EZUTÁN FELEJTSD EL"
+
+msgid "NO, IGNORE FOREVER"
+msgstr "NEM, ÖRÖKKÉ FIGYELMEN KÍVÜL"
+
+msgid "Adding drive to ignore list..."
+msgstr "Meghajtó hozzáadása a tiltólistához..."
+
+msgid "YES, FORMAT & MERGE"
+msgstr "IGEN, FORMÁZÁS ÉS EGYESÍTÉS"
+
+msgid "NO, IGNORE"
+msgstr "NEM, FIGYELMEN KÍVÜL HAGY"
+
+#~ msgid "EJECT AN EXTERNAL DISK"
+#~ msgstr "KÜLSŐ LEMEZ KIADÁSA"
+
+#~ msgid "EXTERNAL DRIVE FILESYSTEM TYPE"
+#~ msgstr "KÜLSŐ MEGHAJTÓ FÁJLRENDSZER TÍPUSA"
+
+#~ msgid "Merge games from this drive now?"
+#~ msgstr "Egyesíted most a játékokat erről a meghajtóról?"
+
+#~ msgid "Merging drive... Please wait."
+#~ msgstr "Meghajtó egyesítése... Kérjük, várjon."
+
+#~ msgid "New drive content will be available after games list is refreshed..."
+#~ msgstr ""
+#~ "Új tartalom lesz elérhető a meghajtón a játéklista frissítése után..."
 
 #~ msgid "BY HARDWARE TYPE"
 #~ msgstr "HARDVER TÍPUS SZERINT"

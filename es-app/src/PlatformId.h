@@ -119,6 +119,7 @@ namespace PlatformIds
 		// Windows Specific
 		VISUALPINBALL,
 		FUTUREPINBALL,
+		PIONEER_LASERACTIVE,
 
 		// Misc systems
 		CHANNELF,
@@ -137,6 +138,7 @@ namespace PlatformIds
 
 		VIC20,
 		TI99,
+		CASSETTE_VISION,
 		SUPER_CASSETTE_VISION,
 		EASYRPG,
 		COMMODORE_PET,

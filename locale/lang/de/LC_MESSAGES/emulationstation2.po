@@ -3,17 +3,17 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2025-11-21 14:51+0000\n"
+"PO-Revision-Date: 2026-02-03 16:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Loco-Source-Locale: de_DE\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Parser: loco_parse_po"
+"X-Loco-Parser: loco_parse_po\n"
 
 msgid "SCANNING BLUETOOTH"
 msgstr "SCANNE BLUETOOTH"
@@ -47,6 +47,24 @@ msgstr "Beschreibung"
 
 msgid "this game's description"
 msgstr "Beschreibung dieses Spiels"
+
+msgid "Genre"
+msgstr "Genre"
+
+msgid "enter game genre"
+msgstr "Spiele-Genre eingeben"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "tags"
+msgstr "tag"
+
+msgid "Sort name"
+msgstr "Sortiername"
+
+msgid "enter game sort name"
+msgstr "Sortiername für Spiel eingeben"
 
 msgid "Emulator"
 msgstr "Emulator"
@@ -173,12 +191,6 @@ msgstr "Herausgeber"
 
 msgid "this game's publisher"
 msgstr "Herausgeber dieses Spiels"
-
-msgid "Genre"
-msgstr "Genre"
-
-msgid "enter game genre"
-msgstr "Spiele-Genre eingeben"
 
 msgid "Game family"
 msgstr "Spiele-Familie"
@@ -919,6 +931,12 @@ msgstr "ANLEITUNG"
 msgid "PADTOKEY SETTINGS"
 msgstr "PADTOKEY EINSTELLUNGEN"
 
+msgid "MANUAL SCRAPE"
+msgstr "MANUELLES SCRAPING"
+
+msgid "INCLUDED SCRAPERS"
+msgstr "ENTHALTENE SCRAPER"
+
 msgid "SCREENSCRAPER"
 msgstr "SCREENSCRAPER"
 
@@ -1540,8 +1558,8 @@ msgstr "UI-ELEMENTE BEIM BOOTEN VORLADEN"
 msgid ""
 "Reduces lag when entering gamelists from the system menu, increases boot time"
 msgstr ""
-"Reduziert Verzögerungen bei der Eingabe von Spielelisten aus dem System-Menü,"
-" verlängert Boot-Zeit"
+"Reduziert Verzögerungen bei der Eingabe von Spielelisten aus dem System-"
+"Menü, verlängert Boot-Zeit"
 
 msgid "PRELOAD METADATA MEDIA ON BOOT"
 msgstr "MEDIEN-METADATEN BEIM BOOTEN VORLADEN"
@@ -1603,6 +1621,18 @@ msgstr "SPRACHE"
 
 msgid "LANGUAGE (REGION)"
 msgstr "SPRACHE (REGION)"
+
+msgid "KEYBOARD LAYOUT"
+msgstr "TASTATURLAYOUT"
+
+msgid "KEYBOARD VARIANT"
+msgstr "TASTATURVARIANTE"
+
+msgid ""
+"Select the physical keyboard layout. A reboot may be required for changes to "
+"take full effect."
+msgstr ""
+"Physisches Tastaturlayout auswählen. Ein Neustart kann erforderlich sein."
 
 msgid "SELECT YOUR TIME ZONE"
 msgstr "WÄHLEN SIE IHRE ZEITZONE"
@@ -1771,6 +1801,12 @@ msgstr "DATENSPEICHER-GERÄT"
 
 msgid "BACKUP USER DATA"
 msgstr "BENUTZERDATEN SICHERN"
+
+msgid "EJECT AN EXTRA DISK"
+msgstr "ZUSÄTZLICHES LAUFWERK AUSWERFEN"
+
+msgid "EXTRA DRIVE FILESYSTEM TYPE"
+msgstr "DATEISYSTEMTYP ZUSÄTZLICHES LAUFWERK"
 
 msgid "ADVANCED"
 msgstr "ERWEITERT"
@@ -2050,11 +2086,17 @@ msgstr "mehrere Spiele vorliegend"
 msgid "SHOW '..' PARENT FOLDER"
 msgstr "ÜBERGEORDNETEN ORDNER '..' ANZEIGEN"
 
-msgid "BEFORE NAME"
-msgstr "VOR NAME"
+msgid "ICONS"
+msgstr "ICONS"
 
 msgid "AFTER NAME"
 msgstr "NACH NAME"
+
+msgid "BEFORE NAME"
+msgstr "VOR NAME"
+
+msgid "SHOW TAGS ICONS"
+msgstr "TAGS-SYMBOLE ANZEIGEN"
 
 msgid "SHOW REGION FLAG"
 msgstr "REGIONS-SYMBOL IN LISTEN ANZEIGEN"
@@ -2349,6 +2391,24 @@ msgstr "GEWÄHLTE OPIONEN SIND UNGÜLTIG"
 msgid "ARE YOU SURE YOU WANT TO FORMAT THIS DRIVE?"
 msgstr "SIND SIE SICHER, DASS SIE DIESES LAUFWERK FORMATIEREN WOLLEN?"
 
+msgid "SAFELY EJECT A DISK"
+msgstr "LAUFWERK SICHER AUSWERFEN"
+
+msgid "MERGED DRIVE"
+msgstr "ZUSAMMENGEFÜHRTES LAUFWERK"
+
+msgid "NO MERGED DRIVES FOUND"
+msgstr "KEINE ZUSAMMENGEFÜHRTEN LAUFWERKE GEFUNDEN"
+
+msgid "EJECT"
+msgstr "AUSWERFEN"
+
+msgid "NO DRIVE SELECTED"
+msgstr "KEIN LAUFWERK AUSGEWÄHLT"
+
+msgid "Ejecting..."
+msgstr "Wird ausgeworfen..."
+
 msgid "Points"
 msgstr "Punkte"
 
@@ -2440,6 +2500,32 @@ msgid ""
 msgstr ""
 "DIES WIRD DIE AKTUELLE(N) SPIELE-DATEI(EN) LÖSCHEN!\n"
 "SIND SIE SICHER?"
+
+msgid "NFC"
+msgstr "NFC"
+
+msgid "WRITE AN NFC TAG FOR THIS GAME"
+msgstr "SCHREIBE EINEN NFC-TAG FÜR DIESES SPIEL"
+
+#, c-format
+msgid ""
+"IN ORDER TO WRITE THE LAUNCH COMMAND FOR\n"
+"'%s'\n"
+"PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
+msgstr ""
+"UM DEN STARTBEFEHL FÜR\n"
+"'%s'\n"
+"ZU SCHREIBEN, DRÜCKE DIE SCHREIBEN-TASTE UND LEGE DANN EINEN NFC-TAG AUF DEN "
+"NFC-SCHREIBER"
+
+msgid "WRITE"
+msgstr "SCHREIBEN"
+
+msgid "PLACE A TAG ON THE WRITER..."
+msgstr "LEGE EINEN TAG AUF DEN NFC-SCHREIBER..."
+
+msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
+msgstr "DER TAG WURDE ERFOLGREICH BESCHRIEBEN"
 
 msgid "COLLECTIONS"
 msgstr "SAMMLUNGEN"
@@ -2692,6 +2778,9 @@ msgstr "ZOOM"
 msgid "EDIT METADATA"
 msgstr "METADATEN BEARBEITEN"
 
+msgid "TAGS"
+msgstr "TAGS"
+
 msgid "GENRES"
 msgstr "GENRES"
 
@@ -2774,8 +2863,8 @@ msgstr "CONTROLLER TASTENBELEGUNG"
 msgid ""
 "YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION, NOT "
 "ITS PHYSICAL LABEL. IF YOU DO NOT HAVE A SPECIAL BUTTON FOR HOTKEY, USE THE "
-"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY BUTTON."
-" PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
+"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY "
+"BUTTON. PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
 msgstr ""
 "SIE FÜHREN NUN DIE TASTENZUORDNUNG EINES CONTROLLERS DURCH. WEISEN SIE DIE "
 "TASTEN NICHT AUFGRUND IHRER BEZEICHNUNG ZU SONDERN ENTSPRECHEND IHRER "
@@ -3127,11 +3216,11 @@ msgid "INVALID CONTENT"
 msgstr "UNGÜLTIGER INHALT"
 
 msgid ""
-"A valid account is required. Please register an account on https:"
-"//retroachievements.org"
+"A valid account is required. Please register an account on https://"
+"retroachievements.org"
 msgstr ""
-"Ein gültiger Zugang wird benötigt. Bitte registriere dich auf https:"
-"//retroachievements.org"
+"Ein gültiger Zugang wird benötigt. Bitte registriere dich auf https://"
+"retroachievements.org"
 
 msgid "Full"
 msgstr "Vollständig"
@@ -3254,6 +3343,9 @@ msgstr "Lade Spielelisten"
 msgid "GENRE"
 msgstr "GENRE"
 
+msgid "TAG"
+msgstr "TAG"
+
 msgid "FAMILY"
 msgstr "FAMILIE"
 
@@ -3319,6 +3411,21 @@ msgstr "SCRAPEN ABGESCHLOSSEN"
 
 msgid "UPDATE GAMELISTS TO APPLY CHANGES."
 msgstr "SPIELELISTEN UPDATEN, UM ÄNDERUNGEN ZU ÜBERNEHMEN."
+
+msgid "SLOW"
+msgstr "LANGSAM"
+
+msgid "NOT WORKING"
+msgstr "NICHT FUNKTIONSFÄHIG"
+
+msgid "BUGGY"
+msgstr "FEHLERHAFT"
+
+msgid "LIKED"
+msgstr "MOCHTE ICH"
+
+msgid "DISLIKED"
+msgstr "MOCHTE ICH NICHT"
 
 msgid "Loading system config..."
 msgstr "Lade Systemkonfiguration..."
@@ -3797,24 +3904,68 @@ msgstr ""
 "KALIBRIERE PISTOLE\n"
 "Zur Kalibration auf Ziele schießen"
 
-msgid "WRITE AN NFC TAG FOR THIS GAME"
-msgstr "SCHREIBE EINEN NFC-TAG FÜR DIESES SPIEL"
+msgid "Reloaded the games list..."
+msgstr "Spieleliste neu geladen..."
 
-#, c-format
-msgid ""
-"IN ORDER TO WRITE THE LAUNCH COMMAND FOR\n"
-"'%s'\n"
-"PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
-msgstr ""
-"UM DEN STARTBEFEHL FÜR\n"
-"'%s'\n"
-"ZU SCHREIBEN, DRÜCKE DIE SCHREIBEN-TASTE UND LEGE DANN EINEN NFC-TAG AUF DEN NFC-SCHREIBER"
+msgid "GAME DRIVE DETECTED"
+msgstr "SPIELELAUFWERK ERKANNT"
 
-msgid "WRITE"
-msgstr "SCHREIBEN"
+msgid "DEVICE"
+msgstr "GERÄT"
 
-msgid "PLACE A TAG ON THE WRITER..."
-msgstr "LEGE EINEN TAG AUF DEN NFC-SCHREIBER..."
+msgid "MODEL"
+msgstr "MODELL"
 
-msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
-msgstr "DER TAG WURDE ERFOLGREICH BESCHRIEBEN"
+msgid "SIZE"
+msgstr "GRÖSSE"
+
+msgid "MOUNT"
+msgstr "EINBINDEN"
+
+msgid "Merge games from this drive partition now?"
+msgstr "Spiele jetzt von dieser Laufwerkspartition zusammenführen?"
+
+msgid "(This will also apply on future boots)"
+msgstr "(Dies gilt auch für zukünftige Starts)"
+
+msgid "Merge requested... Please wait."
+msgstr "Zusammenführung angefordert... Bitte warten."
+
+msgid "MERGE FAILED"
+msgstr "ZUSAMMENFÜHRUNG FEHLGESCHLAGEN"
+
+msgid "Please check the logs."
+msgstr "Bitte Protokolle prüfen."
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "NEW DRIVE DETECTED"
+msgstr "NEUES LAUFWERK ERKANNT"
+
+msgid "Format and prepare this drive for game storage?"
+msgstr "Dieses Laufwerk formatieren und für Spiele vorbereiten?"
+
+msgid "(ALL EXISTING DATA WILL BE ERASED)"
+msgstr "(ALLE BESTEHENDEN DATEN WERDEN GELÖSCHT)"
+
+msgid "Starting format process..."
+msgstr "Formatierungsvorgang wird gestartet..."
+
+msgid "FORMAT FAILED"
+msgstr "FORMATIERUNG FEHLGESCHLAGEN"
+
+msgid "NO, IGNORE THIS TIME"
+msgstr "NEIN, DIESES MAL IGNORIEREN"
+
+msgid "NO, IGNORE FOREVER"
+msgstr "NEIN, IMMER IGNORIEREN"
+
+msgid "Adding drive to ignore list..."
+msgstr "Laufwerk wird zur Ignorierliste hinzugefügt..."
+
+msgid "YES, FORMAT & MERGE"
+msgstr "JA, FORMATIEREN & ZUSAMMENFÜHREN"
+
+msgid "NO, IGNORE"
+msgstr "NEIN, IGNORIEREN"

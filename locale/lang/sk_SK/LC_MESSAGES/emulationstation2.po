@@ -1,18 +1,19 @@
+# SPDX-FileCopyrightText: 2026 Roman Paholík <wizzardsk@gmail.com>
 msgid ""
 msgstr ""
 "Project-Id-Version: Batocera\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-12-05 13:13+0100\n"
-"PO-Revision-Date: 2025-12-02 10:53+0100\n"
-"Last-Translator: Roman Paholík\n"
-"Language-Team: Slovak (Slovakia)\n"
+"PO-Revision-Date: 2026-01-30 21:46+0100\n"
+"Last-Translator: Roman Paholík <wizzardsk@gmail.com>\n"
+"Language-Team: Slovak <kde-sk@linux.sk>\n"
 "Language: sk_SK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=( n == 1 ) ? 0 : ( n >= 2 && n <= 4 ) ? 1 : "
 "2;\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Lokalize 25.12.1\n"
 "X-Loco-Source-Locale: en\n"
 "X-Loco-Project-Id: 136009\n"
 "X-Loco-Api-Version: 1.0.27 20230201-1\n"
@@ -49,6 +50,24 @@ msgstr "Popis"
 
 msgid "this game's description"
 msgstr "popis tejto hry"
+
+msgid "Genre"
+msgstr "Žáner"
+
+msgid "enter game genre"
+msgstr "zadajte žáner hry"
+
+msgid "Tags"
+msgstr "Značky"
+
+msgid "tags"
+msgstr "značky"
+
+msgid "Sort name"
+msgstr "Triediť meno"
+
+msgid "enter game sort name"
+msgstr "zadajte názov hry na triedenie"
 
 msgid "Emulator"
 msgstr "Emulátor"
@@ -175,12 +194,6 @@ msgstr "Vydavateľ"
 
 msgid "this game's publisher"
 msgstr "zadajte vydavateľa hry"
-
-msgid "Genre"
-msgstr "Žáner"
-
-msgid "enter game genre"
-msgstr "zadajte žáner hry"
 
 msgid "Game family"
 msgstr "Rodina hier"
@@ -915,6 +928,12 @@ msgstr "Ručné"
 msgid "PADTOKEY SETTINGS"
 msgstr "Nastavenia PadToKey"
 
+msgid "MANUAL SCRAPE"
+msgstr "ručné vyhľadanie"
+
+msgid "INCLUDED SCRAPERS"
+msgstr "zahrnuté vyhľadávače"
+
 msgid "SCREENSCRAPER"
 msgstr "Screenscraper"
 
@@ -1592,6 +1611,17 @@ msgstr "Jazyk"
 msgid "LANGUAGE (REGION)"
 msgstr "Jazyk (región)"
 
+msgid "KEYBOARD LAYOUT"
+msgstr "Rozloženie klávesov"
+
+msgid "KEYBOARD VARIANT"
+msgstr "variant klávesnice"
+
+msgid ""
+"Select the physical keyboard layout. A reboot may be required for changes to "
+"take full effect."
+msgstr "Vyberte fyzické rozloženie klávesnice. Môže byť potrebný reštart."
+
 msgid "SELECT YOUR TIME ZONE"
 msgstr "Vyberte vaše časové pásmp"
 
@@ -1756,6 +1786,12 @@ msgstr "Úložné zariadenie"
 
 msgid "BACKUP USER DATA"
 msgstr "Zálohovať údaje používateľa"
+
+msgid "EJECT AN EXTRA DISK"
+msgstr ""
+
+msgid "EXTRA DRIVE FILESYSTEM TYPE"
+msgstr ""
 
 msgid "ADVANCED"
 msgstr "Pokročilé"
@@ -2029,11 +2065,17 @@ msgstr "majúce viac hier"
 msgid "SHOW '..' PARENT FOLDER"
 msgstr "Zobraziť nadradený priečinok '..'"
 
-msgid "BEFORE NAME"
-msgstr "Pred názvom"
+msgid "ICONS"
+msgstr "Ikony"
 
 msgid "AFTER NAME"
 msgstr "Po názve"
+
+msgid "BEFORE NAME"
+msgstr "Pred názvom"
+
+msgid "SHOW TAGS ICONS"
+msgstr "Zobraziť ikony značiek"
 
 msgid "SHOW REGION FLAG"
 msgstr "Zobraziť vlajku regiónu"
@@ -2327,6 +2369,24 @@ msgstr "Vybrané voľby sú neplatné"
 msgid "ARE YOU SURE YOU WANT TO FORMAT THIS DRIVE?"
 msgstr "Určite chcete naformátovať toto zariadenie?"
 
+msgid "SAFELY EJECT A DISK"
+msgstr "Bezpečne vysunúť disk"
+
+msgid "MERGED DRIVE"
+msgstr "Zlúčený disk"
+
+msgid "NO MERGED DRIVES FOUND"
+msgstr "Nenašli sa zlúčené disky"
+
+msgid "EJECT"
+msgstr "Vysunúť"
+
+msgid "NO DRIVE SELECTED"
+msgstr "Nevybraný disk"
+
+msgid "Ejecting..."
+msgstr "Vysúvam..."
+
 msgid "Points"
 msgstr "Body"
 
@@ -2418,6 +2478,31 @@ msgid ""
 msgstr ""
 "Toto vymaže herné súbory!\n"
 "Chcete pokračovať?"
+
+msgid "NFC"
+msgstr ""
+
+msgid "WRITE AN NFC TAG FOR THIS GAME"
+msgstr "Zapísať NFC značku pre túto hru"
+
+#, c-format
+msgid ""
+"IN ORDER TO WRITE THE LAUNCH COMMAND FOR\n"
+"'%s'\n"
+"PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
+msgstr ""
+"Na zapísanie príkazu spustenia pre\n"
+"'%s'\n"
+"stlačte tlačidlo Zápis a potom umiestnite NFC značku na zapisovač"
+
+msgid "WRITE"
+msgstr "Zápis"
+
+msgid "PLACE A TAG ON THE WRITER..."
+msgstr "Umiestniť značku na zapisovač..."
+
+msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
+msgstr "Značka bola úspešne zapísaná"
 
 msgid "COLLECTIONS"
 msgstr "Kolekcie"
@@ -2669,6 +2754,9 @@ msgstr "Priblíženie"
 
 msgid "EDIT METADATA"
 msgstr "Upraviť metadáta"
+
+msgid "TAGS"
+msgstr "Značky"
 
 msgid "GENRES"
 msgstr "Žánre"
@@ -3232,6 +3320,9 @@ msgstr "Načítavam zoznamy hier"
 msgid "GENRE"
 msgstr "Žáner"
 
+msgid "TAG"
+msgstr "Značka"
+
 msgid "FAMILY"
 msgstr "Rodina"
 
@@ -3297,6 +3388,21 @@ msgstr "Vyhľadávanie ukončené"
 
 msgid "UPDATE GAMELISTS TO APPLY CHANGES."
 msgstr "Aktualizujte zoznamy hier na použitie zmien."
+
+msgid "SLOW"
+msgstr "Pomaly"
+
+msgid "NOT WORKING"
+msgstr "Nefunguje"
+
+msgid "BUGGY"
+msgstr "Chybné"
+
+msgid "LIKED"
+msgstr "Obľúbené"
+
+msgid "DISLIKED"
+msgstr "Neobľúbené"
 
 msgid "Loading system config..."
 msgstr "Načítavam systémové nastavenie..."
@@ -3780,6 +3886,87 @@ msgid ""
 msgstr ""
 "Kalibrácia zbrane\n"
 "Vystreľte na cieľ na kalibráciu"
+
+msgid "Reloaded the games list..."
+msgstr "Znovu načítaný zoznam hier..."
+
+msgid "GAME DRIVE DETECTED"
+msgstr "Zistil sa disk s hrou"
+
+msgid "DEVICE"
+msgstr "Zariadenie"
+
+msgid "MODEL"
+msgstr "Model"
+
+msgid "SIZE"
+msgstr "Veľkosť"
+
+msgid "MOUNT"
+msgstr ""
+
+msgid "Merge games from this drive partition now?"
+msgstr ""
+
+msgid "(This will also apply on future boots)"
+msgstr "(Toto sa použije aj pri ďalších spusteniach)"
+
+msgid "Merge requested... Please wait."
+msgstr ""
+
+msgid "MERGE FAILED"
+msgstr "Zlúčenie zlyhalo"
+
+msgid "Please check the logs."
+msgstr "Prosím skontrolujte záznamy."
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "NEW DRIVE DETECTED"
+msgstr "Zistil sa nový disk"
+
+msgid "Format and prepare this drive for game storage?"
+msgstr "Formátovať a pripraviť tento disk na uloženie hier?"
+
+msgid "(ALL EXISTING DATA WILL BE ERASED)"
+msgstr "(všetky existujúce dáta budú vymazané)"
+
+msgid "Starting format process..."
+msgstr "Spúšťam proces formátovania"
+
+msgid "FORMAT FAILED"
+msgstr "Formátovanie zlyhalo"
+
+msgid "NO, IGNORE THIS TIME"
+msgstr "Nie, ignorovať teraz"
+
+msgid "NO, IGNORE FOREVER"
+msgstr "Nie, ignorovať navždy"
+
+msgid "Adding drive to ignore list..."
+msgstr "Pridávam disk do ignore listu..."
+
+msgid "YES, FORMAT & MERGE"
+msgstr "Áno, formátovať a zlúčiť"
+
+msgid "NO, IGNORE"
+msgstr "Nie, ignorovať"
+
+#~ msgid "EJECT AN EXTERNAL DISK"
+#~ msgstr "Vysunúť externý disk"
+
+#~ msgid "EXTERNAL DRIVE FILESYSTEM TYPE"
+#~ msgstr "Typ filesystému externého disku"
+
+#~ msgid "Merge games from this drive now?"
+#~ msgstr "Zlúčiť hry z tohto disku?"
+
+#~ msgid "Merging drive... Please wait."
+#~ msgstr "Zlučujem disk... Prosím, čakajte."
+
+#~ msgid "New drive content will be available after games list is refreshed..."
+#~ msgstr "Nový obsah disku bude dostupný po obnovení zoznamu hier..."
 
 #~ msgid "BY HARDWARE TYPE"
 #~ msgstr "Podľa typu hardvéru"

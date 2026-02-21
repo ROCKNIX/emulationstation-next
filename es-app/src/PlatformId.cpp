@@ -126,6 +126,7 @@ namespace PlatformIds
 		{ "vpinball",				VISUALPINBALL },
 		{ "fpinball",				FUTUREPINBALL },
 		{ "o2em",					VIDEOPAC_ODYSSEY2 },
+		{ "laseractive",			PIONEER_LASERACTIVE },
 
 		// Misc systems
 		{ "channelf",				CHANNELF },
@@ -155,6 +156,7 @@ namespace PlatformIds
 			
 		{ "imageviewer",			IMAGEVIEWER },
 			
+		{ "cassettevision",			CASSETTE_VISION },
 		{ "scv",					SUPER_CASSETTE_VISION },
 		{ "easyrpg",				EASYRPG },			
 		{ "pet",					COMMODORE_PET },
