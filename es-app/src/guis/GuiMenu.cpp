@@ -1964,7 +1964,7 @@ void GuiMenu::openSystemSettings()
 
 	// Default Scaling governor
 	auto optionsGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEFAULT SCALING GOVERNOR"), false);
-	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableGovernors();
+	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableCpuGovernors();
 	std::string selectedGovernors = SystemConf::getInstance()->get("system.cpugovernor");
 	if (selectedGovernors.empty())
 		selectedGovernors = "default";
@@ -1987,20 +1987,33 @@ void GuiMenu::openSystemSettings()
 	});
 
 	// GPU performance mode with enhanced power savings
-	auto gpuPerformance = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU PERFORMANCE PROFILE"), false);
-	std::string gpu_performance = SystemConf::getInstance()->get("system.gpuperf");
-	if (gpu_performance.empty())
-		gpu_performance = "profile_standard";
-	gpuPerformance->add(_("Balanced"), "profile_standard", gpu_performance == "profile_standard");
-	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
-	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
-	s->addWithLabel(_("GPU PERFORMANCE PROFILE"), gpuPerformance);
-	s->addSaveFunc([this, gpuPerformance, gpu_performance]
+	auto optionsGpuGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEFAULT GPU SCALING GOVERNOR"), false);
+
+	std::vector<std::string> availableGpuGovernors = ApiSystem::getInstance()->getAvailableGpuGovernors();
+	std::string selectedGpuGovernor = SystemConf::getInstance()->get("system.gpuperf");
+	
+	if (selectedGpuGovernor.empty())
+		selectedGpuGovernor = "ondemand";
+	
+	bool selectedGpuGovernorFound = false;
+	
+	for (auto it = availableGpuGovernors.begin(); it != availableGpuGovernors.end(); it++)
 	{
-		if (gpuPerformance->changed()) {
-			SystemConf::getInstance()->set("system.gpuperf", gpuPerformance->getSelected());
-			Utils::Platform::runSystemCommand("/usr/bin/sh -lc \". /etc/profile.d/030-powerfunctions; gpu_performance_level "+ gpuPerformance->getSelected() + "\"", "", nullptr);
+		optionsGpuGovernors->add((*it), (*it), selectedGpuGovernor == (*it));
+		if (selectedGpuGovernor == (*it))
+			selectedGpuGovernorFound = true;
+	}
+	
+	if (!selectedGpuGovernorFound)
+		optionsGpuGovernors->add(selectedGpuGovernor, selectedGpuGovernor, true);
+
+	s->addWithLabel(_("DEFAULT GPU SCALING GOVERNOR"), optionsGpuGovernors);
+	s->addSaveFunc([selectedGpuGovernor, optionsGpuGovernors]
+	{
+		if (optionsGpuGovernors->changed()) {
+			SystemConf::getInstance()->set("system.gpuperf", optionsGpuGovernors->getSelected());
 		}
+		Utils::Platform::runSystemCommand("/usr/bin/sh -lc \". /etc/profile.d/099-freqfunctions; gpu_performance_level "+ optionsGpuGovernors->getSelected() + "\"", "", nullptr);
 	});
 
 	if (Utils::Platform::GetEnv("DEVICE_TURBO_MODE") == "true"){
@@ -2886,7 +2899,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	// Per game/core/emu CPU governor
 	auto optionsGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CPU SCALING GOVERNOR"), false);
 
-	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableGovernors();
+	std::vector<std::string> availableGovernors = ApiSystem::getInstance()->getAvailableCpuGovernors();
 	std::string selectedGovernors = SystemConf::getInstance()->get(configName + ".cpugovernor");
 	if (selectedGovernors.empty())
 		selectedGovernors = "default";
@@ -2911,22 +2924,30 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	});
 
 	// GPU performance mode with enhanced power savings
-	auto gpuPerformance = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU PERFORMANCE PROFILE"), false);
-	std::string gpu_performance = SystemConf::getInstance()->get(configName + ".gpuperf");
-	if (gpu_performance.empty())
-		gpu_performance = "default";
+	auto optionsGpuGovernors = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU SCALING GOVERNOR"), false);
 
-	gpuPerformance->add(_("DEFAULT"), "default", gpu_performance == "default");
-	gpuPerformance->add(_("Balanced"), "profile_standard", gpu_performance == "profile_standard");
-	gpuPerformance->add(_("Battery Focus"), "low", gpu_performance == "low");
-	gpuPerformance->add(_("Best Performance"), "profile_peak", gpu_performance == "profile_peak");
-
-	guiSystemOptions->addWithLabel(_("GPU PERFORMANCE PROFILE"), gpuPerformance);
-
-	guiSystemOptions->addSaveFunc([configName, gpuPerformance, gpu_performance]
+	std::vector<std::string> availableGpuGovernors = ApiSystem::getInstance()->getAvailableGpuGovernors();
+	std::string selectedGpuGovernor = SystemConf::getInstance()->get(configName + ".gpuperf");
+	
+	if (selectedGpuGovernor.empty())
+		selectedGpuGovernor = "default";
+	
+	bool selectedGpuGovernorFound = false;
+	
+	for (auto it = availableGpuGovernors.begin(); it != availableGpuGovernors.end(); it++)
 	{
-		if (gpuPerformance->changed()) {
-			SystemConf::getInstance()->set(configName + ".gpuperf", gpuPerformance->getSelected());
+		optionsGpuGovernors->add((*it), (*it), selectedGpuGovernor == (*it));
+		if (selectedGpuGovernor == (*it))
+			selectedGpuGovernorFound = true;
+	}
+	if (!selectedGpuGovernorFound)
+		optionsGpuGovernors->add(selectedGpuGovernor, selectedGpuGovernor, true);
+
+	guiSystemOptions->addWithLabel(_("GPU SCALING GOVERNOR"), optionsGpuGovernors);
+	guiSystemOptions->addSaveFunc([configName, selectedGpuGovernor, optionsGpuGovernors]
+	{
+		if (optionsGpuGovernors->changed()) {
+			SystemConf::getInstance()->set(configName + ".gpuperf", optionsGpuGovernors->getSelected());
 		}
 	});
 
