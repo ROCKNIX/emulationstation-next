@@ -279,7 +279,8 @@ public:
 	bool setPowerLedGameForce(std::string basic_string);    
 
     /* OS Info */
-    std::vector<std::string> getAvailableGovernors();
+    std::vector<std::string> getAvailableCpuGovernors();
+	std::vector<std::string> getAvailableGpuGovernors();
 
     /* Display Info */
     std::vector<std::string> getAvailableDisplayModes();

@@ -741,9 +741,14 @@ std::vector<std::string> ApiSystem::getAvailableChannels()
 	return executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wifictl channels\"");
 }
 
-std::vector<std::string> ApiSystem::getAvailableGovernors()
+std::vector<std::string> ApiSystem::getAvailableCpuGovernors()
 {
 	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" < /sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors\" | grep \[a-z\]");
+}
+
+std::vector<std::string> ApiSystem::getAvailableGpuGovernors()
+{
+	return executeEnumerationScript("/usr/bin/sh -lc \". /etc/profile.d/099-freqfunctions; get_available_gpu_governors\"");
 }
 
 std::vector<std::string> ApiSystem::getAvailableDisplayModes()
