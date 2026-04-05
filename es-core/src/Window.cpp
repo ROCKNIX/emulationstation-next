@@ -473,13 +473,13 @@ void Window::update(int deltaTime)
 			ss << std::fixed << std::setprecision(2) << ((float)mFrameTimeElapsed / (float)mFrameCountElapsed) << "ms";
 
 			// vram
-			float textureVramUsageMb = TextureResource::getTotalMemUsage(false) / 1024.0f / 1024.0f;
-			float textureTotalUsageMb = TextureResource::getTotalTextureSize() / 1024.0f / 1024.0f;
-			float textureCacheUsageMb = TextureResource::getCachedTextureSize() / 1024.0f / 1024.0f;
-			float fontVramUsageMb = Font::getTotalMemUsage() / 1024.0f / 1024.0f;
+			float textureVramUsageMb = TextureResource::getTotalMemoryUsage(MemoryUsageType::VRAM) / 1024.0f / 1024.0f;
+			float textureKnownUsageMb = TextureResource::getTotalMemoryUsage(MemoryUsageType::Estimated) / 1024.0f / 1024.0f;
+			float textureCacheUsageMb = TextureResource::getTotalMemoryUsage(MemoryUsageType::RAM) / 1024.0f / 1024.0f;
+			float fontVramUsageMb = Font::getTotalMemoryUsage() / 1024.0f / 1024.0f;
 			size_t max_texture = Settings::getInstance()->getInt("MaxVRAM");
 
-			ss << "\nFont VRAM: " << fontVramUsageMb << " Tex VRAM: " << (textureVramUsageMb - textureCacheUsageMb) << " Cached Tex RAM: " << textureCacheUsageMb << " Known Tex: " << textureTotalUsageMb << " Max VRAM: " << max_texture;
+			ss << "\nFont VRAM: " << fontVramUsageMb << " Tex VRAM: " << textureVramUsageMb << " Cached Tex RAM: " << textureCacheUsageMb << " Known Tex: " << textureKnownUsageMb << " Max VRAM: " << max_texture;
 
 			mFrameDataText = std::unique_ptr<TextCache>(mDefaultFonts.at(0)->buildTextCache(ss.str(), Vector2f(50.f, 50.f), 0xFFFF40FF, 0.0f, ALIGN_LEFT, 1.2f));			
 		}
@@ -955,7 +955,12 @@ void Window::renderSplashScreen(std::string text, float percent, float opacity)
 		mSplash = std::make_shared<Splash>(this, getCustomSplashScreenImage());
 
 	mSplash->update(text, percent);
-	mSplash->render(opacity);	
+	mSplash->render(opacity);
+
+#if WIN32
+	SDL_Event evt;
+	SDL_PollEvent(&evt);
+#endif
 }
 
 void Window::renderSplashScreen(float opacity, bool swapBuffers)
@@ -1484,6 +1489,7 @@ void Window::processStorageRequest(std::string line)
 		std::string deviceModel = parts[2];
 		std::string deviceSize  = parts[3];
 		std::string mountPoint  = parts[4];
+		std::string uniqueId    = (parts.size() > 5 && !parts[5].empty()) ? parts[5] : "";
 
 		std::string message = _("GAME DRIVE DETECTED") + "\n\n" +
 							  _("DEVICE") + ": " + deviceName + "\n" +
@@ -1493,8 +1499,7 @@ void Window::processStorageRequest(std::string line)
 							  _("Merge games from this drive partition now?") + "\n" + 
 							  _("(This will also apply on future boots)");
 
-		auto* msg = new GuiMsgBox(this, message,
-			_("YES"), [this, mountPoint, processNext] {
+		auto mergeLambda = [this, mountPoint, processNext] {
 				this->displayNotificationMessage(_("Merge requested... Please wait."));
 				needReload = true;
 
@@ -1508,10 +1513,31 @@ void Window::processStorageRequest(std::string line)
 						}
 					});
 				}).detach();
-			}, 
-			_("NO"), [processNext] { processNext(); }
-		);
-		pushGui(msg);
+		};
+
+		if (!uniqueId.empty())
+		{
+			auto* msg = new GuiMsgBox(this, message,
+				_("NO, IGNORE THIS TIME"), [processNext] { processNext(); },
+				_("NO, IGNORE FOREVER"), [this, uniqueId, processNext] {
+					this->displayNotificationMessage(_("Adding drive to ignore list..."));
+					std::thread([uniqueId, processNext, this]() {
+						ApiSystem::getInstance()->ignoreDevicePermanently(uniqueId);
+						this->postToUiThread([processNext] { processNext(); });
+					}).detach();
+				},
+				_("YES, MERGE DRIVE"), mergeLambda
+			);
+			pushGui(msg);
+		}
+		else
+		{
+			auto* msg = new GuiMsgBox(this, message,
+				_("YES"), mergeLambda, 
+				_("NO"), [processNext] { processNext(); }
+			);
+			pushGui(msg);
+		}
 	}
 	else if (type == "REQUEST_FORMAT" && parts.size() >= 2)
 	{

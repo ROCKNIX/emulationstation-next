@@ -101,6 +101,8 @@ std::vector<const char*> settings_dont_save {
 	{ "ScreenOffsetY" },
 	{ "ScreenRotate" },
 	{ "MonitorID" },
+	{ "PackGamelists" },
+	{ "BuildMultiDiskContentCache" }
 };
 
 Settings::Settings() : mLoaded(false)
@@ -158,6 +160,7 @@ void Settings::setDefaults()
     mBoolMap["DrawClock"] = Settings::_DrawClock;
 	mBoolMap["ClockMode12"] = Settings::_ClockMode12;
 	mBoolMap["ShowControllerNotifications"] = true;	
+	mBoolMap["ShowGunsNotifications"] = true;
 	mBoolMap["ShowControllerActivity"] = Settings::_ShowControllerActivity;
 	mBoolMap["ShowControllerBattery"] = Settings::_ShowControllerBattery;
     mIntMap["SystemVolume"] = 95;
@@ -193,6 +196,8 @@ void Settings::setDefaults()
 	mStringMap["ShowBattery"] = "text";
 	mBoolMap["CheckBiosesAtLaunch"] = false;
 	mBoolMap["RemoveMultiDiskContent"] = true;
+	mBoolMap["PackGamelists"] = false;
+	mBoolMap["BuildMultiDiskContentCache"] = false;	
 
 	mBoolMap["ShowNetworkIndicator"] = Settings::_ShowNetworkIndicator;
 

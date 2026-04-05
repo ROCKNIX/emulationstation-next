@@ -132,8 +132,11 @@ public:
 
 protected:
 	std::shared_ptr<TextureResource> mTexture;
-	std::shared_ptr<TextureResource> mLoadingTexture;
+	bool mTextureLoaded;
 
+	std::shared_ptr<TextureResource> mLoadingTexture;
+	bool mLoadingTextureLoaded;
+	
 	Vector2f mTargetSize;
 
 	void	recalcLayout() override;
@@ -149,6 +152,7 @@ private:
 	void updateVertices();
 	void updateColors();
 	void updateRoundCorners();
+	bool watchTextureLoading();
 
 	void fadeIn(bool textureLoaded);
 
@@ -188,7 +192,7 @@ private:
 
 	float mPlaylistTimer;
 
-	bool mLinear;
+	bool mLinear;	
 
 	std::vector<Renderer::Vertex>	mRoundCornerStencil;
 

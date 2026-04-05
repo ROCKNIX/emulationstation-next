@@ -58,7 +58,7 @@ namespace PlatformIds
 		{ "pc88",					PC_88 },
 		{ "pc98",					PC_98 },
 		{ "sega32x",				SEGA_32X },
-		{ "segacd",					SEGA_CD },
+		{ "megacd",					SEGA_CD },
 		{ "dreamcast",				SEGA_DREAMCAST },
 		{ "gamegear",				SEGA_GAME_GEAR },
 		{ "genesis",				SEGA_GENESIS },
@@ -171,6 +171,7 @@ namespace PlatformIds
 		{ "astrocade",				ASTROCADE },
 		{ "archimedes",				ARCHIMEDES },			
 		{ "adam",					ADAM },
+		{ "bk",						ELEKTRONIKA_BK },
 
 		{ "fmtowns",				FMTOWNS },
 		{ "cdi",					PHILIPS_CDI },			
