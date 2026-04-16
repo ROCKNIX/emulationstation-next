@@ -647,6 +647,10 @@ namespace Utils
 			return "rk3566";
 #endif
 
+#if RK3576
+			return "rk3576";
+#endif
+
 #if RK3568
 			return "rk3568";
 #endif
