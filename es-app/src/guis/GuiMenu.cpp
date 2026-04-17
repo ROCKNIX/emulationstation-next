@@ -2824,7 +2824,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	GuiSettings* guiSystemOptions = new GuiSettings(mWindow, _("SYSTEM OPTIONS").c_str());
 	bool cfound = false;
 
-#if defined(S922X) || defined(RK3588) || defined(RK3399) || defined(SM8250) || defined(SM8550)
+#if defined(S922X) || defined(RK3588) || defined(RK3399)|| defined(RK3576) || defined(SM6115) || defined(SM8250) || defined(SM8550) || defined(SM8650)
 	// Core chooser
 	auto cores_used = std::make_shared<OptionListComponent<std::string>>(mWindow, _("CORES USED"));
 	cores_used->addRange({ {("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));
