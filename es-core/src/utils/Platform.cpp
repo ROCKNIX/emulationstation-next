@@ -651,6 +651,10 @@ namespace Utils
 			return "rk3568";
 #endif
 
+#if RK3576
+			return "rk3576";
+#endif
+
 #if RK3588
 			return "rk3588";
 #endif
@@ -695,12 +699,20 @@ namespace Utils
 			return "s922x";
 #endif
 
+#if SM6115
+			return "sm6115";
+#endif
+
 #if SM8250
 			return "sm8250";
 #endif
 
 #if SM8550
 			return "sm8550";
+#endif
+
+#if SM8650
+			return "sm8650";
 #endif
 
 #endif
