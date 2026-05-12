@@ -71,6 +71,8 @@ namespace Utils
 
 #if WIN32
 		bool isWindows11();
+#else
+		bool isBuildroot();
 #endif
 		int runSystemCommand(const std::string& cmd_utf8, const std::string& name, Window* window); // run a utf-8 encoded in the shell (requires wstring conversion on Windows)
 		std::string GetEnv(const std::string& var);

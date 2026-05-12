@@ -2084,6 +2084,9 @@
     <game id="hotd3">
       <gun/>
     </game>
+    <game id="HOTD3">
+      <gun/>
+    </game>
     <game id="hotd4" name="The House of the Dead 4 (Rev C)">
       <gun/>
     </game>
@@ -2718,6 +2721,9 @@
     </game>
     <game id="missile2a">
       <trackball/>
+    </game>
+    <game id="MissionImpossible">
+      <gun/>
     </game>
     <game id="moonwar">
       <spinner/>
@@ -4712,6 +4718,9 @@
     </game>
     <game id="vbowlj">
       <trackball/>
+    </game>
+    <game id="vc3">
+      <gun/>
     </game>
     <game id="vcombat">
       <gun/>
@@ -8154,6 +8163,29 @@
     </game>
     <game id="macsbasicriflemarksmanship">
       <gun type="macsrifle"/>
+    </game>
+  </system>
+  <system id="triforce">
+    <game id="fzeroaxmonsterride">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="fzeroax">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="mariokartgp1">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="mariokartgp2">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="mariokartarcadegp2dolrelseur">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="mariokartarcadegp2">
+      <wheel type="Steering Wheel" rotation="200"/>
+    </game>
+    <game id="mariokartarcadegp">
+      <wheel type="Steering Wheel" rotation="200"/>
     </game>
   </system>
   <system id="wii">
