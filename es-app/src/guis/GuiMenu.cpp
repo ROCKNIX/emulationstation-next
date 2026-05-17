@@ -1719,6 +1719,33 @@ void GuiMenu::openSystemSettings()
 	  }
 	}
 
+#if defined(ROCKNIX)
+	// Bottom screen content - only visible when 2+ displays detected
+	if (brightnesses.size() >= 2)
+	{    
+		auto bottomScreenType = std::make_shared<OptionListComponent<std::string>>(mWindow, _("BOTTOM SCREEN CONTENT"), false);
+		std::string selectedBottomScreenType = SystemConf::getInstance()->get("rocknix.bottomscreen.type");
+		if (selectedBottomScreenType.empty())
+			selectedBottomScreenType = "vc";
+
+		bottomScreenType->add(_("OFF"), "off", selectedBottomScreenType == "off");
+		bottomScreenType->add(_("VIRTUAL CONSOLE"), "vc", selectedBottomScreenType == "vc");
+
+		if (!bottomScreenType->hasSelection())
+			bottomScreenType->selectFirstItem();
+
+		s->addWithLabel(_("BOTTOM SCREEN CONTENT"), bottomScreenType);
+		s->addSaveFunc([bottomScreenType]
+		{
+			if (bottomScreenType->changed())
+			{
+				SystemConf::getInstance()->set("rocknix.bottomscreen.type", bottomScreenType->getSelected());
+				SystemConf::getInstance()->saveSystemConf();
+			}
+		});
+	}
+#endif
+
     // Default Display mode
     std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
     if (! availableDisplayModes.empty()){
