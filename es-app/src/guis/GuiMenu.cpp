@@ -5482,6 +5482,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 			Utils::Platform::runSystemCommand("tailscale down", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl stop tailscaled", "", nullptr);
 		}
+		SystemConf::getInstance()->set("tailscale.up", tsEnabled ? "1" : "0");
 	});
 
 
