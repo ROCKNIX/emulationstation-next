@@ -41,7 +41,8 @@ SystemScreenSaver::SystemScreenSaver(Window* window) :
 	mSystemName(""),
 	mGameName(""),
 	mCurrentGame(NULL),
-	mLoadingNext(false)
+	mLoadingNext(false),
+	mDisplayPoweredOff(false)
 {
 
 	mWindow->setScreenSaver(this);
@@ -95,7 +96,23 @@ void SystemScreenSaver::startScreenSaver()
 			screensaver_behavior = "black";
 	}
 
-	if (!loadingNext && Settings::getInstance()->getBool("StopMusicOnScreenSaver")) //(Settings::getInstance()->getBool("VideoAudio") && !Settings::getInstance()->getBool("ScreenSaverVideoMute")))
+	if (screensaver_behavior == "screen_off")
+	{
+		if (ApiSystem::getInstance()->setDisplayPower(false))
+		{
+			mDisplayPoweredOff = true;
+			ApiSystem::getInstance()->turnLEDsOff();
+			mState = STATE_SCREENSAVER_ACTIVE;
+			mCurrentGame = NULL;
+			PowerSaver::runningScreenSaver(true);
+			return;
+		}
+
+		LOG(LogWarning) << "ScreenSaver: screen_off not supported on this platform, falling back to black";
+		screensaver_behavior = "black";
+	}
+
+	if (!loadingNext && Settings::getInstance()->getBool("StopMusicOnScreenSaver")) //(Settings::getInstance()->getBool("VideoAudio") && !Settings::getInstance()->getBool("ScreenSaverVideoMute"))
 		AudioManager::getInstance()->deinit();
 
 
@@ -206,6 +223,14 @@ void SystemScreenSaver::stopScreenSaver()
 {
 	bool isExitingScreenSaver = !mLoadingNext;
 	bool isVideoScreenSaver = (mVideoScreensaver != nullptr);
+
+	// Restore panel + LEDs before anything else so the wake transition is immediate.
+	if (mDisplayPoweredOff)
+	{
+		ApiSystem::getInstance()->setDisplayPower(true);
+		ApiSystem::getInstance()->restoreLEDs();
+		mDisplayPoweredOff = false;
+	}
 
 	if (mLoadingNext)
 		mFadingImageScreensaver = mImageScreensaver;

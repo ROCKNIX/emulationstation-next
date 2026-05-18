@@ -128,6 +128,7 @@ private:
 	int 			mVideoChangeTime;
 	bool			mLoadingNext;
 
+	bool			mDisplayPoweredOff;
 };
 
 #endif // ES_APP_SYSTEM_SCREEN_SAVER_H

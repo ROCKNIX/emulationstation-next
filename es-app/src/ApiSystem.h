@@ -337,6 +337,13 @@ public:
 	bool	getBrightness(std::vector<BrightnessDevice>& value);
 	void	setBrightness(BrightnessDevice value);
 
+	bool	setDisplayPower(bool on);
+	bool	isDisplayPowerControlSupported();
+
+	bool	turnLEDsOff();
+	bool	restoreLEDs();
+	bool	isLEDControlSupported();
+
 	// LED RGB sliders
 	bool getLED(int& red, int& green, int& blue);
 	void getLEDColours(int& red, int& green, int& blue);

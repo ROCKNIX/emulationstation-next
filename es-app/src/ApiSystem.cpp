@@ -1402,6 +1402,95 @@ void ApiSystem::setBrightness(BrightnessDevice bd)
 	Utils::FileSystem::writeAllText(bd.path, content);
 }
 
+static int sSavedBrightnessRaw = -1;
+
+bool ApiSystem::isDisplayPowerControlSupported()
+{
+#if WIN32
+	return true;
+#else
+	std::vector<BrightnessDevice> devices;
+	return getBrightness(devices) && !devices.empty();
+#endif
+}
+
+bool ApiSystem::setDisplayPower(bool on)
+{
+#if WIN32
+	HWND hwnd = GetDesktopWindow();
+	if (hwnd == nullptr)
+		return false;
+
+		SendMessageW(hwnd, WM_SYSCOMMAND, SC_MONITORPOWER, on ? (LPARAM)-1 : (LPARAM)2);
+	return true;
+#else
+	std::vector<BrightnessDevice> devices;
+	if (!getBrightness(devices) || devices.empty())
+		return false;
+
+	const BrightnessDevice& bd = devices[0];
+
+	std::string blPowerPath = Utils::FileSystem::getParent(bd.path) + "/bl_power";
+	if (Utils::FileSystem::exists(blPowerPath))
+	{
+		Utils::FileSystem::writeAllText(blPowerPath, on ? "0\n" : "4\n");
+		return true;
+	}
+
+	if (!on)
+	{
+		sSavedBrightnessRaw = Utils::String::toInteger(Utils::FileSystem::readAllText(bd.path));
+		Utils::FileSystem::writeAllText(bd.path, "0\n");
+	}
+	else
+	{
+		int restore = sSavedBrightnessRaw > 0 ? sSavedBrightnessRaw : 1;
+		Utils::FileSystem::writeAllText(bd.path, std::to_string(restore) + "\n");
+	}
+	return true;
+#endif
+}
+
+static int sSavedLEDBrightness = -1;
+
+bool ApiSystem::isLEDControlSupported()
+{
+#if WIN32
+	return false;
+#else
+	int dummy = 0;
+	return getLEDBrightness(dummy);
+#endif
+}
+
+bool ApiSystem::turnLEDsOff()
+{
+#if WIN32
+	return false;
+#else
+	int current = 0;
+	if (!getLEDBrightness(current))
+		return false;
+	sSavedLEDBrightness = current;
+	executeScript("batocera-led-handheld block_color_changes");
+	setLEDBrightness(0);
+	return true;
+#endif
+}
+
+bool ApiSystem::restoreLEDs()
+{
+#if WIN32
+	return false;
+#else
+	if (sSavedLEDBrightness < 0)
+		return false;
+	setLEDBrightness(sSavedLEDBrightness);
+	sSavedLEDBrightness = -1;
+	return true;
+#endif
+}
+
 static std::string LED_COLOUR_NAME;
 static std::string LED_BRIGHTNESS_VALUE;
 static std::string LED_MAX_BRIGHTNESS_VALUE;
@@ -1551,12 +1640,16 @@ bool ApiSystem::getLEDBrightness(int& value)
     if (LED_BRIGHTNESS_VALUE.empty() || LED_MAX_BRIGHTNESS_VALUE.empty())
     {
         auto directories = Utils::FileSystem::getDirContent("/sys/class/leds");
+        // sort so the resolved LED is deterministic across boots
+        directories.sort();
 
         for (const auto& directory : directories)
         {
-            if (directory.find("multicolor") != std::string::npos || 
+            if (directory.find("multicolor") != std::string::npos ||
                 directory.find(":rgb:joystick_rings") != std::string::npos ||
-                directory.find("l:r1") != std::string::npos) 
+                directory.find("l:r1") != std::string::npos ||
+                directory.find("rgb:l") != std::string::npos ||
+                directory.find("rgb:r") != std::string::npos)
             {
                 std::string ledBrightnessPath = directory + "/brightness";
                 std::string ledMaxBrightnessPath = directory + "/max_brightness";
@@ -1659,12 +1752,29 @@ void ApiSystem::setLEDBrightness(int value)
             }
         }
     }
-    else 
+    else
     {
-        // Fallback for standard devices (multicolor/joystick_rings handles scaling internally)
-        int max = Utils::String::toInteger(Utils::FileSystem::readAllText(LED_MAX_BRIGHTNESS_VALUE));
-        int brightnessValue = static_cast<int>(factor * max + 0.5f);
-        Utils::FileSystem::writeAllText(LED_BRIGHTNESS_VALUE, std::to_string(brightnessValue) + "\n");
+        // Unified path. Enumerate every matching LED so multi-LED arrays dim together.
+        auto directories = Utils::FileSystem::getDirContent("/sys/class/leds");
+        for (const auto& directory : directories)
+        {
+            if (directory.find("multicolor") == std::string::npos &&
+                directory.find(":rgb:joystick_rings") == std::string::npos &&
+                directory.find("l:r1") == std::string::npos &&
+                directory.find("rgb:l") == std::string::npos &&
+                directory.find("rgb:r") == std::string::npos)
+                continue;
+
+            std::string bpath = directory + "/brightness";
+            std::string mpath = directory + "/max_brightness";
+            if (!Utils::FileSystem::exists(bpath) || !Utils::FileSystem::exists(mpath))
+                continue;
+
+            int dmax = Utils::String::toInteger(Utils::FileSystem::readAllText(mpath));
+            if (dmax <= 0) continue;
+            int dvalue = static_cast<int>(factor * dmax + 0.5f);
+            Utils::FileSystem::writeAllText(bpath, std::to_string(dvalue) + "\n");
+        }
     }
 }
 

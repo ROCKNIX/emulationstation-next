@@ -310,6 +310,9 @@ bool loadSystemConfigFile(Window* window, const char** errorString)
 //called on exit, assuming we get far enough to have the log initialized
 void onExit()
 {
+	ApiSystem::getInstance()->setDisplayPower(true);
+	ApiSystem::getInstance()->restoreLEDs();
+
 	Log::close();
 }
 
@@ -348,7 +351,11 @@ void signalHandler(int signum)
 
 	Log::flush();
 
-	// cleanup and close up stuff here  
+	// undo any screen_off state so a crash doesn't leave the panel dark
+	ApiSystem::getInstance()->setDisplayPower(true);
+	ApiSystem::getInstance()->restoreLEDs();
+
+	// cleanup and close up stuff here
 	exit(signum);
 }
 

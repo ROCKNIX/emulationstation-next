@@ -13,6 +13,7 @@
 
 #define fake_gettext_dim			_("dim")
 #define fake_gettext_black			_("black")
+#define fake_gettext_screen_off		_("screen off")
 #define fake_gettext_randomvideo	_("random video")
 #define fake_gettext_slideshow		_("slideshow")
 #define fake_gettext_suspend		_("suspend")
@@ -44,10 +45,15 @@ GuiGeneralScreensaverOptions::GuiGeneralScreensaverOptions(Window* window, int s
 	// Screensaver behavior
 	auto ctlBehavior = std::make_shared< OptionListComponent<std::string> >(mWindow, _("SCREENSAVER TYPE"), false);
 
+	std::vector<std::string> ssOptions = { "dim", "black" };
+	if (ApiSystem::getInstance()->isDisplayPowerControlSupported())
+		ssOptions.push_back("screen_off");
+	ssOptions.push_back("random video");
+	ssOptions.push_back("slideshow");
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
-		ctlBehavior->addRange({ "dim", "black", "random video", "slideshow", "suspend" }, ssBehavior);
-	else
-		ctlBehavior->addRange({ "dim", "black", "random video", "slideshow" }, ssBehavior);
+		ssOptions.push_back("suspend");
+
+	ctlBehavior->addRange(ssOptions, ssBehavior);
 
 	addWithLabel(_("SCREENSAVER TYPE"), ctlBehavior, selectItem == 1);
 	ctlBehavior->setSelectedChangedCallback([this](const std::string& name)
