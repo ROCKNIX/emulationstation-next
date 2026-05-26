@@ -2021,6 +2021,31 @@ void GuiMenu::openSystemSettings()
 		});
 	}
 
+#if defined(SM6115)
+	// Add option to set gpu max clock speed
+	auto optionsGpuMaxClockSpeed = std::make_shared<OptionListComponent<std::string> >(mWindow, _("GPU MAX CLOCK SPEED"), false);
+	std::string selectedGpuSpeed = SystemConf::getInstance()->get("gpu-max-clock-speed");
+	if (selectedGpuSpeed.empty())
+		selectedGpuSpeed = "1050";
+	optionsGpuMaxClockSpeed->add(_("320 MHZ"),"320", selectedGpuSpeed == "320");
+	optionsGpuMaxClockSpeed->add(_("465 MHZ"),"465", selectedGpuSpeed == "465");
+	optionsGpuMaxClockSpeed->add(_("600 MHZ"),"600", selectedGpuSpeed == "600");
+	optionsGpuMaxClockSpeed->add(_("745 MHZ"),"745", selectedGpuSpeed == "745");
+	optionsGpuMaxClockSpeed->add(_("820 MHZ"),"820", selectedGpuSpeed == "820");
+	optionsGpuMaxClockSpeed->add(_("900 MHZ"),"900", selectedGpuSpeed == "900");
+	optionsGpuMaxClockSpeed->add(_("950 MHZ"),"950", selectedGpuSpeed == "950");
+	optionsGpuMaxClockSpeed->add(_("980 MHZ"),"980", selectedGpuSpeed == "980");
+	optionsGpuMaxClockSpeed->add(_("1050 MHZ"),"1050", selectedGpuSpeed == "1050");
+	s->addWithLabel(_("GPU MAX CLOCK SPEED"), optionsGpuMaxClockSpeed);
+	s->addSaveFunc([this, optionsGpuMaxClockSpeed, selectedGpuSpeed]
+	{
+		if (optionsGpuMaxClockSpeed->changed()) {
+			SystemConf::getInstance()->set("gpu-max-clock-speed", optionsGpuMaxClockSpeed->getSelected());
+			Utils::Platform::runSystemCommand("/usr/lib/autostart/quirks/platforms/SM6115/bin/gpu_max_clock " + optionsGpuMaxClockSpeed->getSelected(), "", nullptr);
+		}
+	});
+#endif
+
 	if (Utils::Platform::GetEnv("DEVICE_GPU_OVERCLOCK") == "true"){
 #if defined(SM8250)
 		// Add option to set gpu overclock speed
