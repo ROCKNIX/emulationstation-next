@@ -1420,7 +1420,25 @@ bool ApiSystem::getLED(int& red, int& green, int& blue)
 
 	for (const auto& entry : entries)
 	{
-		if (entry.find("multicolor") != std::string::npos || entry.find(":rgb:joystick_rings") != std::string::npos)
+		if (entry.find("joystick-left") != std::string::npos)
+		{
+			LED_COLOUR_NAME = "rg_vita_pro";
+			mSystemLedType = LED_TYPE_UNIFIED;
+			LOG(LogInfo) << "ApiSystem::getLED > Found Anbernic RG Vita Pro LED at " << entry;
+			break;
+		}
+
+		if (entry.find("rgb:kbd_backlight") != std::string::npos)
+		{
+			LED_COLOUR_NAME = "cubexx";
+			mSystemLedType = LED_TYPE_UNIFIED;
+			LOG(LogInfo) << "ApiSystem::getLED > Found Anbernic CubeXX LED at " << entry;
+			break;
+		}
+
+		if (entry.find("multicolor") != std::string::npos || 
+			entry.find(":rgb:joystick_rings") != std::string::npos || 
+			entry.find("rgb:l1") != std::string::npos)
 		{
 			std::string ledColourPath = entry + "/multi_intensity";				
 			if (Utils::FileSystem::exists(ledColourPath))
@@ -1431,6 +1449,24 @@ bool ApiSystem::getLED(int& red, int& green, int& blue)
 				break;
 			}
 		}
+
+		// Fallback check for the Ayn Odin monochrome LEDs
+		if (entry.find("left_joystick") != std::string::npos)
+		{
+			LED_COLOUR_NAME = "monochrome";
+			mSystemLedType = LED_TYPE_UNIFIED;
+			LOG(LogInfo) << "ApiSystem::getLED > Found MONOCHROME LED at " << entry;
+
+			std::vector<std::string> mono_nodes = { "left_joystick", "right_joystick", "left_side", "right_side" };
+			for (const auto& node : mono_nodes) {
+				std::string trigger_path = "/sys/class/leds/" + node + "/trigger";
+				if (Utils::FileSystem::exists(trigger_path)) {
+					Utils::FileSystem::writeAllText(trigger_path, "none\n");
+				}
+			}
+			break;
+		}
+
 		if (entry.find("l:b1") != std::string::npos)
 		{
 			found_addressable = true;
@@ -1447,30 +1483,67 @@ bool ApiSystem::getLED(int& red, int& green, int& blue)
 		return false;
 	}
 
-    if (mSystemLedType == LED_TYPE_UNIFIED && Utils::FileSystem::exists(LED_COLOUR_NAME)) {
-        std::string colourValue = Utils::FileSystem::readAllText(LED_COLOUR_NAME);
-        std::stringstream ss(colourValue);
-        std::string token;
-        // Extract red value
-        std::getline(ss, token, ' ');
-        red = std::stoi(token);
+	if (mSystemLedType == LED_TYPE_UNIFIED) 
+	{
+		if (LED_COLOUR_NAME == "monochrome") 
+		{
+			red = 255;
+			green = 255;
+			blue = 255;
+			executeScript("batocera-led-handheld block_color_changes");
+			return true;
+		}
+		else if (LED_COLOUR_NAME == "cubexx" || LED_COLOUR_NAME == "rg_vita_pro") 
+		{
+			getLEDColours(red, green, blue);
+			executeScript("batocera-led-handheld block_color_changes");
+			return true;
+		}
+		else if (Utils::FileSystem::exists(LED_COLOUR_NAME)) 
+		{
+			std::string colourValue = Utils::FileSystem::readAllText(LED_COLOUR_NAME);
+			std::stringstream ss(colourValue);
+			std::string token;
 
-        // Extract green value
-        std::getline(ss, token, ' ');
-        green = std::stoi(token);
+			if (LED_COLOUR_NAME.find("rgb:l") != std::string::npos) 
+			{
+				// Extract blue value
+				std::getline(ss, token, ' ');
+				blue = std::stoi(token);
 
-        // Extract blue value
-        std::getline(ss, token);
-        blue = std::stoi(token);
+				// Extract green value
+				std::getline(ss, token, ' ');
+				green = std::stoi(token);
 
-        executeScript("batocera-led-handheld block_color_changes"); // temporarily prevent changes from external daemon
-        LOG(LogInfo) << "ApiSystem::getLED > LED colours are:" << red << " " << green << " " << blue;
+				// Extract red value
+				std::getline(ss, token);
+				red = std::stoi(token);
+			} 
+			else 
+			{
+				// Extract red value
+				std::getline(ss, token, ' ');
+				red = std::stoi(token);
 
-        return true;
-    }
-	else if (mSystemLedType == LED_TYPE_ADDRESSABLE) {
+				// Extract green value
+				std::getline(ss, token, ' ');
+				green = std::stoi(token);
+
+				// Extract blue value
+				std::getline(ss, token);
+				blue = std::stoi(token);
+			}
+
+			executeScript("batocera-led-handheld block_color_changes"); // temporarily prevent changes from external daemon
+			LOG(LogInfo) << "ApiSystem::getLED > LED colours are:" << red << " " << green << " " << blue;
+
+			return true;
+		}
+	}
+	else if (mSystemLedType == LED_TYPE_ADDRESSABLE) 
+	{
 		getLEDColours(red, green, blue);
-        executeScript("batocera-led-handheld block_color_changes");
+		executeScript("batocera-led-handheld block_color_changes");
 		return true;
 	}
 
@@ -1505,7 +1578,7 @@ void ApiSystem::setLEDColours(int red, int green, int blue)
 {
 #if WIN32    
     return;
-#endif 
+#endif
 
 	if (mSystemLedType == LED_TYPE_NONE)
 		return;
@@ -1521,8 +1594,42 @@ void ApiSystem::setLEDColours(int red, int green, int blue)
 	if (mSystemLedType == LED_TYPE_UNIFIED)
 	{
 		if (LED_COLOUR_NAME.empty() || LED_COLOUR_NAME == "notfound") return;
-		std::string content = std::to_string(red) + " " + std::to_string(green) + " " + std::to_string(blue);
-		Utils::FileSystem::writeAllText(LED_COLOUR_NAME, content);
+
+		if (LED_COLOUR_NAME == "cubexx" || LED_COLOUR_NAME == "rg_vita_pro") {
+			executeScript("batocera-led-handheld set_color_force_dec " + 
+                          std::to_string(red) + " " + 
+                          std::to_string(green) + " " + 
+                          std::to_string(blue));
+		}
+		// Handle monochrome power state mappings (1 = ON, 0 = OFF)
+		else if (LED_COLOUR_NAME == "monochrome") {
+			int brightnessValue = (red > 0 || green > 0 || blue > 0) ? 1 : 0;
+			std::vector<std::string> mono_nodes = { "left_joystick", "right_joystick", "left_side", "right_side" };
+			for (const auto& node : mono_nodes) {
+				std::string path = "/sys/class/leds/" + node + "/brightness";
+				if (Utils::FileSystem::exists(path)) {
+					Utils::FileSystem::writeAllText(path, std::to_string(brightnessValue) + "\n");
+				}
+			}
+		}
+		else if (LED_COLOUR_NAME.find("rgb:l") != std::string::npos) {
+			std::string content = std::to_string(blue) + " " + std::to_string(green) + " " + std::to_string(red);
+			for (int i = 1; i <= 7; i++) {
+				std::string leftPath = "/sys/class/leds/rgb:l" + std::to_string(i) + "/multi_intensity";
+				std::string rightPath = "/sys/class/leds/rgb:r" + std::to_string(i) + "/multi_intensity";
+				
+				// Only write if the specific LED index exists on the hardware
+				if (Utils::FileSystem::exists(leftPath)) {
+					Utils::FileSystem::writeAllText(leftPath, content);
+				}
+				if (Utils::FileSystem::exists(rightPath)) {
+					Utils::FileSystem::writeAllText(rightPath, content);
+				}
+			}
+		} else {
+			std::string content = std::to_string(red) + " " + std::to_string(green) + " " + std::to_string(blue);
+			Utils::FileSystem::writeAllText(LED_COLOUR_NAME, content);
+		}
 	}
 	else if (mSystemLedType == LED_TYPE_ADDRESSABLE)
 	{
@@ -1556,7 +1663,11 @@ bool ApiSystem::getLEDBrightness(int& value)
         {
             if (directory.find("multicolor") != std::string::npos || 
                 directory.find(":rgb:joystick_rings") != std::string::npos ||
-                directory.find("l:r1") != std::string::npos) 
+                directory.find("rgb:l1") != std::string::npos ||
+                directory.find("l:r1") != std::string::npos ||
+                directory.find("left_joystick") != std::string::npos ||
+                directory.find("rgb:kbd_backlight") != std::string::npos ||
+                directory.find("joystick-left") != std::string::npos)
             {
                 std::string ledBrightnessPath = directory + "/brightness";
                 std::string ledMaxBrightnessPath = directory + "/max_brightness";
@@ -1610,6 +1721,15 @@ void ApiSystem::setLEDBrightness(int value)
     if (value < 0) value = 0;
     if (value > 100) value = 100;
 
+	if (LED_COLOUR_NAME == "cubexx" || LED_COLOUR_NAME == "rg_vita_pro") {
+		SystemConf::getInstance()->set("led.brightness", std::to_string(value));
+		SystemConf::getInstance()->saveSystemConf();
+		int r, g, b;
+		getLEDColours(r, g, b);
+		setLEDColours(r, g, b);
+		return;
+	}
+
     std::string colorStr = SystemConf::getInstance()->get("led.colour");
     if (colorStr.empty()) colorStr = "255 255 255"; // Default to white if not set
 
@@ -1634,9 +1754,26 @@ void ApiSystem::setLEDBrightness(int value)
     int gOut = static_cast<int>(gBase * factor + 0.5f);
     int bOut = static_cast<int>(bBase * factor + 0.5f);
 
+    if (LED_BRIGHTNESS_VALUE.find("rgb:l") != std::string::npos)
+    {
+        int max = Utils::String::toInteger(Utils::FileSystem::readAllText(LED_MAX_BRIGHTNESS_VALUE));
+        int brightnessValue = static_cast<int>(factor * max + 0.5f);
+        for (int i = 1; i <= 7; i++) {
+            std::string leftBrightPath = "/sys/class/leds/rgb:l" + std::to_string(i) + "/brightness";
+            std::string rightBrightPath = "/sys/class/leds/rgb:r" + std::to_string(i) + "/brightness";
+            
+            // Validate existence before writing
+            if (Utils::FileSystem::exists(leftBrightPath)) {
+                Utils::FileSystem::writeAllText(leftBrightPath, std::to_string(brightnessValue) + "\n");
+            }
+            if (Utils::FileSystem::exists(rightBrightPath)) {
+                Utils::FileSystem::writeAllText(rightBrightPath, std::to_string(brightnessValue) + "\n");
+            }
+        }
+    }
     // Check if we are on an addressable device (Retroid/Ayn style)
     // These paths typically look like /sys/class/leds/l:r1
-    if (LED_BRIGHTNESS_VALUE.find("/l:") != std::string::npos || 
+    else if (LED_BRIGHTNESS_VALUE.find("/l:") != std::string::npos || 
         LED_BRIGHTNESS_VALUE.find("/r:") != std::string::npos) 
     {
         // Batch update all addressable LED channels
@@ -1703,6 +1840,15 @@ void ApiSystem::setLEDEnabled(bool enabled)
 	}
 
 	SystemConf::getInstance()->saveSystemConf();
+#endif
+}
+
+bool ApiSystem::isLEDMonochrome()
+{
+#if WIN32
+    return false;
+#else
+    return (LED_COLOUR_NAME == "monochrome");
 #endif
 }
 
@@ -2011,7 +2157,7 @@ std::vector<std::string> ApiSystem::extractPdfImages(const std::string& fileName
 			int pc = getPdfPageCount(fileName);
 			if (pc > 0)
 			{
-				Utils::ThreadPool pool(1);
+				Utils::ThreadPool pool("extractPdfImages", 1);
 
 				for (int i = 0; i < pc; i += numberOfPagesToProcess)
 					pool.queueWorkItem([this, fileName, i, numberOfPagesToProcess] { extractPdfImages(fileName, i + 1, numberOfPagesToProcess); });
