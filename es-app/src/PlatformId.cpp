@@ -59,6 +59,7 @@ namespace PlatformIds
 		{ "pc98",					PC_98 },
 		{ "sega32x",				SEGA_32X },
 		{ "megacd",					SEGA_CD },
+		{ "segacd",					SEGA_CD },
 		{ "dreamcast",				SEGA_DREAMCAST },
 		{ "gamegear",				SEGA_GAME_GEAR },
 		{ "genesis",				SEGA_GENESIS },
@@ -146,6 +147,7 @@ namespace PlatformIds
 		{ "ti99",					TI99 },
 		{ "ti99_4a",				TI99 },
 		{ "pico8",					PICO8 },
+		{ "pico-8",					PICO8 },
 		{ "sgb",					SUPER_GAME_BOY },
 		{ "vc4000",					VC4000 },
 
