@@ -2137,7 +2137,31 @@ void GuiMenu::openSystemSettings()
 #else
 	// Allow user control over a timed shutdown after fake suspend
 	s->addGroup(_("SUSPEND"));
+
+	// Fake suspend toggle
+	auto optionsEnableSuspend = std::make_shared<SwitchComponent>(mWindow);
+	bool suspendEnabled = SystemConf::getInstance()->get("system.suspend.enable") == "1";
+	optionsEnableSuspend->setState(suspendEnabled);
+	s->addWithLabel(_("ENABLE SUSPEND"), optionsEnableSuspend);
 	
+	optionsEnableSuspend->setOnChangedCallback([optionsEnableSuspend] {
+		bool enableSuspendState = optionsEnableSuspend->getState();
+		SystemConf::getInstance()->set("system.suspend.enable", enableSuspendState ? "1" : "0");
+		SystemConf::getInstance()->saveSystemConf();
+	});
+	
+	// Timed shutdown toggle
+	auto optionsEnableTimedShutdown = std::make_shared<SwitchComponent>(mWindow);
+	bool timedShutdownEnabled = SystemConf::getInstance()->get("system.suspend.enable_timed_shutdown") == "1";
+	optionsEnableTimedShutdown->setState(timedShutdownEnabled);
+	s->addWithLabel(_("ENABLE TIMED SHUTDOWN"), optionsEnableTimedShutdown);
+	
+	optionsEnableTimedShutdown->setOnChangedCallback([optionsEnableTimedShutdown] {
+		bool enableTimedShutdownState = optionsEnableTimedShutdown->getState();
+		SystemConf::getInstance()->set("system.suspend.enable_timed_shutdown", enableTimedShutdownState ? "1" : "0");
+		SystemConf::getInstance()->saveSystemConf();
+	});
+
 	// Shutdown delay after suspend
 	auto ctlShutdownDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
 
@@ -2154,7 +2178,7 @@ void GuiMenu::openSystemSettings()
 	s->addWithLabel(_("SHUTDOWN DELAY"), ctlShutdownDelay);
 	s->addSaveFunc([ctlShutdownDelay]
 	{
-	    SystemConf::getInstance()->set("system.shutdown_delay", std::to_string((int)(round(ctlShutdownDelay->getValue()) * 60)));
+		SystemConf::getInstance()->set("system.shutdown_delay", std::to_string((int)(round(ctlShutdownDelay->getValue()) * 60)));
 	});
 
 	// Shutdown delay after suspend (in game)
@@ -2173,7 +2197,7 @@ void GuiMenu::openSystemSettings()
 	s->addWithLabel(_("SHUTDOWN DELAY (IN GAME)"), ctlShutdownInGameDelay);
 	s->addSaveFunc([ctlShutdownInGameDelay]
 	{
-	    SystemConf::getInstance()->set("system.shutdown_delay_running_game", std::to_string((int)(round(ctlShutdownInGameDelay->getValue()) * 60)));
+		SystemConf::getInstance()->set("system.shutdown_delay_running_game", std::to_string((int)(round(ctlShutdownInGameDelay->getValue()) * 60)));
 	});
 
 	// Add option to park cores on suspend
