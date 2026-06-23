@@ -1753,7 +1753,7 @@ void GuiMenu::openSystemSettings()
 
     // Default Display mode
     std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
-    if (! availableDisplayModes.empty()){
+    if (availableDisplayModes.size() > 1){
         auto optionsDisplayModes = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DISPLAY MODE"), false);
         std::string selectedDisplayMode = SystemConf::getInstance()->get("system.display_mode");
         for (auto it = availableDisplayModes.begin(); it != availableDisplayModes.end(); it++)
@@ -3007,7 +3007,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 
     // Per game/core/emu Display mode
     std::vector<std::string> availableDisplayModes = ApiSystem::getInstance()->getAvailableDisplayModes();
-    if (! availableDisplayModes.empty()){
+    if (availableDisplayModes.size() > 1){
         auto optionsDisplayModes = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DISPLAY MODE"), false);
 
         std::string selectedDisplayMode = SystemConf::getInstance()->get(configName + ".display_mode");
