@@ -1692,8 +1692,11 @@ void GuiMenu::openSystemSettings()
 	if (ApiSystem::getInstance()->getBrightness(brightnesses))
 	{
 	  int n = 0;
+	  bool dualScreen = Utils::Platform::GetEnv("DEVICE_HAS_DUAL_SCREEN") == "true";
 	  for (auto brightness : brightnesses) {
 	    n++;
+            if (n > 1 && !dualScreen)
+              break;
 	    auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 5.f, 100.f, 5.f, "%");
 	    brightnessComponent->setValue(brightness.value);
 	    brightnessComponent->setOnValueChanged([n, brightness](const float &newVal)
@@ -1721,6 +1724,7 @@ void GuiMenu::openSystemSettings()
 
 #if defined(ROCKNIX)
 	// Bottom screen content - only visible when 2+ displays detected
+  if (Utils::Platform::GetEnv("DEVICE_HAS_DUAL_SCREEN") == "true"){
 	if (brightnesses.size() >= 2)
 	{    
 		auto bottomScreenType = std::make_shared<OptionListComponent<std::string>>(mWindow, _("BOTTOM SCREEN CONTENT"), false);
@@ -1744,6 +1748,7 @@ void GuiMenu::openSystemSettings()
 			}
 		});
 	}
+  }
 #endif
 
     // Default Display mode
