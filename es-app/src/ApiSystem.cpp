@@ -477,6 +477,13 @@ std::string ApiSystem::getIpAddress()
 	return result;
 }
 
+std::vector<std::pair<std::string, std::string>> ApiSystem::getIpAddresses()
+{
+	LOG(LogDebug) << "ApiSystem::getIpAddresses";
+
+	return Utils::Platform::queryIPAddresses(); // platform.h
+}
+
 bool ApiSystem::isWifiAPModeSupported()
 {
 	LOG(LogDebug) << "ApiSystem::isWifiAPModeSupported";

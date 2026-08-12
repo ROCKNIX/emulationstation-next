@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
+#include <net/if.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
@@ -281,39 +282,54 @@ namespace Utils
 			return quitMode == QuitMode::FAST_REBOOT || quitMode == QuitMode::FAST_SHUTDOWN;
 		}
 
-		std::string queryIPAddress()
+#if !WIN32
+		// "gadget", "ncm" and "rndis" are the usb networking interfaces : ROCKNIX names its NCM gadget "gadget"
+		static bool isLocalNetworkInterface(const std::string& ifName)
 		{
-#ifdef DEVTEST
-			return "127.0.0.1";
+			return ifName.find("eth") != std::string::npos || ifName.find("wlan") != std::string::npos || ifName.find("mlan") != std::string::npos || ifName.find("en") != std::string::npos || ifName.find("wl") != std::string::npos || ifName.find("p2p") != std::string::npos || ifName.find("usb") != std::string::npos || ifName.find("gadget") != std::string::npos || ifName.find("ncm") != std::string::npos || ifName.find("rndis") != std::string::npos;
+		}
+
+		// The usb gadget keeps its address while NO-CARRIER, and an unplugged ethernet port does the same.
+		// IFF_RUNNING is the link state, so it tells apart an address you can actually be reached on.
+		static bool isConnectedInterface(const struct ifaddrs* ifa)
+		{
+			return (ifa->ifa_flags & IFF_RUNNING) != 0 && isLocalNetworkInterface(ifa->ifa_name);
+		}
 #endif
 
-			std::string result;
+		std::vector<std::pair<std::string, std::string>> queryIPAddresses()
+		{
+			std::vector<std::pair<std::string, std::string>> result;
+
+#ifdef DEVTEST
+			result.push_back(std::pair<std::string, std::string>("lo", "127.0.0.1"));
+			return result;
+#endif
 
 #if WIN32
 			// Init WinSock
 			WSADATA wsa_Data;
 			int wsa_ReturnCode = WSAStartup(0x101, &wsa_Data);
 			if (wsa_ReturnCode != 0)
-				return "";
-
-			char* szLocalIP = nullptr;
+				return result;
 
 			// Get the local hostname
 			char szHostName[255];
 			if (gethostname(szHostName, 255) == 0)
 			{
-				struct hostent* host_entry;
-				host_entry = gethostbyname(szHostName);
+				struct hostent* host_entry = gethostbyname(szHostName);
 				if (host_entry != nullptr)
-					szLocalIP = inet_ntoa(*(struct in_addr*)*host_entry->h_addr_list);
+				{
+					for (int i = 0; host_entry->h_addr_list[i] != nullptr; i++)
+					{
+						char* szLocalIP = inet_ntoa(*(struct in_addr*)host_entry->h_addr_list[i]);
+						if (szLocalIP != nullptr)
+							result.push_back(std::pair<std::string, std::string>("", std::string(szLocalIP))); // "127.0.0.1"
+					}
+				}
 			}
 
 			WSACleanup();
-
-			if (szLocalIP == nullptr)
-				return "";
-
-			return std::string(szLocalIP); // "127.0.0.1"
 #else
 			struct ifaddrs* ifAddrStruct = NULL;
 			struct ifaddrs* ifa = NULL;
@@ -333,40 +349,30 @@ namespace Utils
 					char addressBuffer[INET_ADDRSTRLEN];
 					inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
 
-					std::string ifName = ifa->ifa_name;
-					if (ifName.find("eth") != std::string::npos || ifName.find("wlan") != std::string::npos || ifName.find("mlan") != std::string::npos || ifName.find("en") != std::string::npos || ifName.find("wl") != std::string::npos || ifName.find("p2p") != std::string::npos || ifName.find("usb") != std::string::npos)
-					{
-						result = std::string(addressBuffer);
-						break;
-					}
+					if (isConnectedInterface(ifa))
+						result.push_back(std::pair<std::string, std::string>(std::string(ifa->ifa_name), std::string(addressBuffer)));
 				}
 			}
-			// Seeking for ipv6 if no IPV4
-			if (result.empty())
+
+			// IPv6 comes last : callers using the first address keep getting the IPv4 one when there is any
+			for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
 			{
-				for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
+				if (!ifa->ifa_addr)
+					continue;
+
+				// check it is IP6 is a valid IP6 Address
+				if (ifa->ifa_addr->sa_family == AF_INET6)
 				{
-					if (!ifa->ifa_addr)
+					tmpAddrPtr = &((struct sockaddr_in6*)ifa->ifa_addr)->sin6_addr;
+					char addressBuffer[INET6_ADDRSTRLEN];
+					inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+
+					// Skip IPv6 link-local address
+					if (strncmp(addressBuffer, "fe80:", 5) == 0)
 						continue;
 
-					// check it is IP6 is a valid IP6 Address
-					if (ifa->ifa_addr->sa_family == AF_INET6)
-					{
-						tmpAddrPtr = &((struct sockaddr_in6*)ifa->ifa_addr)->sin6_addr;
-						char addressBuffer[INET6_ADDRSTRLEN];
-						inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-
-						// Skip IPv6 link-local address
-						if (strncmp(addressBuffer, "fe80:", 5) == 0)
-							continue;
-
-						std::string ifName = ifa->ifa_name;
-						if (ifName.find("eth") != std::string::npos || ifName.find("wlan") != std::string::npos || ifName.find("mlan") != std::string::npos || ifName.find("en") != std::string::npos || ifName.find("wl") != std::string::npos || ifName.find("p2p") != std::string::npos || ifName.find("usb") != std::string::npos)
-						{
-							result = std::string(addressBuffer);
-							break;
-						}
-					}
+					if (isConnectedInterface(ifa))
+						result.push_back(std::pair<std::string, std::string>(std::string(ifa->ifa_name), std::string(addressBuffer)));
 				}
 			}
 
@@ -375,7 +381,15 @@ namespace Utils
 #endif
 
 			return result;
+		}
 
+		std::string queryIPAddress()
+		{
+			auto addresses = queryIPAddresses();
+			if (addresses.empty())
+				return "";
+
+			return addresses[0].second;
 		}
 
 		BatteryInformation queryBatteryInformation()

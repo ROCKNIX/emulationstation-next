@@ -239,6 +239,10 @@ public:
     bool disableWifi();
 
 	virtual std::string getIpAddress();
+
+	// Every address of every connected interface, as { interface name, address }
+	virtual std::vector<std::pair<std::string, std::string>> getIpAddresses();
+
 	virtual bool isWifiAPModeSupported();
 
 	// BlueTooth methods

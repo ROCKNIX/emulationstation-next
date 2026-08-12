@@ -3,6 +3,8 @@
 #define ES_CORE_PLATFORM_H
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -66,6 +68,10 @@ namespace Utils
 		BatteryInformation queryBatteryInformation();
 
 		std::string queryIPAddress();
+
+		// Every address of every connected interface, as { interface name, address }. IPv4 first, then IPv6.
+		std::vector<std::pair<std::string, std::string>> queryIPAddresses();
+
 		std::string getArchString();
 		unsigned long long getTotalSystemMemory();
 
