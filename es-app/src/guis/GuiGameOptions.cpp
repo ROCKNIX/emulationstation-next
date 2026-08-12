@@ -265,7 +265,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 	if (hasZaparoo || (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::ScriptId::NFC) && ApiSystem::getInstance()->nfc_is_available())) {
 	  if(hasZaparoo) {
-	    mMenu.addGroup("ZAPAROO");
+	    mMenu.addGroup(_("ZAPAROO"));
 	  } else {
 	    mMenu.addGroup(_("NFC"));
 	  }

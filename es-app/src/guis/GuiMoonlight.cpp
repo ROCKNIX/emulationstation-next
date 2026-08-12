@@ -265,7 +265,7 @@ void GuiMoonlight::show(Window* window)
 }
 
 GuiMoonlight::GuiMoonlight(Window* window)
- : GuiSettings(window, "MOONLIGHT GAME STREAMING")
+ : GuiSettings(window, _("MOONLIGHT GAME STREAMING"))
 {
   char pin[5];
   snprintf(pin, sizeof pin, "%04d", rand() % 10000);

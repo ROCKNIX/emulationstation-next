@@ -303,7 +303,7 @@ void GuiCollectionSystemsOptions::initializeMenu()
 
 
 	auto bundleCustomCollectionsEx = std::make_shared< OptionListComponent<std::string> >(mWindow, _("GROUP CUSTOM COLLECTIONS"), false);
-	bundleCustomCollectionsEx->addRange({ { _("UNTHEMED"), "" },{ "NEVER", "false" },{ "ALWAYS", "true" } }, Settings::getInstance()->getString("UseCustomCollectionsSystemEx"));
+	bundleCustomCollectionsEx->addRange({ { _("UNTHEMED"), "" },{ _("NEVER"), "false" },{ _("ALWAYS"), "true" } }, Settings::getInstance()->getString("UseCustomCollectionsSystemEx"));
 	addWithLabel(_("GROUP CUSTOM COLLECTIONS"), bundleCustomCollectionsEx);
 	addSaveFunc([this, bundleCustomCollectionsEx]
 	{

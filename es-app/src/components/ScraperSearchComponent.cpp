@@ -383,8 +383,8 @@ void ScraperSearchComponent::onSearchDone(bool isReallyFinished)
 		// Check if the scraper used is still valid
 		if (!Scraper::isValidConfiguredScraper())
 		{
-			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::toUpper("Configured scraper is no longer available.\nPlease change the scraping source in the settings."),
-				"FINISH", mSkipCallback));
+			mWindow->pushGui(new GuiMsgBox(mWindow, _("Configured scraper is no longer available.\nPlease change the scraping source in the settings."),
+				_("FINISH"), mSkipCallback));
 		}
 		else
 		{
@@ -724,14 +724,14 @@ void ScraperSearchComponent::openInputScreen(ScraperSearchParams& params)
 		mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, _("SEARCH FOR"),
 			// initial value is last search if there was one, otherwise the clean path name
 			params.nameOverride.empty() ? params.game->getCleanName() : params.nameOverride,
-			searchForFunc, false, "SEARCH"));
+			searchForFunc, false, _("SEARCH")));
 	}
 	else
 	{
 		mWindow->pushGui(new GuiTextEditPopup(mWindow, _("SEARCH FOR"),
 			// initial value is last search if there was one, otherwise the clean path name
 			params.nameOverride.empty() ? params.game->getCleanName() : params.nameOverride,
-			searchForFunc, false, "SEARCH"));
+			searchForFunc, false, _("SEARCH")));
 	}
 }
 

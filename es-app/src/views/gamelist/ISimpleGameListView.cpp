@@ -33,7 +33,7 @@ ISimpleGameListView::ISimpleGameListView(Window* window, FolderData* root, bool 
 {
 	mExtraMode = ThemeData::ExtraImportType::ALL_EXTRAS;
 
-	mHeaderText.setText("Logo Text");
+	mHeaderText.setText(_("Logo Text"));
 	mHeaderText.setSize(mSize.x(), 0);
 	mHeaderText.setPosition(0, 0);
 	mHeaderText.setHorizontalAlignment(ALIGN_CENTER);

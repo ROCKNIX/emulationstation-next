@@ -349,10 +349,10 @@ msgid ""
 msgstr "當能夠獲得符合條件的成就時在右下角顯示圖示。"
 
 msgid "UNOFFICIAL ACHIEVEMENTS"
-msgstr ""
+msgstr "非官方成就"
 
 msgid "Enable unlocking of unofficial achievements."
-msgstr ""
+msgstr "允許解鎖非官方成就。"
 
 msgid "RETROACHIEVEMENT UNLOCK SOUND"
 msgstr "RETROACHIEVEMENT 解鎖音效"
@@ -382,103 +382,103 @@ msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
 msgstr "無法啟用 RETROACHIEVEMENTS："
 
 msgid "KEYBOARDTOPADS"
-msgstr ""
+msgstr "鍵盤支架"
 
 msgid "HOTKEYS"
-msgstr ""
+msgstr "熱鍵"
 
 msgid "KEYS DEFINED BUT JOYSTICK NOT NAMED"
-msgstr ""
+msgstr "已定義按鍵但未命名搖桿"
 
 msgid "JOYSTICK NAMED BUT NO KEYS DEFINED"
-msgstr ""
+msgstr "已命名搖桿但未定義按鍵"
 
 msgid "UNPLUG AND REPLUG THE DEVICE TO APPLY"
-msgstr ""
+msgstr "拔下裝置插頭並重新插入以套用"
 
 msgid "go back"
 msgstr "返回"
 
 msgid "JOYSTICK NAME"
-msgstr ""
+msgstr "搖桿名稱"
 
 msgid "PRESS A KEY OR WAIT 4 SECONDS TO CLEAR"
-msgstr ""
+msgstr "按下任意鍵或等待4秒以清除"
 
 msgid "OVERLAYS"
-msgstr ""
+msgstr "覆疊層"
 
 msgid "BRIGHTNESS CYCLE"
-msgstr ""
+msgstr "亮度循環"
 
 msgid "CONTROL CENTER"
-msgstr ""
+msgstr "控制中心"
 
 msgid "EXIT"
-msgstr ""
+msgstr "離開"
 
 msgid "PAUSE"
-msgstr ""
+msgstr "暫停"
 
 msgid "COIN"
-msgstr ""
+msgstr "投幣"
 
 msgid "FAST FORWARD"
-msgstr ""
+msgstr "快轉"
 
 msgid "NEXT DISK"
-msgstr ""
+msgstr "下一張磁碟"
 
 msgid "NEXT SLOT"
-msgstr ""
+msgstr "下一個槽位"
 
 msgid "PREVIOUS SLOT"
-msgstr ""
+msgstr "上一個槽位"
 
 msgid "RESET"
 msgstr "重置"
 
 msgid "SAVE STATE"
-msgstr ""
+msgstr "儲存狀態"
 
 msgid "RESTORE STATE"
-msgstr ""
+msgstr "恢復狀態"
 
 msgid "REWIND"
 msgstr "倒帶功能"
 
 msgid "SCREEN LAYOUT"
-msgstr ""
+msgstr "螢幕佈局"
 
 msgid "SCREENSHOT"
 msgstr "螢幕截圖"
 
 msgid "SWAP SCREEN"
-msgstr ""
+msgstr "交換螢幕"
 
 msgid "TRANSLATION"
-msgstr ""
+msgstr "翻譯"
 
 msgid "VOLUME DOWN"
-msgstr ""
+msgstr "降低音量"
 
 msgid "VOLUME UP"
-msgstr ""
+msgstr "提高音量"
 
 msgid "VOLUME MUTE"
-msgstr ""
+msgstr "靜音"
 
 msgid "START RECORDING"
-msgstr ""
+msgstr "開始錄製"
 
 msgid "STOP RECORDING"
-msgstr ""
+msgstr "停止錄製"
 
 msgid "KEYBOARD TOGGLE"
-msgstr ""
+msgstr "鍵盤切換"
 
 msgid "KEY ASSIGNED TWICE"
-msgstr ""
+msgstr "按鍵被重複指派"
 
 msgid "ZOOM OUT"
 msgstr "縮小"
@@ -895,10 +895,10 @@ msgstr ""
 "您確定要刪除嗎？"
 
 msgid "NFC"
-msgstr ""
+msgstr "NFC"
 
 msgid "WRITE AN NFC TAG FOR THIS GAME"
-msgstr ""
+msgstr "為此遊戲寫入NFC標籤"
 
 #, c-format
 msgid ""
@@ -906,15 +906,18 @@ msgid ""
 "'%s'\n"
 "PRESS THE WRITE BUTTON AND THEN PLACE AN NFC TAG ON THE WRITER"
 msgstr ""
+"若要為\n"
+"'%s'\n"
+"寫入啟動指令，請按下「寫入」按鈕，然後將NFC標籤放在寫入器上"
 
 msgid "WRITE"
-msgstr ""
+msgstr "寫入"
 
 msgid "PLACE A TAG ON THE WRITER..."
-msgstr ""
+msgstr "請將標籤放在寫入器上..."
 
 msgid "THE TAG WAS WRITTEN SUCCESSFULLY"
-msgstr ""
+msgstr "標籤寫入成功"
 
 #, c-format
 msgid "REMOVE FROM %s"
@@ -982,10 +985,10 @@ msgid "BY MANUFACTURER"
 msgstr "依製作廠商"
 
 msgid "BY HARDWARE TYPE THEN ALPHABETICALLY"
-msgstr ""
+msgstr "依硬體類型排序，然後依字母順序"
 
 msgid "BY HARDWARE TYPE THEN YEAR"
-msgstr ""
+msgstr "依硬體類型再依年份"
 
 msgid "BY MANUFACTURER AND TYPE"
 msgstr "依製造商以及類型"
@@ -1132,7 +1135,7 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "顯示遊戲控制器的電池電量"
 
 msgid "SHOW GUN NOTIFICATIONS"
-msgstr ""
+msgstr "顯示光槍通知"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "顯示光槍準星"
@@ -1141,13 +1144,13 @@ msgid "BEHAVIOR"
 msgstr "行為"
 
 msgid "JOYSTICKS HOTKEYS"
-msgstr ""
+msgstr "搖桿熱鍵"
 
 msgid "RESTRICT JOYSTICKS HOTKEYS TO EXIT"
-msgstr ""
+msgstr "限制搖桿熱鍵僅用於離開"
 
 msgid "GLOBAL HOTKEYS"
-msgstr ""
+msgstr "全域熱鍵"
 
 msgid "default"
 msgstr "預設值"
@@ -1156,67 +1159,67 @@ msgid "NOT CONNECTED"
 msgstr "尚未連線"
 
 msgid "SOUTH"
-msgstr ""
+msgstr "南"
 
 msgid "EAST"
-msgstr ""
+msgstr "東"
 
 msgid "NORTH"
-msgstr ""
+msgstr "北"
 
 msgid "WEST"
-msgstr ""
+msgstr "西"
 
 msgid "D-PAD UP"
-msgstr ""
+msgstr "方向鍵上"
 
 msgid "D-PAD DOWN"
-msgstr ""
+msgstr "方向鍵下"
 
 msgid "D-PAD LEFT"
-msgstr ""
+msgstr "方向鍵左"
 
 msgid "D-PAD RIGHT"
-msgstr ""
+msgstr "方向鍵右"
 
 msgid "LEFT SHOULDER"
-msgstr ""
+msgstr "左肩鍵"
 
 msgid "RIGHT SHOULDER"
-msgstr ""
+msgstr "右肩鍵"
 
 msgid "LEFT TRIGGER"
-msgstr ""
+msgstr "左扳機"
 
 msgid "RIGHT TRIGGER"
-msgstr ""
+msgstr "右扳機"
 
 msgid "LEFT STICK PRESS"
-msgstr ""
+msgstr "左搖桿按下"
 
 msgid "RIGHT STICK PRESS"
-msgstr ""
+msgstr "右搖桿按下"
 
 msgid "HOTKEY"
-msgstr ""
+msgstr "熱鍵"
 
 msgid "DEFAULT"
 msgstr "預設"
 
 msgid "NO DEVICE FOUND (JAMMASD, IPAC, ...)"
-msgstr ""
+msgstr "未找到裝置（JAMMASD、IPAC...）"
 
 msgid "DECLARE A NEW GLOBAL HOTKEY"
-msgstr ""
+msgstr "宣告新的全域熱鍵"
 
 msgid "YOU'VE 4 SECONDS TO PRESS EXACTLY 2 TIMES THE GLOBAL HOTKEY"
-msgstr ""
+msgstr "您有4秒鐘的時間，必須準確按下全域熱鍵兩次"
 
 msgid "NO GLOBAL HOTKEY DETECTED"
-msgstr ""
+msgstr "未偵測到全域熱鍵"
 
 msgid "MORE THAN ONE GLOBAL HOTKEY DETECTED"
-msgstr ""
+msgstr "偵測到多個全域熱鍵"
 
 msgid "BORDER SIZE"
 msgstr "邊框尺寸"
@@ -1375,13 +1378,13 @@ msgid "SEARCHING WI-FI NETWORKS"
 msgstr "搜尋 WI-FI 網路"
 
 msgid "PARIS"
-msgstr ""
+msgstr "巴黎"
 
 msgid "OSAKA"
-msgstr ""
+msgstr "大阪"
 
 msgid "SEOUL"
-msgstr ""
+msgstr "首爾"
 
 msgid "NETPLAY SETTINGS"
 msgstr "多人遊戲設定"
@@ -1564,22 +1567,22 @@ msgid "PADTOKEY SETTINGS"
 msgstr "手把轉鍵盤設定"
 
 msgid "MANUAL SCRAPE"
-msgstr ""
+msgstr "手動搜刮"
 
 msgid "INCLUDED SCRAPERS"
-msgstr ""
+msgstr "內建搜刮器"
 
 msgid "SCREENSCRAPER"
-msgstr ""
+msgstr "ScreenScraper"
 
 msgid "IGDB"
-msgstr ""
+msgstr "IGDB"
 
 msgid "CLIENT ID"
-msgstr ""
+msgstr "客戶端ID"
 
 msgid "CLIENT SECRET"
-msgstr ""
+msgstr "客戶端密鑰"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -1608,7 +1611,7 @@ msgid "SYSTEM DISK USAGE"
 msgstr "系統磁碟用量"
 
 msgid "DISK USAGE"
-msgstr ""
+msgstr "磁碟使用量"
 
 msgid "VIDEO DRIVER"
 msgstr "影像驅動程式"
@@ -2207,7 +2210,7 @@ msgid "OPTIMIZE VIDEO VRAM USAGE"
 msgstr "最佳化影像的 VRAM 使用"
 
 msgid "USE FILESYSTEM CACHE"
-msgstr ""
+msgstr "使用檔案系統快取"
 
 msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
 msgstr "需要重新啟動系統才可以套用新的設定"
@@ -2243,15 +2246,15 @@ msgid "LANGUAGE (REGION)"
 msgstr "語言（地區）"
 
 msgid "KEYBOARD LAYOUT"
-msgstr ""
+msgstr "鍵盤配置"
 
 msgid "KEYBOARD VARIANT"
-msgstr ""
+msgstr "鍵盤變體"
 
 msgid ""
 "Select the physical keyboard layout. A reboot may be required for changes to "
 "take full effect."
-msgstr ""
+msgstr "選擇實體鍵盤配置。可能需要重新啟動才能使變更完全生效。"
 
 msgid "SELECT YOUR TIME ZONE"
 msgstr "選擇您所在的時區"
@@ -2389,7 +2392,7 @@ msgid "LED HARDWARE"
 msgstr "LED硬體"
 
 msgid "ENABLE LED"
-msgstr ""
+msgstr "啟用LED"
 
 msgid "LED BRIGHTNESS"
 msgstr "LED亮度"
@@ -2401,10 +2404,10 @@ msgid "STORAGE DEVICE"
 msgstr "儲存裝置"
 
 msgid "EJECT AN EXTRA DISK"
-msgstr ""
+msgstr "退出額外磁碟"
 
 msgid "EXTRA DRIVE FILESYSTEM TYPE"
-msgstr ""
+msgstr "額外磁碟機檔案系統類型"
 
 msgid "ADVANCED"
 msgstr "進階設定"
@@ -2660,7 +2663,7 @@ msgid "SHOW '..' PARENT FOLDER"
 msgstr "顯示「..」上層資料夾"
 
 msgid "ICONS"
-msgstr ""
+msgstr "圖示"
 
 msgid "AFTER NAME"
 msgstr "在名字後面"
@@ -2669,7 +2672,7 @@ msgid "BEFORE NAME"
 msgstr "在名字前面"
 
 msgid "SHOW TAGS ICONS"
-msgstr ""
+msgstr "顯示標籤圖示"
 
 msgid "SHOW REGION FLAG"
 msgstr "在清單中顯示語言旗幟"
@@ -2822,10 +2825,10 @@ msgid "WIFI KEY"
 msgstr "WIFI 連線金鑰"
 
 msgid "WIFI COUNTRY"
-msgstr ""
+msgstr "WiFi國家"
 
 msgid "N/A"
-msgstr ""
+msgstr "N/A"
 
 msgid "WIFI ENABLED"
 msgstr "已啟用 WIFI 無線網路"
@@ -2951,28 +2954,28 @@ msgid "ARE YOU SURE YOU WANT TO FORMAT THIS DRIVE?"
 msgstr "您確定要格式化此裝置嗎？"
 
 msgid "SAFELY EJECT A DISK"
-msgstr ""
+msgstr "安全退出磁碟"
 
 msgid "MERGED DRIVE"
-msgstr ""
+msgstr "合併磁碟機"
 
 msgid "NO MERGED DRIVES FOUND"
-msgstr ""
+msgstr "未找到合併的磁碟機"
 
 msgid "EJECT"
-msgstr ""
+msgstr "退出"
 
 msgid "NO DRIVE SELECTED"
-msgstr ""
+msgstr "未選擇磁碟機"
 
 msgid "Ejecting..."
-msgstr ""
+msgstr "退出中..."
 
 msgid "EDIT METADATA"
 msgstr "編輯中繼資料"
 
 msgid "TAGS"
-msgstr ""
+msgstr "標籤"
 
 msgid "GENRES"
 msgstr "類型"
@@ -3111,7 +3114,7 @@ msgid "A,AN,THE"
 msgstr "A,AN,THE"
 
 msgid "INVALID CREDENTIALS"
-msgstr ""
+msgstr "無效的憑證"
 
 msgid "SCRAPING"
 msgstr "搜刮中"
@@ -3156,16 +3159,16 @@ msgid "enter game genre"
 msgstr "輸入遊戲類型"
 
 msgid "Tags"
-msgstr ""
+msgstr "標籤"
 
 msgid "tags"
-msgstr ""
+msgstr "標籤"
 
 msgid "Sort name"
-msgstr ""
+msgstr "排序名稱"
 
 msgid "enter game sort name"
-msgstr ""
+msgstr "輸入遊戲排序名稱"
 
 msgid "emulator"
 msgstr "模擬器"
@@ -3363,7 +3366,7 @@ msgid "Screenscraper Game ID"
 msgstr "Screenscraper 遊戲 ID"
 
 msgid "MultiDisk"
-msgstr ""
+msgstr "多光碟"
 
 msgid "Loading system config..."
 msgstr "正在載入系統設定..."
@@ -3448,19 +3451,19 @@ msgid ""
 msgstr "需要提供一個有效的帳號。請在 https://retroachievements.org 註冊帳號"
 
 msgid "SLOW"
-msgstr ""
+msgstr "運行緩慢"
 
 msgid "NOT WORKING"
-msgstr ""
+msgstr "無法運行"
 
 msgid "BUGGY"
-msgstr ""
+msgstr "有錯誤"
 
 msgid "LIKED"
-msgstr ""
+msgstr "喜歡"
 
 msgid "DISLIKED"
-msgstr ""
+msgstr "不喜歡"
 
 msgid "UPDATE AVAILABLE"
 msgstr "有可用的更新"
@@ -3508,7 +3511,7 @@ msgid "GENRE"
 msgstr "類型"
 
 msgid "TAG"
-msgstr ""
+msgstr "標籤"
 
 msgid "FAMILY"
 msgstr "家族"
@@ -3805,70 +3808,70 @@ msgstr ""
 "對準目標開火來校準"
 
 msgid "Reloaded the games list..."
-msgstr ""
+msgstr "已重新載入遊戲列表..."
 
 msgid "GAME DRIVE DETECTED"
-msgstr ""
+msgstr "偵測到遊戲磁碟機"
 
 msgid "DEVICE"
-msgstr ""
+msgstr "裝置"
 
 msgid "MODEL"
-msgstr ""
+msgstr "型號"
 
 msgid "SIZE"
-msgstr ""
+msgstr "大小"
 
 msgid "MOUNT"
-msgstr ""
+msgstr "掛載"
 
 msgid "Merge games from this drive partition now?"
-msgstr ""
+msgstr "現在要從此磁碟分割區合併遊戲嗎？"
 
 msgid "(This will also apply on future boots)"
-msgstr ""
+msgstr "（這也將在未來的啟動時套用）"
 
 msgid "Merge requested... Please wait."
-msgstr ""
+msgstr "已請求合併... 請稍候。"
 
 msgid "MERGE FAILED"
-msgstr ""
+msgstr "合併失敗"
 
 msgid "Please check the logs."
-msgstr ""
+msgstr "請檢查記錄檔。"
 
 msgid "NO, IGNORE THIS TIME"
-msgstr ""
+msgstr "否，這次忽略"
 
 msgid "NO, IGNORE FOREVER"
-msgstr ""
+msgstr "否，永遠忽略"
 
 msgid "Adding drive to ignore list..."
-msgstr ""
+msgstr "正在將磁碟機加入忽略清單..."
 
 msgid "YES, MERGE DRIVE"
-msgstr ""
+msgstr "是，合併磁碟機"
 
 msgid "NEW DRIVE DETECTED"
-msgstr ""
+msgstr "偵測到新磁碟機"
 
 msgid "Format and prepare this drive for game storage?"
-msgstr ""
+msgstr "是否格式化並將此磁碟機準備用於遊戲儲存？"
 
 msgid "(ALL EXISTING DATA WILL BE ERASED)"
-msgstr ""
+msgstr "（所有現有資料將被清除）"
 
 msgid "Starting format process..."
-msgstr ""
+msgstr "正在啟動格式化程序..."
 
 msgid "FORMAT FAILED"
-msgstr ""
+msgstr "格式化失敗"
 
 msgid "YES, FORMAT & MERGE"
-msgstr ""
+msgstr "是，格式化並合併"
 
 msgid "NO, IGNORE"
-msgstr ""
+msgstr "否，忽略"
 
 #, c-format
 msgid "%d d"
@@ -3889,7 +3892,7 @@ msgstr "%d 秒"
 #, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
-msgstr[0] ""
+msgstr[0] "%d 年前"
 
 #, c-format
 msgid "%d day ago"
@@ -3910,6 +3913,60 @@ msgstr[0] "%d 分鐘前"
 msgid "%d second ago"
 msgid_plural "%d seconds ago"
 msgstr[0] "%d 幾秒前"
+
+msgid "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."
+msgstr "您確定要退出此磁碟機嗎？\n\n這將卸載該磁碟機並將其從啟動設定中移除。"
+
+msgid "YES, EJECT"
+msgstr "是，退出"
+
+msgid "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."
+msgstr "裝置已安全退出。\n點選確定後遊戲列表將重新整理。"
+
+msgid "FAILED TO EJECT DEVICE."
+msgstr "退出裝置失敗。"
+
+msgid "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!"
+msgstr "ROCKNIX 是免費軟體。\n\n如果您為 ROCKNIX 付了費，表示您被騙了。\n\n請向賣家要求退款！"
+
+msgid "The selected UI mode has nothing to show,\n returning to UI mode: FULL"
+msgstr "目前選擇的介面模式無可顯示內容，\n正在返回至完整模式"
+
+msgid "Configured scraper is no longer available.\nPlease change the scraping source in the settings."
+msgstr "已設定的搜刮器不再可用。\n請在設定中變更搜刮來源。"
+
+msgid "MOONLIGHT GAME STREAMING"
+msgstr "MOONLIGHT 遊戲串流"
+
+msgid "ZEDMD"
+msgstr "ZEDMD"
+
+msgid "add star"
+msgstr "新增星級"
+
+msgid "Logo Text"
+msgstr "Logo 文字"
+
+msgid "SD"
+msgstr "SD"
+
+msgid "HD"
+msgstr "HD"
+
+msgid "EUROPE"
+msgstr "歐洲"
+
+msgid "USA"
+msgstr "美國"
+
+msgid "JAPAN"
+msgstr "日本"
+
+msgid "WORLD"
+msgstr "全球"
+
+msgid "ZAPAROO"
+msgstr "ZAPAROO"
 
 #~ msgid "BUILD IMAGE CACHE"
 #~ msgstr "建立圖片快取"

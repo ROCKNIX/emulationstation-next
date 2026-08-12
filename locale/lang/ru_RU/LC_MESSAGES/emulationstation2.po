@@ -3964,6 +3964,60 @@ msgstr[0] "%d секунду назад"
 msgstr[1] "%d секунды назад"
 msgstr[2] "%d секунд назад"
 
+msgid "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."
+msgstr ""
+
+msgid "YES, EJECT"
+msgstr ""
+
+msgid "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."
+msgstr ""
+
+msgid "FAILED TO EJECT DEVICE."
+msgstr ""
+
+msgid "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!"
+msgstr ""
+
+msgid "The selected UI mode has nothing to show,\n returning to UI mode: FULL"
+msgstr ""
+
+msgid "Configured scraper is no longer available.\nPlease change the scraping source in the settings."
+msgstr ""
+
+msgid "MOONLIGHT GAME STREAMING"
+msgstr ""
+
+msgid "ZEDMD"
+msgstr ""
+
+msgid "add star"
+msgstr ""
+
+msgid "Logo Text"
+msgstr ""
+
+msgid "SD"
+msgstr ""
+
+msgid "HD"
+msgstr ""
+
+msgid "EUROPE"
+msgstr ""
+
+msgid "USA"
+msgstr ""
+
+msgid "JAPAN"
+msgstr ""
+
+msgid "WORLD"
+msgstr ""
+
+msgid "ZAPAROO"
+msgstr ""
+
 #~ msgid "BUILD IMAGE CACHE"
 #~ msgstr "СОЗДАТЬ КЭШ ИЗОБРАЖЕНИЙ"
 
