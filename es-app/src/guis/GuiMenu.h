@@ -41,6 +41,18 @@ public:
         static void editKeyboardMappings(Window *window, IKeyboardMapContainer* mapping, bool editable);
 
 private:
+        // Everything the network menu needs from the system, collected in one go off the UI thread
+        struct NetworkInfo
+        {
+                std::vector<std::pair<std::string, std::string>> ipAddresses;
+                bool internetConnected = false;
+                bool wifiApModeSupported = false;
+                std::vector<std::string> availableChannels;
+                std::string usbGadgetFunction;
+                std::string usbGadgetAddress;
+                std::vector<std::string> usbGadgetFunctions;
+        };
+
         void addEntry(const std::string& name, bool add_arrow, const std::function<void()>& func, const std::string iconName = "");
         void addVersionInfo();
         void openCollectionSystemSettings();
@@ -53,7 +65,10 @@ private:
         
         void openSystemSettings();
         void openGamesSettings();       
-        void openNetworkSettings(bool selectWifiEnable = false, bool selectAdhocEnable = false);        
+        void openNetworkSettings(bool selectWifiEnable = false, bool selectAdhocEnable = false);
+        // focusedRow keeps the cursor on the row that triggered a reload : "wifi", "adhoc", "usbgadget" or empty
+        void loadNetworkSettings(GuiSettings* guiToClose, const std::string& focusedRow, const std::function<void()>& applyFirst = nullptr);
+        void showNetworkSettings(const NetworkInfo& info, const std::string& focusedRow);
         void openQuitMenu();
         void openSystemInformations();
         void openServicesSettings();
@@ -101,7 +116,7 @@ private:
 	static void saveSubsetSettings();
 	static void loadSubsetSettings(const std::string themeName);
 
-	static bool IsTailscaleUp(Window* window);
+	static bool IsTailscaleUp(std::string* reauthenticateUrl = nullptr);
 	static bool IsZeroTierUp(std::string* networkId = nullptr);
 
 public:

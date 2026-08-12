@@ -35,6 +35,10 @@ public:
 		mText = title;
 		mTextChanged = false;
 
+		// Sleeping makes the main loop skip update(), which would leave this popup on screen forever
+		mAllowedSleep = window->getAllowSleep();
+		window->setAllowSleep(false);
+
 		mRunning = true;
 		mHandle = new std::thread(&GuiLoading::threadLoading, this);
 		mBusyAnim.setText(title);
@@ -49,6 +53,8 @@ public:
 	{
 		mRunning = false;
 		mHandle->join();
+
+		mWindow->setAllowSleep(mAllowedSleep);
 	}
 
 	void setText(const std::string& text) override
@@ -130,6 +136,7 @@ private:
     BusyComponent	mBusyAnim;
     std::thread*	mHandle;
     bool			mRunning;
+    bool			mAllowedSleep;
 
 	std::mutex		mTextMutex;
 	std::string		mText;

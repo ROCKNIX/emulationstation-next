@@ -72,6 +72,8 @@
 #include <array>
 #include <memory>
 #include <sstream>
+#include <thread>
+#include <chrono>
 #include <cstdio>
 #endif
 
@@ -5223,7 +5225,104 @@ void GuiMenu::openWifiSettings(Window* win, std::string title, std::string data,
 	win->pushGui(new GuiWifi(win, title, data, onsave));
 }
 
+static bool applyWifiConfiguration(bool enabled, const std::string& ssid, const std::string& key, const std::string& country)
+{
+	if (!enabled)
+		return ApiSystem::getInstance()->disableWifi();
+
+#if WIN32
+	return ApiSystem::getInstance()->enableWifi(ssid, key);
+#else
+	return ApiSystem::getInstance()->enableWifi(ssid, key, country);
+#endif
+}
+
+// Service commands block for seconds : run them from a loading popup, then put the switch back in sync with what
+// was actually achieved. The switch is held weakly so a menu closed in the meantime is simply left alone.
+static void setAsyncSwitchHandler(Window* window, const std::shared_ptr<SwitchComponent>& component, const std::string& systemConfName, const std::function<bool(bool)>& apply, const std::function<void(bool)>& onApplied = nullptr)
+{
+	std::weak_ptr<SwitchComponent> weakSwitch = component;
+	auto busy = std::make_shared<bool>(false);
+
+	component->setOnChangedCallback([window, weakSwitch, systemConfName, apply, onApplied, busy]
+	{
+		auto switchComponent = weakSwitch.lock();
+		if (switchComponent == nullptr || *busy)
+			return;
+
+		bool requested = switchComponent->getState();
+
+		window->pushGui(new GuiLoading<bool>(window, _("PLEASE WAIT"),
+			[apply, requested](IGuiLoadingHandler* gui) { return apply(requested); },
+			[weakSwitch, systemConfName, onApplied, busy](bool applied)
+			{
+				if (!systemConfName.empty())
+					SystemConf::getInstance()->set(systemConfName, applied ? "1" : "0");
+
+				auto switchComponent = weakSwitch.lock();
+				if (switchComponent != nullptr && switchComponent->getState() != applied)
+				{
+					*busy = true; // setState() calls this very handler back
+					switchComponent->setState(applied);
+					*busy = false;
+				}
+
+				if (onApplied != nullptr)
+					onApplied(applied);
+			}));
+	});
+}
+
 void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
+{
+	loadNetworkSettings(nullptr, selectWifiEnable ? "wifi" : (selectAdhocEnable ? "adhoc" : ""));
+}
+
+// guiToClose is only closed once the new menu is ready, so a refresh keeps the current menu on screen.
+// applyFirst runs in the same worker, so applying a setting and reloading the menu shows a single popup.
+void GuiMenu::loadNetworkSettings(GuiSettings* guiToClose, const std::string& focusedRow, const std::function<void()>& applyFirst)
+{
+	Window* window = mWindow;
+
+	// Pinging and probing the wifi / usb tools takes seconds : gather it all before building the menu
+	window->pushGui(new GuiLoading<NetworkInfo>(window, _("PLEASE WAIT"),
+		[applyFirst](IGuiLoadingHandler* gui)
+		{
+			if (applyFirst != nullptr)
+				applyFirst();
+
+			NetworkInfo info;
+
+			info.ipAddresses = ApiSystem::getInstance()->getIpAddresses();
+			info.internetConnected = ApiSystem::getInstance()->ping();
+			info.wifiApModeSupported = ApiSystem::getInstance()->isWifiAPModeSupported();
+			info.availableChannels = ApiSystem::getInstance()->getAvailableChannels();
+
+			info.usbGadgetFunction = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget)"));
+			if (info.usbGadgetFunction.empty())
+				info.usbGadgetFunction = "disabled";
+
+			// The gadget holds its address with no host attached, so the interface is NO-CARRIER and
+			// gets filtered out of the address list. Ask the script for it instead.
+			if (info.usbGadgetFunction == "network")
+				info.usbGadgetAddress = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget address)"));
+
+			std::string function;
+			for (std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget --options)")); getline(ss, function, ' '); )
+				info.usbGadgetFunctions.push_back(function);
+
+			return info;
+		},
+		[this, guiToClose, focusedRow](NetworkInfo info)
+		{
+			if (guiToClose != nullptr)
+				delete guiToClose;
+
+			showNetworkSettings(info, focusedRow);
+		}));
+}
+
+void GuiMenu::showNetworkSettings(const NetworkInfo& info, const std::string& focusedRow)
 {
 	bool baseWifiEnabled = SystemConf::getInstance()->getBool("wifi.enabled");
 	bool baseAdhocEnabled = SystemConf::getInstance()->getBool("wifi.adhoc.enabled");
@@ -5235,12 +5334,55 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	Window *window = mWindow;
 
 	auto s = new GuiSettings(mWindow, _("NETWORK SETTINGS").c_str());
+
+	// This menu is deleted only when its replacement is ready, so it is never freed from its own input handler
+	auto reopen = [this, s](const std::string& focus, const std::function<void()>& applyFirst = nullptr)
+	{
+		loadNetworkSettings(s, focus, applyFirst);
+	};
+
 	s->addGroup(_("INFORMATION"));
 
-	auto ip = std::make_shared<TextComponent>(mWindow, ApiSystem::getInstance()->getIpAddress(), font, color);
-	s->addWithLabel(_("IP ADDRESS"), ip);
+	// IPv4 only, IPv6 is just the fallback for a device that has nothing else
+	std::vector<std::pair<std::string, std::string>> addresses;
+	for (auto& ipAddress : info.ipAddresses)
+		if (ipAddress.second.find(':') == std::string::npos)
+			addresses.push_back(ipAddress);
 
-	auto status = std::make_shared<TextComponent>(mWindow, ApiSystem::getInstance()->ping() ? _("CONNECTED") : _("NOT CONNECTED"), font, color);
+	if (addresses.empty())
+		addresses = info.ipAddresses;
+
+	// Usb networking is reachable on that address as soon as it is configured, whether or not a host
+	// is plugged in, so list it even though the interface has no carrier yet
+	if (!info.usbGadgetAddress.empty())
+	{
+		bool alreadyListed = false;
+		for (auto& ipAddress : addresses)
+			if (ipAddress.second == info.usbGadgetAddress)
+				alreadyListed = true;
+
+		if (!alreadyListed)
+			addresses.push_back(std::pair<std::string, std::string>("usb", info.usbGadgetAddress));
+	}
+
+	if (addresses.empty())
+	{
+		auto ip = std::make_shared<TextComponent>(mWindow, _("NOT CONNECTED"), font, color);
+		s->addWithLabel(_("IP ADDRESS"), ip);
+	}
+
+	// One row per address : a device can be on wifi, ethernet and usb networking at the same time
+	for (auto& ipAddress : addresses)
+	{
+		std::string label = _("IP ADDRESS");
+		if (!ipAddress.first.empty())
+			label = label + " (" + ipAddress.first + ")";
+
+		auto ip = std::make_shared<TextComponent>(mWindow, ipAddress.second, font, color);
+		s->addWithLabel(label, ip);
+	}
+
+	auto status = std::make_shared<TextComponent>(mWindow, info.internetConnected ? _("CONNECTED") : _("NOT CONNECTED"), font, color);
 	s->addWithLabel(_("INTERNET STATUS"), status);
 
 	// Network Indicator
@@ -5259,7 +5401,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	// Wifi enable
 	auto enable_wifi = std::make_shared<SwitchComponent>(mWindow);
 	enable_wifi->setState(baseWifiEnabled);
-	s->addWithLabel(_("ENABLE WIFI"), enable_wifi, selectWifiEnable);
+	s->addWithLabel(_("ENABLE WIFI"), enable_wifi, focusedRow == "wifi");
 
 #ifdef RK3399
         // Add option to disable RG552 wifi gpio
@@ -5267,14 +5409,10 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
         bool internalmoduleEnabled = SystemConf::getInstance()->get("internal.wifi") == "1";
         internal_wifi->setState(internalmoduleEnabled);
         s->addWithLabel(_("ENABLE WIFI GPIO"), internal_wifi);
-        internal_wifi->setOnChangedCallback([internal_wifi] {
-                if (internal_wifi->getState() == false) {
-                        Utils::Platform::runSystemCommand("/usr/bin/internalwifi disable", "", nullptr);
-                } else {
-                        Utils::Platform::runSystemCommand("/usr/bin/internalwifi enable", "", nullptr);
-                }
-                bool internalwifi = internal_wifi->getState();
-                SystemConf::getInstance()->set("internal.wifi", internalwifi ? "1" : "0");
+        setAsyncSwitchHandler(mWindow, internal_wifi, "internal.wifi", [](bool enabled)
+        {
+                Utils::Platform::runSystemCommand(enabled ? "/usr/bin/internalwifi enable" : "/usr/bin/internalwifi disable", "", nullptr);
+                return enabled;
         });
 #endif
 
@@ -5314,8 +5452,8 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 #endif
 		}
 
-		if (ApiSystem::getInstance()->isWifiAPModeSupported())
-			s->addWithLabel(_("LOCAL PLAY MODE"), enable_adhoc, selectAdhocEnable);
+		if (info.wifiApModeSupported)
+			s->addWithLabel(_("LOCAL PLAY MODE"), enable_adhoc, focusedRow == "adhoc");
 	}
 
 	auto optionsAdhocID = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LOCAL PLAY ID"), false);
@@ -5331,7 +5469,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 
 	auto optionsChannels = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LOCAL NETWORK CHANNEL"), false);
 
-	std::vector<std::string> availableChannels = ApiSystem::getInstance()->getAvailableChannels();
+	const std::vector<std::string>& availableChannels = info.availableChannels;
 	std::string selectedChannel = SystemConf::getInstance()->get("wifi.adhoc.channel");
 
 	if (selectedChannel.empty())
@@ -5369,56 +5507,42 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 		{
 			std::string newSSID = SystemConf::getInstance()->get("wifi.ssid");
 			std::string newKey = SystemConf::getInstance()->get("wifi.key");
-#if !WIN32
 			std::string newCountry = SystemConf::getInstance()->get("wifi.country");
-
-			if (baseSSID != newSSID || baseKEY != newKey || baseCountry != newCountry || !baseWifiEnabled)
-			{
-				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey, newCountry))
-					window->pushGui(new GuiMsgBox(window, _("WIFI ENABLED")));
-				else
-					window->pushGui(new GuiMsgBox(window, _("WIFI CONFIGURATION ERROR")));
-			}
+#if !WIN32
+			if (baseSSID == newSSID && baseKEY == newKey && baseCountry == newCountry && baseWifiEnabled)
+				return;
 #else
-			if (baseSSID != newSSID || baseKEY != newKey || !baseWifiEnabled)
-			{
-				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey))
-					window->pushGui(new GuiMsgBox(window, _("WIFI ENABLED")));
-				else
-					window->pushGui(new GuiMsgBox(window, _("WIFI CONFIGURATION ERROR")));
-			}
+			if (baseSSID == newSSID && baseKEY == newKey && baseWifiEnabled)
+				return;
 #endif
+			window->pushGui(new GuiLoading<bool>(window, _("PLEASE WAIT"),
+				[newSSID, newKey, newCountry](IGuiLoadingHandler* gui) { return applyWifiConfiguration(true, newSSID, newKey, newCountry); },
+				[window](bool enabled) { window->pushGui(new GuiMsgBox(window, enabled ? _("WIFI ENABLED") : _("WIFI CONFIGURATION ERROR"))); }));
 		}
 		else if (baseWifiEnabled)
-			ApiSystem::getInstance()->disableWifi();
+		{
+			window->pushGui(new GuiLoading<bool>(window, _("PLEASE WAIT"),
+				[](IGuiLoadingHandler* gui) { return ApiSystem::getInstance()->disableWifi(); }));
+		}
 	});
 
-	enable_wifi->setOnChangedCallback([this, s, baseWifiEnabled, enable_wifi, baseAdhocEnabled, enable_adhoc]()
+	enable_wifi->setOnChangedCallback([reopen, baseWifiEnabled, enable_wifi, baseAdhocEnabled, enable_adhoc]()
 	{
 		bool wifienabled = enable_wifi->getState();
 		bool adhocenabled = enable_adhoc->getState();
-		if (baseWifiEnabled != wifienabled || baseAdhocEnabled != adhocenabled)
-		{
-			SystemConf::getInstance()->setBool("wifi.enabled", wifienabled);
+		if (baseWifiEnabled == wifienabled && baseAdhocEnabled == adhocenabled)
+			return;
 
-			if (wifienabled)
-			{
-#if !WIN32
-				std::string country = SystemConf::getInstance()->get("wifi.country");
-				ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"), country);
-#else
-				ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"));
-#endif
-			}
-			else
-				ApiSystem::getInstance()->disableWifi();
+		SystemConf::getInstance()->setBool("wifi.enabled", wifienabled);
 
-			delete s;
-			openNetworkSettings(true);
-		}
+		std::string ssid = SystemConf::getInstance()->get("wifi.ssid");
+		std::string key = SystemConf::getInstance()->get("wifi.key");
+		std::string country = SystemConf::getInstance()->get("wifi.country");
+
+		reopen("wifi", [wifienabled, ssid, key, country] { applyWifiConfiguration(wifienabled, ssid, key, country); });
 	});
 
-	enable_adhoc->setOnChangedCallback([this, s, baseAdhocEnabled, baseWifiEnabled, enable_wifi, enable_adhoc, optionsAdhocID, selectedAdhocID, optionsChannels, selectedChannel]
+	enable_adhoc->setOnChangedCallback([reopen, enable_wifi, enable_adhoc, optionsAdhocID, optionsChannels]
 	{
 		bool wifienabled = enable_wifi->getState();
 		bool adhocenabled = enable_adhoc->getState();
@@ -5433,126 +5557,140 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 		SystemConf::getInstance()->setBool("wifi.adhoc.enabled", adhocenabled);
 		SystemConf::getInstance()->saveSystemConf();
 
-		if (wifienabled)
+		if (!wifienabled)
 		{
-			ApiSystem::getInstance()->disableWifi();
-#if !WIN32
-			ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"), SystemConf::getInstance()->get("wifi.country"));
-#else
-			ApiSystem::getInstance()->enableWifi(SystemConf::getInstance()->get("wifi.ssid"), SystemConf::getInstance()->get("wifi.key"));
-#endif
+			reopen("adhoc");
+			return;
 		}
 
-		delete s;
-		openNetworkSettings(false, true);
+		std::string ssid = SystemConf::getInstance()->get("wifi.ssid");
+		std::string key = SystemConf::getInstance()->get("wifi.key");
+		std::string country = SystemConf::getInstance()->get("wifi.country");
+
+		reopen("adhoc", [ssid, key, country]
+		{
+			ApiSystem::getInstance()->disableWifi();
+			applyWifiConfiguration(true, ssid, key, country);
+		});
 	});
 
 	// NETWORK SERVICES
 	s->addGroup(_("NETWORK SERVICES"));
 
-       auto sshd_enabled = std::make_shared<SwitchComponent>(mWindow);
+	auto sshd_enabled = std::make_shared<SwitchComponent>(mWindow);
 	bool sshbaseEnabled = SystemConf::getInstance()->get("ssh.enabled") == "1";
 	sshd_enabled->setState(sshbaseEnabled);
 	s->addWithLabel(_("ENABLE SSH"), sshd_enabled);
-	sshd_enabled->setOnChangedCallback([sshd_enabled] {
-		if (sshd_enabled->getState() == false) {
-			Utils::Platform::runSystemCommand("systemctl stop sshd", "", nullptr);
-			Utils::Platform::runSystemCommand("systemctl disable sshd", "", nullptr);
-			Utils::Platform::runSystemCommand("rm /storage/.cache/services/sshd.conf", "", nullptr);
-		} else {
+	setAsyncSwitchHandler(mWindow, sshd_enabled, "ssh.enabled", [](bool enabled)
+	{
+		if (enabled) {
 			Utils::Platform::runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
 			Utils::Platform::runSystemCommand("touch /storage/.cache/services/sshd.conf", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl enable sshd", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl start sshd", "", nullptr);
-						}
-			bool sshenabled = sshd_enabled->getState();
-			SystemConf::getInstance()->set("ssh.enabled", sshenabled ? "1" : "0");
-		});
+		} else {
+			Utils::Platform::runSystemCommand("systemctl stop sshd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl disable sshd", "", nullptr);
+			Utils::Platform::runSystemCommand("rm /storage/.cache/services/sshd.conf", "", nullptr);
+		}
+		return enabled;
+	});
 
-       auto samba_enabled = std::make_shared<SwitchComponent>(mWindow);
+	auto samba_enabled = std::make_shared<SwitchComponent>(mWindow);
 	bool smbbaseEnabled = SystemConf::getInstance()->get("samba.enabled") == "1";
 	samba_enabled->setState(smbbaseEnabled);
 	s->addWithLabel(_("ENABLE SAMBA"), samba_enabled);
-	samba_enabled->setOnChangedCallback([samba_enabled] {
-		if (samba_enabled->getState() == false) {
-			Utils::Platform::runSystemCommand("systemctl stop nmbd", "", nullptr);
-			Utils::Platform::runSystemCommand("systemctl stop smbd", "", nullptr);
-			Utils::Platform::runSystemCommand("rm /storage/.cache/services/smb.conf", "", nullptr);
-		} else {
+	setAsyncSwitchHandler(mWindow, samba_enabled, "samba.enabled", [](bool enabled)
+	{
+		if (enabled) {
 			Utils::Platform::runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
 			Utils::Platform::runSystemCommand("touch /storage/.cache/services/smb.conf", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl start nmbd", "", nullptr);
 			Utils::Platform::runSystemCommand("systemctl start smbd", "", nullptr);
-						}
-			bool sambaenabled = samba_enabled->getState();
-			SystemConf::getInstance()->set("samba.enabled", sambaenabled ? "1" : "0");
-		});
+		} else {
+			Utils::Platform::runSystemCommand("systemctl stop nmbd", "", nullptr);
+			Utils::Platform::runSystemCommand("systemctl stop smbd", "", nullptr);
+			Utils::Platform::runSystemCommand("rm /storage/.cache/services/smb.conf", "", nullptr);
+		}
+		return enabled;
+	});
 
 	auto simple_http_enabled = std::make_shared<SwitchComponent>(mWindow);
 	bool simplehttpEnabled = SystemConf::getInstance()->get("simplehttp.enabled") == "1";
 	simple_http_enabled->setState(simplehttpEnabled);
 	s->addWithLabel(_("ENABLE SIMPLE HTTP SERVER"), simple_http_enabled);
-	simple_http_enabled->setOnChangedCallback([simple_http_enabled] {
-		if(simple_http_enabled->getState() == false) {
-			Utils::Platform::runSystemCommand("systemctl disable --now simple-http-server", "", nullptr);
-		} else {
+	setAsyncSwitchHandler(mWindow, simple_http_enabled, "simplehttp.enabled", [](bool enabled)
+	{
+		if (enabled)
 			Utils::Platform::runSystemCommand("systemctl enable --now simple-http-server", "", nullptr);
-		}
-		bool simplehttpenabled = simple_http_enabled->getState();
-		SystemConf::getInstance()->set("simplehttp.enabled", simplehttpenabled ? "1" : "0");
+		else
+			Utils::Platform::runSystemCommand("systemctl disable --now simple-http-server", "", nullptr);
+
+		return enabled;
 	});
 
 	const std::string usbGadgetScript = "/usr/bin/usbgadget";
 	auto optionsUSBGadget = std::make_shared<OptionListComponent<std::string> >(mWindow, _("USB GADGET FUNCTION"), false);
-	std::string selectedUSBGadget = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget)"));
-	if (selectedUSBGadget.empty())
-		selectedUSBGadget = "disabled";
 
-	std::string a;
-	for(std::stringstream ss(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget --options)")); getline(ss, a, ' '); ) {
-		optionsUSBGadget->add(a, a, a == selectedUSBGadget);
-	}
-	s->addWithLabel(_("USB GADGET FUNCTION"), optionsUSBGadget);
+	// usbgadget names its functions with underscores, which read badly once the menu upper cases them
+	for (auto& function : info.usbGadgetFunctions)
+		optionsUSBGadget->add(Utils::String::replace(function, "_", " "), function, function == info.usbGadgetFunction);
 
-	s->addSaveFunc([this, window, usbGadgetScript, optionsUSBGadget, selectedUSBGadget] {
-		if (optionsUSBGadget->changed()) {
-			Utils::Platform::runSystemCommand(usbGadgetScript + " " + optionsUSBGadget->getSelected(), "", nullptr);
-			if (optionsUSBGadget->getSelected() == "network") {
-				std::string usbip = std::string(Utils::Platform::GetShOutput(R"(/usr/bin/usbgadget address)"));
-				mWindow->pushGui(new GuiMsgBox(mWindow, _("USB Networking enabled, the device IP is ") + usbip, _("OK"), nullptr));
+	s->addWithLabel(_("USB GADGET FUNCTION"), optionsUSBGadget, focusedRow == "usbgadget");
+
+	// Applied straight away rather than on close, so the address the network gadget brings up lands in the list above.
+	// Set after the entries : add() fires this callback too.
+	optionsUSBGadget->setSelectedChangedCallback([reopen, usbGadgetScript, current = info.usbGadgetFunction](const std::string& function)
+	{
+		// Picking the same entry again still fires this, and re-applying tears the gadget down and back up
+		if (function == current)
+			return;
+
+		reopen("usbgadget", [usbGadgetScript, function]
+		{
+			Utils::Platform::runSystemCommand(usbGadgetScript + " " + function, "", nullptr);
+
+			// udev tears the gadget down and brings it back, so the reported function and its address
+			// only settle a moment after the command returns. Without this the menu reloads too early.
+			for (int i = 0; i < 20; i++)
+			{
+				if (std::string(Utils::Platform::GetShOutput(usbGadgetScript)) == function)
+					break;
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			}
-		}
+		});
 	});
 
 	// CLOUD SERVICES
 	s->addGroup(_("CLOUD SERVICES"));
 
-       auto enable_syncthing = std::make_shared<SwitchComponent>(mWindow);
+	auto enable_syncthing = std::make_shared<SwitchComponent>(mWindow);
 	bool syncthingEnabled = SystemConf::getInstance()->get("syncthing.enabled") == "1";
 	enable_syncthing->setState(syncthingEnabled);
 	s->addWithLabel(_("ENABLE SYNCTHING"), enable_syncthing);
-	enable_syncthing->setOnChangedCallback([enable_syncthing] {
-		if (enable_syncthing->getState() == false) {
-			Utils::Platform::runSystemCommand("systemctl stop syncthing", "", nullptr);
-		} else {
+	setAsyncSwitchHandler(mWindow, enable_syncthing, "syncthing.enabled", [](bool enabled)
+	{
+		if (enabled)
 			Utils::Platform::runSystemCommand("systemctl start syncthing", "", nullptr);
-		}
-		bool syncthingenabled = enable_syncthing->getState();
-		SystemConf::getInstance()->set("syncthing.enabled", syncthingenabled ? "1" : "0");
+		else
+			Utils::Platform::runSystemCommand("systemctl stop syncthing", "", nullptr);
+
+		return enabled;
 	});
 
-       auto mount_cloud = std::make_shared<SwitchComponent>(mWindow);
+	auto mount_cloud = std::make_shared<SwitchComponent>(mWindow);
 	bool mntcloudEnabled = SystemConf::getInstance()->get("clouddrive.mounted") == "1";
 	mount_cloud->setState(mntcloudEnabled);
 	s->addWithLabel(_("MOUNT CLOUD DRIVE"), mount_cloud);
-	mount_cloud->setOnChangedCallback([mount_cloud] {
-		if (mount_cloud->getState() == false) {
-			Utils::Platform::runSystemCommand("rclonectl unmount", "", nullptr);
-		} else {
+	setAsyncSwitchHandler(mWindow, mount_cloud, "clouddrive.mounted", [](bool enabled)
+	{
+		if (enabled)
 			Utils::Platform::runSystemCommand("rclonectl mount", "", nullptr);
-		}
-		bool cloudenabled = mount_cloud->getState();
-		SystemConf::getInstance()->set("clouddrive.mounted", cloudenabled ? "1" : "0");
+		else
+			Utils::Platform::runSystemCommand("rclonectl unmount", "", nullptr);
+
+		return enabled;
 	});
 
 	s->addGroup(_("VPN SERVICES"));
@@ -5563,15 +5701,16 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 		bool wgUp = SystemConf::getInstance()->get("wireguard.up") == "1";
 		wireguard->setState(wgUp);
 		s->addWithLabel(_("WIREGUARD VPN"), wireguard);
-		wireguard->setOnChangedCallback([wireguard, wireguardConfigFile] {
-			if (wireguard->getState() == false) {
-				Utils::Platform::runSystemCommand("wg-quick down " + wireguardConfigFile, "", nullptr);
-				Utils::Platform::runSystemCommand("systemctl stop connman-vpn", "", nullptr);
-			} else {
+		setAsyncSwitchHandler(mWindow, wireguard, "wireguard.up", [wireguardConfigFile](bool enabled)
+		{
+			if (enabled) {
 				Utils::Platform::runSystemCommand("systemctl start connman-vpn", "", nullptr);
 				Utils::Platform::runSystemCommand("wg-quick up " + wireguardConfigFile, "", nullptr);
+			} else {
+				Utils::Platform::runSystemCommand("wg-quick down " + wireguardConfigFile, "", nullptr);
+				Utils::Platform::runSystemCommand("systemctl stop connman-vpn", "", nullptr);
 			}
-			SystemConf::getInstance()->set("wireguard.up", wireguard->getState() ? "1" : "0");
+			return enabled;
 		});
 	}
 
@@ -5579,39 +5718,50 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	bool tsUp = SystemConf::getInstance()->get("tailscale.up") == "1";
 	tailscale->setState(tsUp);
 	s->addWithLabel(_("TAILSCALE VPN"), tailscale);
-	tailscale->setOnChangedCallback([this, tailscale] {
-		bool tsEnabled = tailscale->getState();
-		if (tsEnabled) {
+
+	auto tailscaleReauthUrl = std::make_shared<std::string>();
+	setAsyncSwitchHandler(mWindow, tailscale, "tailscale.up",
+		[tailscaleReauthUrl](bool enabled)
+		{
+			tailscaleReauthUrl->clear();
+
+			if (!enabled) {
+				Utils::Platform::runSystemCommand("tailscale down", "", nullptr);
+				Utils::Platform::runSystemCommand("systemctl stop tailscaled", "", nullptr);
+				return false;
+			}
+
 			Utils::Platform::runSystemCommand("systemctl start tailscaled", "", nullptr);
 			Utils::Platform::runSystemCommand("tailscale up --timeout=7s", "", nullptr);
-			tsEnabled = IsTailscaleUp(mWindow);
-		} else {
-			Utils::Platform::runSystemCommand("tailscale down", "", nullptr);
-			Utils::Platform::runSystemCommand("systemctl stop tailscaled", "", nullptr);
-		}
-		SystemConf::getInstance()->set("tailscale.up", tsEnabled ? "1" : "0");
-	});
+			return IsTailscaleUp(tailscaleReauthUrl.get());
+		},
+		[window, tailscaleReauthUrl](bool enabled)
+		{
+			if (!tailscaleReauthUrl->empty())
+				window->pushGui(new GuiMsgBox(window, _("TAILSCALE REAUTHENTICATE:\n") + *tailscaleReauthUrl));
+		});
 
 
 	auto zerotier = std::make_shared<SwitchComponent>(mWindow);
 	bool ztUp = SystemConf::getInstance()->get("zerotier.up") == "1";
 	zerotier->setState(ztUp);
 	s->addWithLabel(_("ZeroTier One"), zerotier);
-	zerotier->setOnChangedCallback([zerotier] {
-		bool ztEnabled = zerotier->getState();
-		if(ztEnabled) {
-			Utils::Platform::runSystemCommand("systemctl start zerotier-one", "", nullptr);
-			ztEnabled = IsZeroTierUp();
-		} else {
+	setAsyncSwitchHandler(mWindow, zerotier, "zerotier.up", [](bool enabled)
+	{
+		if (!enabled) {
 			Utils::Platform::runSystemCommand("systemctl stop zerotier-one", "", nullptr);
+			return false;
 		}
-		SystemConf::getInstance()->set("zerotier.up", ztEnabled ? "1" : "0");
+
+		Utils::Platform::runSystemCommand("systemctl start zerotier-one", "", nullptr);
+		return IsZeroTierUp();
 	});
 
 	mWindow->pushGui(s);
 }
 
-bool GuiMenu::IsTailscaleUp(Window* window) {
+// Runs from a worker thread : reports the login url instead of showing it, the caller does that from the UI thread
+bool GuiMenu::IsTailscaleUp(std::string* reauthenticateUrl) {
   bool loggedOut = false;
   std::string tempUrl;
   ApiSystem::executeScriptLegacy("tailscale status", [&](const std::string& line) {
@@ -5623,9 +5773,8 @@ bool GuiMenu::IsTailscaleUp(Window* window) {
       loggedOut = true;
     }
   });
-  if (loggedOut && window && !tempUrl.empty()) {
-    std::string msg = _("TAILSCALE REAUTHENTICATE:\n") + tempUrl;
-    window->pushGui(new GuiMsgBox(window, msg));
+  if (loggedOut && reauthenticateUrl != nullptr) {
+    *reauthenticateUrl = tempUrl;
   }
   return !loggedOut;
 }
