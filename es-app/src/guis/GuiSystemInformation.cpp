@@ -64,12 +64,24 @@
 #define fake_gettext_info_cores              pgettext("system_information_value", "Cores")
 #define fake_gettext_info_community          pgettext("system_information_value", "community")
 
+static std::string localizeInformationLabelText(const std::string& label)
+{
+	std::string translated = pgettext("system_information", label.c_str());
+	if (translated != label)
+		return translated;
+
+	// Preserve translations that existed before system-information-specific
+	// contexts were introduced. Locales can migrate to the contextual entries
+	// without temporarily falling back to English.
+	return _(label.c_str());
+}
+
 static std::string localizeInformationLabel(const std::string& label)
 {
 	if (Utils::String::startsWith(label, "THREADS "))
-		return std::string(pgettext("system_information", "THREADS")) + label.substr(7);
+		return localizeInformationLabelText("THREADS") + label.substr(7);
 
-	return pgettext("system_information", label.c_str());
+	return localizeInformationLabelText(label);
 }
 
 static std::string localizeInformationValue(const std::string& rawValue)
