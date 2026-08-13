@@ -535,10 +535,10 @@ void GuiMenu::openDmdSettings()
 	// format
 	auto format = std::make_shared< OptionListComponent<std::string> >(window, _("FORMAT"), false);
 	std::string current_format = SystemConf::getInstance()->get("dmd.format");
-	format->addRange({ { _("AUTO"), "" }, { "SD", "sd" }, { "HD", "hd" } }, current_format);
+	format->addRange({ { _("AUTO"), "" }, { _("SD"), "sd" }, { _("HD"), "hd" } }, current_format);
 	s->addWithDescription(_("FORMAT"), _("dmd matrix size"), format);
 
-	s->addGroup("ZEDMD");
+	s->addGroup(_("ZEDMD"));
 
 	// zedmd.brightness
 	auto zedmd_brightness = std::make_shared< OptionListComponent<std::string> >(window, _("BRIGHTNESS"), false);
@@ -1012,12 +1012,12 @@ void GuiMenu::openDeveloperSettings()
 	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reboot", true); });
 
 	auto fullScreenMenus = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FULL SCREEN MENUS"), false);
-	fullScreenMenus->addRange({ { _("AUTO"), "" },{ "YES", "true" },{ "NO", "false" } }, Settings::getInstance()->getString("FullScreenMenu"));
+	fullScreenMenus->addRange({ { _("AUTO"), "" },{ _("YES"), "true" },{ _("NO"), "false" } }, Settings::getInstance()->getString("FullScreenMenu"));
 	s->addWithLabel(_("FULL SCREEN MENUS"), fullScreenMenus);
 	s->addSaveFunc([s, fullScreenMenus] { if (Settings::getInstance()->setString("FullScreenMenu", fullScreenMenus->getSelected())) s->setVariable("reboot", true); });
 
 	auto isSmallScreen = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FORCE SMALL SCREEN THEMING"), false);
-	isSmallScreen->addRange({ { _("AUTO"), "" },{ "YES", "true" },{ "NO", "false" } }, Settings::getInstance()->getString("ForceSmallScreen"));
+	isSmallScreen->addRange({ { _("AUTO"), "" },{ _("YES"), "true" },{ _("NO"), "false" } }, Settings::getInstance()->getString("ForceSmallScreen"));
 	s->addWithLabel(_("FORCE SMALL SCREEN THEMING"), isSmallScreen);
 	s->addSaveFunc([s, isSmallScreen] { if (Settings::getInstance()->setString("ForceSmallScreen", isSmallScreen->getSelected())) s->setVariable("reboot", true); });
 
@@ -2935,7 +2935,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 #if defined(S922X) || defined(RK3588) || defined(RK3399)|| defined(RK3576) || defined(SM6115) || defined(SM8250) || defined(SM8550) || defined(SM8650)
 	// Core chooser
 	auto cores_used = std::make_shared<OptionListComponent<std::string>>(mWindow, _("CORES USED"));
-	cores_used->addRange({ {("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));
+	cores_used->addRange({ {_("DEFAULT"), "" }, { _("ALL"), "all" },{ _("BIG") , "big" },{ _("LITTLE") , "little" } }, SystemConf::getInstance()->get(configName + ".cores"));
 	guiSystemOptions->addWithLabel(_("CORES USED"), cores_used);
 	guiSystemOptions->addSaveFunc([cores_used, configName] { SystemConf::getInstance()->set(configName + ".cores", cores_used->getSelected()); });
 #endif
@@ -3023,7 +3023,7 @@ void GuiMenu::openSystemOptionsConfiguration(Window* mWindow, std::string config
 	// Per game/core/emu Mangohud
 	if (Utils::Platform::GetEnv("DEVICE_MANGOHUD_SUPPORT") == "true"){
 		auto mangohud = std::make_shared<OptionListComponent<std::string>>(mWindow, _("MANGOHUD OVERLAY"));
-		mangohud->addRange({ {("DEFAULT"), "" }, { _("ENABLED"), "1" },{ _("DISABLED") , "0" } }, SystemConf::getInstance()->get(configName + ".rocknix.mangohud.enabled"));
+		mangohud->addRange({ {_("DEFAULT"), "" }, { _("ENABLED"), "1" },{ _("DISABLED") , "0" } }, SystemConf::getInstance()->get(configName + ".rocknix.mangohud.enabled"));
 		guiSystemOptions->addWithLabel(_("MANGOHUD OVERLAY"), mangohud);
 		guiSystemOptions->addSaveFunc([mangohud, configName] { SystemConf::getInstance()->set(configName + ".rocknix.mangohud.enabled", mangohud->getSelected()); });
 	}
@@ -6797,8 +6797,8 @@ void GuiMenu::openUnmountDriveSettings()
 			return;
 		}
 
-		window->pushGui(new GuiMsgBox(window, "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration.",
-			"YES, EJECT", [s, window, path]
+		window->pushGui(new GuiMsgBox(window, _("ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."),
+			_("YES, EJECT"), [s, window, path]
 			{
 				auto* ac = window->createAsyncNotificationComponent();
 				ac->updateText(_("Ejecting..."));
@@ -6810,7 +6810,7 @@ void GuiMenu::openUnmountDriveSettings()
 						ac->close();
 
 						if (success) {
-							window->pushGui(new GuiMsgBox(window, "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK.", "OK", [window, s] {
+							window->pushGui(new GuiMsgBox(window, _("DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."), _("OK"), [window, s] {
 								s->close(); 
                                 if (ViewController::get()) {
                                     if (ThreadedScraper::isRunning() || ThreadedHasher::isRunning()) {
@@ -6821,7 +6821,7 @@ void GuiMenu::openUnmountDriveSettings()
                                 }
 							}));
 						} else {
-							window->pushGui(new GuiMsgBox(window, "FAILED TO EJECT DEVICE.", "OK"));
+							window->pushGui(new GuiMsgBox(window, _("FAILED TO EJECT DEVICE."), _("OK")));
 						}
 					});
 				});

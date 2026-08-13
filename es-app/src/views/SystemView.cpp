@@ -231,7 +231,7 @@ void SystemView::populate()
 		if (!UIModeController::getInstance()->isUIModeFull())
 		{
 			Settings::getInstance()->setString("UIMode", "Full");
-			mWindow->pushGui(new GuiMsgBox(mWindow, "The selected UI mode has nothing to show,\n returning to UI mode: FULL", "OK", nullptr));
+			mWindow->pushGui(new GuiMsgBox(mWindow, _("The selected UI mode has nothing to show,\n returning to UI mode: FULL"), _("OK"), nullptr));
 		}
 
 		if (Settings::getInstance()->setString("HiddenSystems", ""))

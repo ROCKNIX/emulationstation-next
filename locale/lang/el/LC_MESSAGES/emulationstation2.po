@@ -3938,6 +3938,78 @@ msgid_plural "%d seconds ago"
 msgstr[0] "%d δευτεροπλεπτο πριν"
 msgstr[1] "%d δευτερολεπτα πριν"
 
+#. TRANSLATION: [ROCKNIX only] Confirmation dialog before ejecting a storage drive: it will be unmounted and removed from the boot configuration.
+msgid "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Button confirming the user wants to eject the selected storage drive.
+msgid "YES, EJECT"
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Success message after ejecting a drive; the game lists refresh when the user clicks OK.
+msgid "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Error message shown when ejecting the drive failed.
+msgid "FAILED TO EJECT DEVICE."
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] One-time warning on first boot: ROCKNIX is free software, so anyone who paid for it should request a refund from the seller.
+msgid "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!"
+msgstr ""
+
+#. TRANSLATION: Message shown when the selected UI mode has no systems to display; the UI falls back to FULL mode.
+msgid "The selected UI mode has nothing to show,\n returning to UI mode: FULL"
+msgstr ""
+
+#. TRANSLATION: Error message when the configured scraper is no longer available; the user must change the scraping source in the settings.
+msgid "Configured scraper is no longer available.\nPlease change the scraping source in the settings."
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Title of the Moonlight game-streaming settings menu.
+msgid "MOONLIGHT GAME STREAMING"
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Settings group header for the ZeDMD (dot-matrix display) hardware; brand name, do not translate.
+msgid "ZEDMD"
+msgstr ""
+
+#. TRANSLATION: Help prompt for the button that adds a star to the game rating.
+msgid "add star"
+msgstr ""
+
+#. TRANSLATION: Default header text of simple game list views (placeholder when the theme provides no logo).
+msgid "Logo Text"
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] DMD (dot-matrix display) format option: standard-definition panel.
+msgid "SD"
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] DMD (dot-matrix display) format option: high-definition panel.
+msgid "HD"
+msgstr ""
+
+#. TRANSLATION: Preferred game region for the scraper: European releases.
+msgid "EUROPE"
+msgstr ""
+
+#. TRANSLATION: Preferred game region for the scraper: US releases.
+msgid "USA"
+msgstr ""
+
+#. TRANSLATION: Preferred game region for the scraper: Japanese releases.
+msgid "JAPAN"
+msgstr ""
+
+#. TRANSLATION: Preferred game region for the scraper: no region preference.
+msgid "WORLD"
+msgstr ""
+
+#. TRANSLATION: [ROCKNIX only] Game options group header for the Zaparoo NFC tag feature; brand name, do not translate.
+msgid "ZAPAROO"
+msgstr ""
+
 #~ msgid "BUILD IMAGE CACHE"
 #~ msgstr "ΔΗΜΙΟΥΡΓΙΑ ΚΡΥΦΗΣ ΜΝΗΜΗΣ ΕΙΚΟΝΑΣ"
 

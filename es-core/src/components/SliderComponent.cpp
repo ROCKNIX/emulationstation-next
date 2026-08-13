@@ -279,7 +279,7 @@ void SliderComponent::onValueChanged()
 
 		if (mIsAutoMode && getAuto())
 		{
-			ss << "Auto";  // Display "AUTO"
+			ss << _("AUTO");  // Display "AUTO"
 		}
 		else
 		{

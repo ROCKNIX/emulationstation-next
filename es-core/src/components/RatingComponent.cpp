@@ -262,7 +262,7 @@ void RatingComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const 
 std::vector<HelpPrompt> RatingComponent::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts;
-	prompts.push_back(HelpPrompt(BUTTON_OK, "add star"));
+	prompts.push_back(HelpPrompt(BUTTON_OK, _("add star")));
 	return prompts;
 }
 

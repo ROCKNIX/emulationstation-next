@@ -262,7 +262,7 @@ void GuiScraperStart::loadSettingsPage()
 	{
 		std::string region = Settings::getInstance()->getString("ScraperRegion");
 		auto regionCtrl = std::make_shared< OptionListComponent<std::string> >(mWindow, _("PREFERED REGION"), false);
-		regionCtrl->addRange({ { _("AUTO"), "" }, { "EUROPE", "eu" },  { "USA", "us" }, { "JAPAN", "jp" } , { "WORLD", "wor" } }, region);
+		regionCtrl->addRange({ { _("AUTO"), "" }, { _("EUROPE"), "eu" },  { _("USA"), "us" }, { _("JAPAN"), "jp" } , { _("WORLD"), "wor" } }, region);
 
 		if (!regionCtrl->hasSelection())
 			regionCtrl->selectFirstItem();

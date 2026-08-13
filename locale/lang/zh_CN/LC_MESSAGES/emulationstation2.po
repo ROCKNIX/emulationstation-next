@@ -467,13 +467,13 @@ msgid "VOLUME MUTE"
 msgstr "静音音量"
 
 msgid "START RECORDING"
-msgstr ""
+msgstr "开始录制"
 
 msgid "STOP RECORDING"
-msgstr ""
+msgstr "停止录制"
 
 msgid "KEYBOARD TOGGLE"
-msgstr ""
+msgstr "键盘切换"
 
 msgid "KEY ASSIGNED TWICE"
 msgstr "密钥被重复分配"
@@ -1133,7 +1133,7 @@ msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "显示手柄电池电量"
 
 msgid "SHOW GUN NOTIFICATIONS"
-msgstr ""
+msgstr "显示光枪通知"
 
 msgid "DRAW GUN CROSSHAIR"
 msgstr "绘制枪的准星"
@@ -2208,7 +2208,7 @@ msgid "OPTIMIZE VIDEO VRAM USAGE"
 msgstr "优化视频VRAM的使用"
 
 msgid "USE FILESYSTEM CACHE"
-msgstr ""
+msgstr "使用文件系统缓存"
 
 msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
 msgstr "需要重新启动系统才能应用新配置"
@@ -3365,7 +3365,7 @@ msgid "Screenscraper Game ID"
 msgstr "Screenscraper游戏ID"
 
 msgid "MultiDisk"
-msgstr ""
+msgstr "多光盘"
 
 msgid "Loading system config..."
 msgstr "正在载入系统配置..."
@@ -3814,7 +3814,7 @@ msgid "GAME DRIVE DETECTED"
 msgstr "检测到游戏驱动器"
 
 msgid "DEVICE"
-msgstr "驱动器"
+msgstr "设备"
 
 msgid "MODEL"
 msgstr "型号"
@@ -3850,7 +3850,7 @@ msgid "Adding drive to ignore list..."
 msgstr "将驱动器添加到忽略列表中..."
 
 msgid "YES, MERGE DRIVE"
-msgstr ""
+msgstr "是，合并驱动器"
 
 msgid "NEW DRIVE DETECTED"
 msgstr "检测到新驱动器"
@@ -3913,6 +3913,78 @@ msgstr[0] "%d 分钟前"
 msgid "%d second ago"
 msgid_plural "%d seconds ago"
 msgstr[0] "%d 秒前"
+
+#. TRANSLATION: [ROCKNIX only] Confirmation dialog before ejecting a storage drive: it will be unmounted and removed from the boot configuration.
+msgid "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."
+msgstr "你确定要弹出此驱动器吗？\n\n这将卸载该驱动器并将其从启动配置中移除。"
+
+#. TRANSLATION: [ROCKNIX only] Button confirming the user wants to eject the selected storage drive.
+msgid "YES, EJECT"
+msgstr "是，弹出"
+
+#. TRANSLATION: [ROCKNIX only] Success message after ejecting a drive; the game lists refresh when the user clicks OK.
+msgid "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."
+msgstr "设备已安全弹出。\n点击确定后游戏列表将刷新。"
+
+#. TRANSLATION: [ROCKNIX only] Error message shown when ejecting the drive failed.
+msgid "FAILED TO EJECT DEVICE."
+msgstr "弹出设备失败。"
+
+#. TRANSLATION: [ROCKNIX only] One-time warning on first boot: ROCKNIX is free software, so anyone who paid for it should request a refund from the seller.
+msgid "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!"
+msgstr "ROCKNIX 是免费软件。\n\n如果您为 ROCKNIX 付了费，说明您被骗了。\n\n请向卖家要求退款！"
+
+#. TRANSLATION: Message shown when the selected UI mode has no systems to display; the UI falls back to FULL mode.
+msgid "The selected UI mode has nothing to show,\n returning to UI mode: FULL"
+msgstr "当前选择的界面模式无可显示内容，\n正在返回至完整模式"
+
+#. TRANSLATION: Error message when the configured scraper is no longer available; the user must change the scraping source in the settings.
+msgid "Configured scraper is no longer available.\nPlease change the scraping source in the settings."
+msgstr "已配置的抓取器不再可用。\n请在设置中更改抓取来源。"
+
+#. TRANSLATION: [ROCKNIX only] Title of the Moonlight game-streaming settings menu.
+msgid "MOONLIGHT GAME STREAMING"
+msgstr "MOONLIGHT 游戏串流"
+
+#. TRANSLATION: [ROCKNIX only] Settings group header for the ZeDMD (dot-matrix display) hardware; brand name, do not translate.
+msgid "ZEDMD"
+msgstr "ZEDMD"
+
+#. TRANSLATION: Help prompt for the button that adds a star to the game rating.
+msgid "add star"
+msgstr "添加星级"
+
+#. TRANSLATION: Default header text of simple game list views (placeholder when the theme provides no logo).
+msgid "Logo Text"
+msgstr "Logo 文字"
+
+#. TRANSLATION: [ROCKNIX only] DMD (dot-matrix display) format option: standard-definition panel.
+msgid "SD"
+msgstr "SD"
+
+#. TRANSLATION: [ROCKNIX only] DMD (dot-matrix display) format option: high-definition panel.
+msgid "HD"
+msgstr "HD"
+
+#. TRANSLATION: Preferred game region for the scraper: European releases.
+msgid "EUROPE"
+msgstr "欧洲"
+
+#. TRANSLATION: Preferred game region for the scraper: US releases.
+msgid "USA"
+msgstr "美国"
+
+#. TRANSLATION: Preferred game region for the scraper: Japanese releases.
+msgid "JAPAN"
+msgstr "日本"
+
+#. TRANSLATION: Preferred game region for the scraper: no region preference.
+msgid "WORLD"
+msgstr "全球"
+
+#. TRANSLATION: [ROCKNIX only] Game options group header for the Zaparoo NFC tag feature; brand name, do not translate.
+msgid "ZAPAROO"
+msgstr "ZAPAROO"
 
 #~ msgid "BUILD IMAGE CACHE"
 #~ msgstr "建立图片缓存"
