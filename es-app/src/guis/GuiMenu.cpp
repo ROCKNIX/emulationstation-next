@@ -331,6 +331,15 @@ void GuiMenu::openResetOptions()
 		}, _("NO"), nullptr));
 	});
 
+	if (Utils::Platform::GetEnv("DEVICE_RK817_FUEL_GAUGE") == "true") {
+		s->addEntry(_("RESET BATTERY FUEL GAUGE"), true, [window] {
+		window->pushGui(new GuiMsgBox(window, _("WARNING: THE PMIC FUEL GAUGE WILL BE RESET AND THE SYSTEM WILL REBOOT!\n\nTHE BATTERY LEVEL IS RE-ESTIMATED FROM THE BATTERY VOLTAGE ON THE NEXT BOOT AND BECOMES ACCURATE AGAIN AFTER A FULL CHARGE.\n\nRESET FUEL GAUGE AND RESTART?"), _("YES"),
+			[] {
+			Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset rk817-fuelgauge\"", "", nullptr);
+			}, _("NO"), nullptr));
+		});
+	}
+
 	s->addEntry(_("FACTORY RESET"), true, [window] {
 	window->pushGui(new GuiMsgBox(window, _("WARNING: YOUR DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nEJECT YOUR GAME CARD BEFORE PROCEEDING!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 		[] {
