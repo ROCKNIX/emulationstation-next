@@ -233,16 +233,16 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 	if (animate)
 	{
 		if (Renderer::ScreenSettings::fullScreenMenus())
-			animateTo(Vector2f((Renderer::getScreenWidth() - getSize().x()) / 2, (Renderer::getScreenHeight() - getSize().y()) / 2));
+			animateTo(Vector2f(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuCenterY(getSize().y())));
 		else
-			animateTo(Vector2f((Renderer::getScreenWidth() - mSize.x()) / 2, Renderer::getScreenHeight() * 0.15f));
+			animateTo(Vector2f(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f));
 	}
 	else
 	{
 		if (Renderer::ScreenSettings::fullScreenMenus())
-			setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+			setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 		else
-			setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, Renderer::getScreenHeight() * 0.15f);
+			setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f);
 	}
 }
 
@@ -5995,18 +5995,18 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 #endif
 
 	if (quickAccessMenu && animate)
-		s->getMenu().animateTo(Vector2f((Renderer::getScreenWidth() - s->getMenu().getSize().x()) / 2, (Renderer::getScreenHeight() - s->getMenu().getSize().y()) / 2));
+		s->getMenu().animateTo(Vector2f(Renderer::getMenuCenterX(s->getMenu().getSize().x()), Renderer::getMenuCenterY(s->getMenu().getSize().y())));
 	else if (quickAccessMenu)
-		s->getMenu().setPosition((Renderer::getScreenWidth() - s->getMenu().getSize().x()) / 2, (Renderer::getScreenHeight() - s->getMenu().getSize().y()) / 2);
+		s->getMenu().setPosition(Renderer::getMenuCenterX(s->getMenu().getSize().x()), Renderer::getMenuCenterY(s->getMenu().getSize().y()));
 
 	window->pushGui(s);
 }
 
 void GuiMenu::createDecorationItemTemplate(Window* window, std::vector<DecorationSetInfo> sets, std::string data, ComponentListRow& row)
 {
-	Vector2f maxSize(Renderer::getScreenWidth() * 0.14, Renderer::getScreenHeight() * 0.14);
+	Vector2f maxSize(Renderer::getMenuRect().w * 0.14, Renderer::getMenuRect().h * 0.14);
 
-	int IMGPADDING = Renderer::getScreenHeight()*0.01f;
+	int IMGPADDING = Renderer::getMenuRect().h*0.01f;
 
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;

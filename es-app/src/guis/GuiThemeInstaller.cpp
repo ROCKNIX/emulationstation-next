@@ -13,7 +13,7 @@
 #include "components/WebImageComponent.h"
 #include "components/ButtonComponent.h"
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
 
 GuiThemeInstaller::GuiThemeInstaller(Window* window)
 	: GuiComponent(window), mGrid(window, Vector2i(1, 4)), mBackground(window, ":/frame.png"), mReloadList(1), mTabFilter(0)
@@ -93,7 +93,7 @@ void GuiThemeInstaller::onSizeChanged()
 	const float subtitleHeight = mSubtitle->getFont()->getLetterHeight();
 	const float titleSubtitleSpacing = mSize.y() * 0.03f;
 
-	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing + subtitleHeight + (Renderer::getScreenHeight()*0.05f));
+	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing + subtitleHeight + (Renderer::getMenuRect().h*0.05f));
 
 	if (mTabs->size() == 0)
 		mGrid.setRowHeight(1, 0.00001f);
@@ -241,11 +241,11 @@ void GuiThemeInstaller::loadThemesAsync()
 void GuiThemeInstaller::centerWindow()
 {
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
+		setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.875f);
 
-	setPosition((Renderer::getScreenWidth() - getSize().x()) / 2, (Renderer::getScreenHeight() - getSize().y()) / 2);
+	setPosition(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuCenterY(getSize().y()));
 }
 
 void GuiThemeInstaller::processTheme(BatoceraTheme theme, bool isCurrentTheme)
@@ -405,7 +405,7 @@ GuiBatoceraThemeEntry::GuiBatoceraThemeEntry(Window* window, BatoceraTheme& entr
 	float windowWidth = WINDOW_WIDTH;
 
 	float itemHeight = (theme->Text.font->getHeight() + theme->TextSmall.font->getHeight() * 3) * 1.15f;
-	itemHeight = Math::max(itemHeight, Renderer::getScreenHeight() * 0.132f);
+	itemHeight = Math::max(itemHeight, Renderer::getMenuRect().h * 0.132f);
 
 	float refImageWidth = (itemHeight / windowWidth) * 1.7777f; // 16:9
 	refImageWidth = Math::min(refImageWidth, 0.24);

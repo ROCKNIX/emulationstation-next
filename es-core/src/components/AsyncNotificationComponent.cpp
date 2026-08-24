@@ -7,7 +7,7 @@
 #include "Window.h"
 #include <SDL_timer.h>
 
-#define PADDING_PX  (Renderer::getScreenWidth()*0.01)
+#define PADDING_PX  (Renderer::getMenuRect().w*0.01)
 
 AsyncNotificationComponent::AsyncNotificationComponent(Window* window, bool actionLine)
 	: GuiComponent(window)
@@ -21,7 +21,7 @@ AsyncNotificationComponent::AsyncNotificationComponent(Window* window, bool acti
 	auto theme = ThemeData::getMenuTheme();
 
 	// Note : Don't localize this text -> It is only used to guess width calculation for the component.
-	float width = theme->TextSmall.font->sizeText("TEXT FOR SIZE CALCULATION TEST").x(); // Renderer::getScreenWidth() * 0.14f;											
+	float width = theme->TextSmall.font->sizeText("TEXT FOR SIZE CALCULATION TEST").x(); // Renderer::getMenuRect().w * 0.14f;											
 
 	mTitle = std::make_shared<TextComponent>(mWindow, "", theme->TextSmall.font, theme->TextSmall.color, ALIGN_LEFT);
 	mGameName = std::make_shared<TextComponent>(mWindow, "", theme->TextSmall.font, theme->Text.color, ALIGN_LEFT);
@@ -55,12 +55,12 @@ AsyncNotificationComponent::AsyncNotificationComponent(Window* window, bool acti
 
 	addChild(mGrid);
 
-	float posX = Renderer::getScreenWidth()*0.5f - mSize.x()*0.5f;
-	float posY = Renderer::getScreenHeight() * 0.02f;
+	float posX = Renderer::getMenuCenterX(mSize.x());
+	float posY = Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.02f;
 
 	// FCA TopRight
-	posX = Renderer::getScreenWidth()*0.99f - mSize.x();
-	posY = Renderer::getScreenHeight() * 0.02f;
+	posX = Renderer::getMenuRect().x + Renderer::getMenuRect().w*0.99f - mSize.x();
+	posY = Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.02f;
 
 	setPosition(posX, posY, 0);
 	setOpacity(200);
