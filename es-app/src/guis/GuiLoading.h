@@ -29,7 +29,7 @@ public:
 	GuiLoading(Window *window, const std::string title, const std::function<T(IGuiLoadingHandler*)> &func, const std::function<void(T)> &func2 = nullptr)
 		: GuiComponent(window), mBusyAnim(window), mFunc(func), mFunc2(func2)
 	{
-		setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+		setSize((float)Renderer::getMenuRect().w, (float)Renderer::getMenuRect().h);
 		setTag("GuiLoading");
 	
 		mText = title;

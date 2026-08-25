@@ -372,6 +372,15 @@ void Settings::setDefaults()
 	mIntMap["ScreenOffsetY"] = 0;
 	mIntMap["ScreenRotate"]  = 0;
 
+	// Menu region: the part of the canvas dialogs are confined to. 0 means
+	// "unset" -> the whole canvas, i.e. no behaviour change. Unlike the Screen*
+	// settings above these are device configuration rather than command-line
+	// overrides, so they are saved to es_settings.cfg (not in settings_dont_save).
+	mIntMap["MenuOffsetX"]   = 0;
+	mIntMap["MenuOffsetY"]   = 0;
+	mIntMap["MenuWidth"]     = 0;
+	mIntMap["MenuHeight"]    = 0;
+
 	mStringMap["INPUT P1NAME"] = "DEFAULT";
 	mStringMap["INPUT P2NAME"] = "DEFAULT";
 	mStringMap["INPUT P3NAME"] = "DEFAULT";
