@@ -5522,6 +5522,8 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	{
 		s->addWithLabel(_("LOCAL PLAY ID"), optionsAdhocID);
 		s->addWithLabel(_("LOCAL NETWORK CHANNEL"), optionsChannels);
+		s->addSaveFunc([optionsAdhocID] { SystemConf::getInstance()->set("wifi.adhoc.id", optionsAdhocID->getSelected()); });
+		s->addSaveFunc([optionsChannels] { SystemConf::getInstance()->set("wifi.adhoc.channel", optionsChannels->getSelected()); });
 	}
 
 
