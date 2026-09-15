@@ -119,6 +119,23 @@
 #define fake_gettext_flatten_glow			pgettext("game_options", "FLATTEN-GLOW")
 #define fake_gettext_rgascaling				pgettext("game_options", "RGA SCALING")
 
+// ROCKNIX Steam options are loaded dynamically from es_features.cfg. Keep the
+// strings visible to xgettext so pgettext() can resolve them at runtime.
+#define fake_gettext_steam_version                 pgettext("game_options", "steam version")
+#define fake_gettext_asound_host_library           pgettext("game_options", "asound host library")
+#define fake_gettext_drm_host_library              pgettext("game_options", "drm host library")
+#define fake_gettext_vulkan_host_library           pgettext("game_options", "vulkan host library")
+#define fake_gettext_wayland_client_host_library   pgettext("game_options", "wayland client host library")
+#define fake_gettext_gl_host_library               pgettext("game_options", "gl host library")
+#define fake_gettext_gamescope                     pgettext("game_options", "gamescope")
+#define fake_gettext_lsfg_enable                   pgettext("game_options", "lsfg enable")
+#define fake_gettext_lsfg_multiplier               pgettext("game_options", "lsfg multiplier")
+#define fake_gettext_lsfg_flow_scale               pgettext("game_options", "lsfg flow scale")
+#define fake_gettext_lsfg_performance_mode         pgettext("game_options", "lsfg performance mode")
+#define fake_gettext_fps_limit                     pgettext("game_options", "fps limit")
+#define fake_gettext_game_option_off               pgettext("game_options", "off")
+#define fake_gettext_game_option_on                pgettext("game_options", "on")
+
 #define fake_gettext_glvendor		_("VENDOR")
 #define fake_gettext_glvrenderer	_("RENDERER")
 #define fake_gettext_glversion		_("VERSION")
@@ -6976,8 +6993,8 @@ void GuiMenu::openUnmountDriveSettings()
 			return;
 		}
 
-		window->pushGui(new GuiMsgBox(window, "ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration.",
-			"YES, EJECT", [s, window, path]
+		window->pushGui(new GuiMsgBox(window, _("ARE YOU SURE YOU WANT TO EJECT THIS DRIVE?\n\nThis will unmount the drive and remove it from the boot configuration."),
+			_("YES, EJECT"), [s, window, path]
 			{
 				auto* ac = window->createAsyncNotificationComponent();
 				ac->updateText(_("Ejecting..."));
@@ -6989,7 +7006,7 @@ void GuiMenu::openUnmountDriveSettings()
 						ac->close();
 
 						if (success) {
-							window->pushGui(new GuiMsgBox(window, "DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK.", "OK", [window, s] {
+							window->pushGui(new GuiMsgBox(window, _("DEVICE EJECTED SAFELY.\nGAME LISTS WILL REFRESH WHEN YOU CLICK OK."), _("OK"), [window, s] {
 								s->close(); 
                                 if (ViewController::get()) {
                                     if (ThreadedScraper::isRunning() || ThreadedHasher::isRunning()) {
@@ -7000,11 +7017,11 @@ void GuiMenu::openUnmountDriveSettings()
                                 }
 							}));
 						} else {
-							window->pushGui(new GuiMsgBox(window, "FAILED TO EJECT DEVICE.", "OK"));
+							window->pushGui(new GuiMsgBox(window, _("FAILED TO EJECT DEVICE."), _("OK")));
 						}
 					});
 				});
-			}, "NO", nullptr));
+			}, _("NO"), nullptr));
 	});
 
 	mWindow->pushGui(s);

@@ -647,7 +647,7 @@ int main(int argc, char* argv[])
 		f.close();
 
 		if (val == "1")
-		window.pushGui(new GuiMsgBox(&window, "ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!", _("AGREE")));
+		window.pushGui(new GuiMsgBox(&window, _("ROCKNIX IS FREE SOFTWARE.\n\n IF YOU PAID FOR ROCKNIX YOU HAVE BEEN SCAMMED.\n\n PLEASE REQUEST A REFUND FROM THE SELLER!"), _("AGREE")));
 
 		std::remove(markerFile.c_str());
 	}

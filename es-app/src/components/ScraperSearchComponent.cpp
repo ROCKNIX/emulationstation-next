@@ -383,8 +383,8 @@ void ScraperSearchComponent::onSearchDone(bool isReallyFinished)
 		// Check if the scraper used is still valid
 		if (!Scraper::isValidConfiguredScraper())
 		{
-			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::toUpper("Configured scraper is no longer available.\nPlease change the scraping source in the settings."),
-				"FINISH", mSkipCallback));
+			mWindow->pushGui(new GuiMsgBox(mWindow, Utils::String::toUpper(_("Configured scraper is no longer available.\nPlease change the scraping source in the settings.")),
+				_("FINISH"), mSkipCallback));
 		}
 		else
 		{
