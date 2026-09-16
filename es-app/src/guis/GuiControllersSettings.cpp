@@ -267,18 +267,22 @@ GuiControllersSettings::GuiControllersSettings(Window* wnd, int autoSel) : GuiSe
 			InputConfigInfo* newInputConfig = new InputConfigInfo(configuratedName, configuratedGuid, configuratedPath);
 			mLoadedInput.push_back(newInputConfig);
 
-			auto it = std::find_if(configList.cbegin(), configList.cend(), [configuratedPath](InputConfig* x) { return x->getSortDevicePath() == configuratedPath; });
+			auto it = std::find_if(configList.cbegin(), configList.cend(), [&configuratedPath, &alreadyTaken](InputConfig* x)
+			{
+				return x->getSortDevicePath() == configuratedPath
+					&& std::find(alreadyTaken.begin(), alreadyTaken.end(), x->getDeviceId()) == alreadyTaken.end();
+			});
+			
 			if (it != configList.cend())
 			{
-				if (std::find(alreadyTaken.begin(), alreadyTaken.end(), (*it)->getDeviceId()) == alreadyTaken.end())
-				{
-					inputOptionList->addEx(configuratedName, configuratedPath, newInputConfig, true, false, false);
-					alreadyTaken.push_back((*it)->getDeviceId());
-					defaultInputConfig = newInputConfig;
-				}
+				inputOptionList->addEx(configuratedName, configuratedPath, newInputConfig, true, false, false);
+				alreadyTaken.push_back((*it)->getDeviceId());
+				defaultInputConfig = newInputConfig;
 			}
-			else
+			else if (std::find_if(configList.cbegin(), configList.cend(), [&configuratedPath](InputConfig* x) { return x->getSortDevicePath() == configuratedPath; }) == configList.cend())
+			{
 				inputOptionList->addEx(configuratedName + " (" + _("NOT CONNECTED") + ")", configuratedPath, newInputConfig, true, false, false);
+			}
 
 			found = true;
 		}
@@ -289,7 +293,10 @@ GuiControllersSettings::GuiControllersSettings(Window* wnd, int autoSel) : GuiSe
 			if (defaultInputConfig != nullptr && defaultInputConfig->name == config->getDeviceName() && defaultInputConfig->guid == config->getDeviceGUIDString() && defaultInputConfig->path == config->getSortDevicePath())
 				continue;
 
-			std::string displayName = config->getDeviceName();
+			// Prefix with the device index, like the non Windows branch does: two boards of the
+			// same model, or the two halves of a 2-players arcade encoder, are otherwise shown
+			// as two strictly identical lines and cannot be told apart.
+			std::string displayName = "#" + std::to_string(config->getDeviceIndex()) + " " + config->getDeviceName();
 
 			bool foundFromConfig = !configuratedPath.empty() ? config->getSortDevicePath() == configuratedPath : configuratedName == config->getDeviceName() && configuratedGuid == config->getDeviceGUIDString();
 			int deviceID = config->getDeviceId();

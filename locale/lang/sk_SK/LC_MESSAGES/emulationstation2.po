@@ -2018,6 +2018,9 @@ msgstr "Tiež zapne natívne počítanie FPS emulátora, ak je dostupné."
 msgid "VSYNC"
 msgstr "Vsync"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2185,6 +2188,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "Ovládať EmulationStation iba prvým joystickom"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "Tolerancia pohybu zbrane"
 
@@ -2254,6 +2263,9 @@ msgstr "Skontrolovať aktualizácie"
 
 msgid "UPDATE TYPE"
 msgstr "Typ aktualizácie"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "Použiť aktualizáciu"
@@ -3479,8 +3491,8 @@ msgstr "4 hráči"
 msgid "never played"
 msgstr "nikdy nehrané"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr "arkáda"

@@ -2011,6 +2011,9 @@ msgstr "También activa el contador de FPS nativo del emulador, si está disponi
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr "LÍMITE DE FPS"
 
@@ -2175,6 +2178,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "CONTROLAR SISTEMA SOLO CON EL CONTROL PRINCIPAL"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANCIA AL MOVIMIENTO DE LA PISTOLA"
 
@@ -2244,6 +2253,9 @@ msgstr "BUSCAR ACTUALIZACIONES AUTOMÁTICAMENTE"
 
 msgid "UPDATE TYPE"
 msgstr "TIPO DE ACTUALIZACIÓN"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "APLICAR ACTUALIZACIÓN"

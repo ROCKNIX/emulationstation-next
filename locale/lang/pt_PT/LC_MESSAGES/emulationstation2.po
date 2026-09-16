@@ -2022,6 +2022,9 @@ msgstr "Ativar o contador de fps nativo do emulador, se disponível."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr "ANTI-ALIASING (MSAA)"
+
 msgid "FPS LIMIT"
 msgstr "LIMITE DE FPS"
 
@@ -2190,6 +2193,14 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "EMULATIONSTATION APENAS COM O PRIMEIRO COMANDO"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr "O ANALÓGICO DIREITO ALTERA O VOLUME"
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+"Mova o analógico direito para cima/baixo para aumentar ou diminuir o volume "
+"do áudio."
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERÂNCIA NO MOVIMENTO DA ARMA"
 
@@ -2259,6 +2270,9 @@ msgstr "VERIFICAR SE HÁ ATUALIZAÇÕES"
 
 msgid "UPDATE TYPE"
 msgstr "TIPO DE ATUALIZAÇÃO"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr "ATUALIZAÇÃO DA ARQUITETURA"
 
 msgid "APPLY UPDATE"
 msgstr "APLICAR ATUALIZAÇÃO"
@@ -3493,7 +3507,7 @@ msgstr "4 jogadores"
 msgid "never played"
 msgstr "nunca jogado"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "retroachivements"
 
 msgid "arcade"
@@ -4024,8 +4038,7 @@ msgid_plural "%d seconds ago"
 msgstr[0] "%d segundo atrás"
 msgstr[1] "%d segundos atrás"
 
-#~ msgid "FANART"
-#~ msgstr "ARTE DE FÃS"
+
 
 #~ msgid ""
 #~ "YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION "

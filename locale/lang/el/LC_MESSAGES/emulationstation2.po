@@ -2008,6 +2008,9 @@ msgstr ""
 msgid "VSYNC"
 msgstr ""
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2173,6 +2176,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "ΕΛΕΓΧΟΣ EMULATIONSTATION ΜΟΝΟ ΜΕ ΤΟ ΠΡΩΤΟ ΧΕΙΡΙΣΤΗΡΙΟ"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
@@ -2239,6 +2248,9 @@ msgstr "ΕΛΕΓΧΟΣ ΓΙΑ ΑΝΑΒΑΘΜΙΣΕΙΣ"
 
 msgid "UPDATE TYPE"
 msgstr "ΤΥΠΟΣ ΑΝΑΒΑΘΜΙΣΗΣ"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "ΕΠΙΚΥΡΩΣΗ ΑΝΑΒΑΘΜΙΣΗΣ"
@@ -3457,7 +3469,7 @@ msgstr "4 παικτες"
 msgid "never played"
 msgstr "δεν παιχτηκε ποτε"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr ""
 
 msgid "arcade"

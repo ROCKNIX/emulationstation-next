@@ -54,6 +54,8 @@ public:
 
 	static WatchersManager* getInstance();
 	static void             stop();
+	static void             pause();
+	static void             resume();
 
 	virtual ~WatchersManager();
 
@@ -67,7 +69,7 @@ private:
 		WatcherInfo() { component = nullptr; nextCheckTime = std::chrono::steady_clock::now(); }
 
 		IWatcher*	component;
-		std::chrono::time_point<std::chrono::steady_clock>	nextCheckTime;
+		std::chrono::steady_clock::time_point nextCheckTime;
 	};
 
 	void NotifyComponentChanged(IWatcher* component);
@@ -81,10 +83,10 @@ private:
 	std::mutex										mThreadLock;
 	std::condition_variable							mEvent;
 	bool											mRunning;
+	bool											mPaused;
 	
 	std::thread*									mThread;
 
 	void run();	
 };
-
 
