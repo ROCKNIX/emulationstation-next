@@ -2019,6 +2019,9 @@ msgstr ""
 msgid "VSYNC"
 msgstr "SINCRONIZACIÓN VERTICAL (VSYNC)"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2188,6 +2191,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "CONTROLAR SISTEMA SOLO CON EL MANDO PRINCIPAL"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANCIA AL MOVIMIENTO DE LA PISTOLA"
 
@@ -2257,6 +2266,9 @@ msgstr "BUSCAR ACTUALIZACIONES AUTOMÁTICAMENTE"
 
 msgid "UPDATE TYPE"
 msgstr "TIPO DE ACTUALIZACIÓN"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "APLICAR ACTUALIZACIÓN"
@@ -3485,8 +3497,8 @@ msgstr "4 jugadores"
 msgid "never played"
 msgstr "nunca jugado"
 
-msgid "retroachievements"
-msgstr "retroachievements (trofeos)"
+msgid "RetroAchievements"
+msgstr "RetroAchievements (trofeos)"
 
 msgid "arcade"
 msgstr "arcade"

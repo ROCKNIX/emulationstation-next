@@ -75,8 +75,8 @@ msgid ""
 "FORMAT.\n"
 "DO YOU WANT TO LAUNCH IT ANYWAY?"
 msgstr ""
-"BUSET: EMULATOR/CORE YANG DIPAKAI TIDAK SUPPORT GAME MU, NIH.\n"
-"TETAP INGIN COBA?"
+"PERINGATAN: EMULATOR/CORE YANG DIPAKAI TIDAK SUPPORT FORMAT FILE GAME INI.\n"
+"APAKAH ANDA INGIN TETAP MENJALANKAN - NYA?"
 
 msgid "YES"
 msgstr "YA"
@@ -89,9 +89,9 @@ msgid ""
 "CORRECTLY.\n"
 "DO YOU WANT TO LAUNCH IT ANYWAY?"
 msgstr ""
-"BUSET: FILE BIOS DI SISTEMNYA HILANG, NIH. KAYAKNYA INI GAME BAKAL JALAN "
+"PERINGATAN: FILE SISTEM MEMILIKI FILE BIOS YANG HILANG, DAN MUNGKIN GAME TIDAK AKAN BERJALAN "
 "GABENER.\n"
-"TETAP INGIN COBA?"
+"APAKAH TETAP INGIN COBA JALANKAN?"
 
 msgid "Preloading UI"
 msgstr "Pramuat UI"
@@ -311,7 +311,8 @@ msgstr "MODE HARDCORE"
 
 msgid "Disable loading states, rewind and cheats for more points."
 msgstr ""
-"Matikan status pemuatan, mundur, dan curang untuk mendapatkan poin lebih."
+"Matikan status pemuatan, mundur, dan curang /cheat untuk mendapatkan poin "
+"lebih."
 
 msgid "LEADERBOARDS"
 msgstr "PAPAN PERINGKAT"
@@ -2009,6 +2010,9 @@ msgstr "Aktifkan juga penghitung FPS asli emulator, jika tersedia."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr "ANTI-ALIASING (MSAA)"
+
 msgid "FPS LIMIT"
 msgstr "BATAS FPS"
 
@@ -2177,6 +2181,14 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "KONTROL EMULATIONSTATION DENGAN JOYSTICK PERTAMA"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr "STIK ANALOG KANAN UNTUK MENGUBAH VOLUME"
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+"Gerakkan stik kanan ke atas/bawah untuk menaikkan atau menurunkan volume "
+"audio."
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANSI GUN MOVE"
 
@@ -2246,6 +2258,9 @@ msgstr "PERIKSA PEMBARUAN"
 
 msgid "UPDATE TYPE"
 msgstr "TIPE PEMBARUAN"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr "UPDATE ARSITEKTUR ( ARCHITECTURE )"
 
 msgid "APPLY UPDATE"
 msgstr "TERAPKAN PEMBARUAN"
@@ -3473,8 +3488,8 @@ msgstr "4 pemain"
 msgid "never played"
 msgstr "tidak pernah dimainkan"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr "arkade"

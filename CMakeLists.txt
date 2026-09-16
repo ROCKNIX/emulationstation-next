@@ -221,6 +221,22 @@ find_package(CURL REQUIRED)
 find_package(VLC REQUIRED)
 find_package(RapidJSON REQUIRED)
 
+# FriBidi is only used to reorder right-to-left scripts (Arabic, Hebrew) at render time.
+# It is optional on purpose: when it is missing, Font.cpp falls back on tryFastBidi(), which
+# is what every build used before RTL support was added. pkg-config is a Unix mechanism and
+# the Windows dependency package does not ship FriBidi, so this must never be REQUIRED.
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+	pkg_check_modules(FRIBIDI QUIET fribidi)
+endif()
+
+if(FRIBIDI_FOUND)
+	MESSAGE("-- FriBidi found, using it for right-to-left text reordering")
+	add_definitions(-DHAVE_FRIBIDI)
+else()
+	MESSAGE("-- FriBidi not found, falling back on the built-in right-to-left reordering")
+endif()
+
 if(NOT WIN32)
 	if(ENABLE_PULSE)
 	  MESSAGE("pulse audio enabled")
@@ -341,6 +357,7 @@ endif()
 set(COMMON_INCLUDE_DIRS
     ${FREETYPE_INCLUDE_DIRS}
     ${FreeImage_INCLUDE_DIRS}
+    ${FRIBIDI_INCLUDE_DIRS}
     # batocera / background musics
     ${SDLMIXER_INCLUDE_DIR}
     # batocera / customisations    
@@ -427,6 +444,7 @@ endif()
 set(COMMON_LIBRARIES
     ${FREETYPE_LIBRARIES}
     ${FreeImage_LIBRARIES}
+    ${FRIBIDI_LIBRARIES}
     ${SDL2_LIBRARY}
     # batocera / background musics
     ${SDLMIXER_LIBRARY}

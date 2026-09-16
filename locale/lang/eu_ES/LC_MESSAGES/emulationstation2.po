@@ -2011,6 +2011,9 @@ msgstr "Emuladorearen FPs kontadorea ere bueltatzen du, eskuragarri badago."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2179,6 +2182,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "KONTROLATU EMULATIONSTATION LEHENENGO JOYSTICK-AREKIN BAKARRIK"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "PISTOLAREN MUGITZE TOLERANTZIA"
 
@@ -2248,6 +2257,9 @@ msgstr "KONPROBATU EGUNERAKETAK"
 
 msgid "UPDATE TYPE"
 msgstr "EGUNERAKETA MOTA"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "EZARRI EGUNERAKETA"
@@ -3480,8 +3492,8 @@ msgstr "4 jokalari"
 msgid "never played"
 msgstr "sekula jolastu gabe"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr "arkade"

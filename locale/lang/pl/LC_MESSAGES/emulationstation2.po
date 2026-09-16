@@ -2020,6 +2020,9 @@ msgstr "Włącza również natywny licznik KL/S emulatora, jeśli jest dostępny
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr "ANTYALIASING (MSAA)"
+
 msgid "FPS LIMIT"
 msgstr "LIMIT KL/S"
 
@@ -2190,6 +2193,13 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "STERUJ EMULATIONSTATION TYLKO Z PIERWSZEGO JOYSTICKA"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr "PRAWY DRĄŻEK ANALOGOWY REGULUJE GŁOŚNOŚĆ"
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+"Przesuń prawy drążek w górę lub w dół, aby zwiększyć lub zmniejszyć głośność."
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANCJA RUCHU PISTOLETU"
 
@@ -2260,6 +2270,9 @@ msgstr "SPRAWDŹ AKTUALIZACJE"
 
 msgid "UPDATE TYPE"
 msgstr "TYP AKTUALIZACJI"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr "AKTUALIZACJA ARCHITEKTURY"
 
 msgid "APPLY UPDATE"
 msgstr "ZASTOSUJ AKTUALIZACJĘ"
@@ -3495,7 +3508,7 @@ msgstr "4 graczy"
 msgid "never played"
 msgstr "nidgy nie grane"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "retroosiągnięcia"
 
 msgid "arcade"

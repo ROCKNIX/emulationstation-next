@@ -2010,6 +2010,9 @@ msgstr ""
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2171,6 +2174,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "OHJAA EMULATIONSTATIONIA PELKÄLLÄ OHJAUSSAUVALLA"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
@@ -2238,6 +2247,9 @@ msgstr "TARKISTA SAATAVAT PÄIVITYKSET"
 
 msgid "UPDATE TYPE"
 msgstr "PÄIVITYKSEN TYYPPI"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "SUORITA PÄIVITYS"
@@ -3467,8 +3479,8 @@ msgstr "4 pelaajaa"
 msgid "never played"
 msgstr "ei koskaan pelattu"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr ""

@@ -2013,6 +2013,9 @@ msgstr "Also turns on the emulator's native FPS counter, if available."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2178,6 +2181,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "GUN MOVE TOLERENCE"
 
@@ -2246,6 +2255,9 @@ msgstr "CHECK FOR UPDATES"
 
 msgid "UPDATE TYPE"
 msgstr "UPDATE TYPE"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "APPLY UPDATE"
@@ -3467,8 +3479,8 @@ msgstr "4 players"
 msgid "never played"
 msgstr "never played"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr "arcade"

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2026-07-14 12:52+0000\n"
+"PO-Revision-Date: 2026-09-05 19:35+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -2024,6 +2024,9 @@ msgstr ""
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr "ANTI-ALIASING (MSAA)"
+
 msgid "FPS LIMIT"
 msgstr "FPS-LIMIT"
 
@@ -2198,6 +2201,14 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "EMULATIONSTATION NUR MIT ERSTEM JOYSTICK STEUERN"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr "RECHTER ANALOGSTICK ÄNDERT DIE LAUTSTÄRKE"
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+"Rechten Analogstick nach oben/unten bewegen, um die Lautstärke zu erhöhen "
+"oder zu verringern."
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "WAFFENBEWEGUNG TOLERANZ"
 
@@ -2267,6 +2278,9 @@ msgstr "AUF UPDATES PRÜFEN"
 
 msgid "UPDATE TYPE"
 msgstr "UPDATE-TYP"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr "ARCHITEKTUR-UPDATE"
 
 msgid "APPLY UPDATE"
 msgstr "UPDATE ANWENDEN"
@@ -3506,7 +3520,7 @@ msgstr "4 Spieler"
 msgid "never played"
 msgstr "noch nie gespielt"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
 msgid "arcade"
@@ -4040,6 +4054,3 @@ msgid "%d second ago"
 msgid_plural "%d seconds ago"
 msgstr[0] "%d Sekunde her"
 msgstr[1] "%d Sekunden her"
-
-#~ msgid "FANART"
-#~ msgstr "FAN ART"

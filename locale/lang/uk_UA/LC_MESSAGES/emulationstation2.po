@@ -2003,6 +2003,9 @@ msgstr "Також увімкнути штатний FPS емулятора, я�
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2162,6 +2165,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr ""
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
@@ -2227,6 +2236,9 @@ msgstr "ПЕРЕВІРИТИ ОНВЛЕННЯ"
 
 msgid "UPDATE TYPE"
 msgstr "ТИП ОНОВЛЕННЯ"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "ЗАСТОСУВАТИ ОНОВЛЕННЯ"
@@ -3438,7 +3450,7 @@ msgstr "4 гравці"
 msgid "never played"
 msgstr "не запускалась"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "ретродосягнення"
 
 msgid "arcade"

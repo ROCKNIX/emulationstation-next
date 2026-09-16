@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: batocera-es v34beta(2022/04/06)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-23 22:31+0800\n"
+"PO-Revision-Date: 2026-09-13 10:22+0800\n"
 "Last-Translator: wanger\n"
 "Language-Team: mikakunin,王二,monyxie\n"
 "Language: zh_CN\n"
@@ -2003,6 +2003,9 @@ msgstr "如果可用，打开模拟器自带的FPS计数器。"
 msgid "VSYNC"
 msgstr "垂直同步"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr "抗锯齿 (MSAA)"
+
 msgid "FPS LIMIT"
 msgstr "FPS限制"
 
@@ -2162,6 +2165,12 @@ msgstr "切换为短按北按键呼出存档，长按南按键呼出游戏选项
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "仅使用第一个手柄控制主界面"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr "右侧模拟摇杆改变音量"
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr "向上/向下移动右侧操纵杆可提高或降低音量."
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "枪支移动容忍度"
 
@@ -2227,6 +2236,9 @@ msgstr "检查更新"
 
 msgid "UPDATE TYPE"
 msgstr "更新类型"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr "架构更新"
 
 msgid "APPLY UPDATE"
 msgstr "应用更新"
@@ -3446,7 +3458,7 @@ msgstr "四人游戏"
 msgid "never played"
 msgstr "从未玩过的"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "RetroAchievements"
 
 msgid "arcade"

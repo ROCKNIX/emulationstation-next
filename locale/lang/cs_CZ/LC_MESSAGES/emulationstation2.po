@@ -2013,6 +2013,9 @@ msgstr "Zapne také nativní čítač FPS emulátoru, pokud je k dispozici."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2178,6 +2181,12 @@ msgstr "Obrátit horní tlačítko (uložit) a dlouhý stisk dolního (nastaven�
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "OVLÁDÁNÍ EMULÁTORU POUZE PRVNÍM JOYSTICKEM"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANCE POHYBU ZBRANĚ"
 
@@ -2247,6 +2256,9 @@ msgstr "HLEDAT AKTUALIZACE"
 
 msgid "UPDATE TYPE"
 msgstr "TIP AKTUALIZACE"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "APLIKOVAT AKTUALIZACE"
@@ -3477,7 +3489,7 @@ msgstr "4 hráči"
 msgid "never played"
 msgstr "nikdy nepřehrál"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "retroúspechy"
 
 msgid "arcade"

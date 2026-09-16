@@ -221,6 +221,7 @@ void Settings::setDefaults()
 	
 	mIntMap["ScreenSaverTime"] = Settings::_ScreenSaverTime;
 	mIntMap["FpsLimit"] = 0;
+	mIntMap["AntiAliasing"] = 0;
 	mIntMap["ScraperResizeWidth"] = 640;
 	mIntMap["ScraperResizeHeight"] = 0;
 
@@ -306,6 +307,7 @@ void Settings::setDefaults()
 	mBoolMap["ScreenSaverVideoMute"] = false;
 	mBoolMap["VideoLowersMusic"] = true;
 	mBoolMap["VolumePopup"] = Settings::_VolumePopup;
+	mBoolMap["RightStickVolume"] = true;
 
 	mIntMap["MusicVolume"] = 128;
 

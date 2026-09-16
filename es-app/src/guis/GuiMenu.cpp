@@ -814,6 +814,21 @@ void GuiMenu::openDeveloperSettings()
 	
 	s->addSwitch(_("SHOW FRAMERATE"), _("Also turns on the emulator's native FPS counter, if available."), "DrawFramerate", true, nullptr);
 	s->addSwitch(_("VSYNC"), "VSync", true, [] { Renderer::setSwapInterval(); });
+	
+	// Antialiasing (solves flickering issues with AMD on Windows in some cases)
+	auto antiAliasing = std::make_shared<OptionListComponent<int>>(mWindow, _("ANTI-ALIASING (MSAA)"), false);
+	antiAliasing->add(_("DISABLED"), 0, Settings::getInstance()->getInt("AntiAliasing") == 0);
+	antiAliasing->add("2X", 2, Settings::getInstance()->getInt("AntiAliasing") == 2);
+	antiAliasing->add("4X", 4, Settings::getInstance()->getInt("AntiAliasing") == 4);
+	if (!antiAliasing->hasSelection())
+		antiAliasing->selectFirstItem();
+	s->addWithLabel(_("ANTI-ALIASING (MSAA)"), antiAliasing);
+	s->addSaveFunc([s, antiAliasing]
+		{
+			if (Settings::getInstance()->setInt("AntiAliasing", antiAliasing->getSelected()))
+				s->setVariable("reboot", true);
+		});
+
 	auto fpsLimit = std::make_shared<OptionListComponent<int>>(mWindow, _("FPS LIMIT"), false);
 	fpsLimit->add(_("NO"), 0, Settings::FpsLimit() == 0);
 	fpsLimit->add("25", 25, Settings::FpsLimit() == 25);
@@ -1156,6 +1171,11 @@ void GuiMenu::openDeveloperSettings()
 	s->addWithLabel(_("CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"), firstJoystickOnly);
 	s->addSaveFunc([this, firstJoystickOnly] { Settings::getInstance()->setBool("FirstJoystickOnly", firstJoystickOnly->getState()); });
 
+  // Keep default behavior, but make it configurable
+  s->addSwitch(_("RIGHT ANALOG STICK CHANGES VOLUME"),
+             _("Move the right stick up/down to raise or lower the audio volume."),
+             "RightStickVolume", true, nullptr);
+
 //#if !defined(WIN32)
 	{
 	  auto gun_mt = std::make_shared<SliderComponent>(mWindow, 0.f, 10.f, 0.1f, "%");
@@ -1315,6 +1335,21 @@ void GuiMenu::openUpdatesSettings(bool selectTorrentService)
 				SystemConf::getInstance()->saveSystemConf();
 		});
 
+#if BATOCERA
+		std::string update_architecture;
+		if (ApiSystem::getInstance()->canArchitectureUpdate(update_architecture)) {
+		  auto architecture_update_switch = std::make_shared<SwitchComponent>(mWindow);
+		  architecture_update_switch->setState(SystemConf::getInstance()->get("updates.architecture") == "1");
+		  updateGui->addWithLabel(_("ARCHITECTURE UPDATE") + " (" + update_architecture + ")", architecture_update_switch);
+
+		  architecture_update_switch->setOnChangedCallback([this, architecture_update_switch]()
+		  {
+		    SystemConf::getInstance()->set("updates.architecture", architecture_update_switch->getState() ? "1" : "");
+		    SystemConf::getInstance()->saveSystemConf();
+		  });
+		}
+#endif
+
 		// Start update
 		updateGui->addEntry(GuiUpdate::state == GuiUpdateState::State::UPDATE_READY ? _("APPLY UPDATE") : _("START UPDATE"), true, [this]
 		{
@@ -1473,12 +1508,12 @@ void GuiMenu::openSystemSettings()
 	if (language.empty()) 
 		language = "en_US";
 
-	language_choice->add("ARABIC",               "ar_YE", language == "ar_YE");
+	language_choice->add("العربية",               "ar_YE", language == "ar_YE");
 	language_choice->add("CATALÀ",               "ca_ES", language == "ca_ES");
 	language_choice->add("ČEŠTINA",                "cs_CZ", language == "cs_CZ");
 	language_choice->add("CYMRAEG",              "cy_GB", language == "cy_GB");
 	language_choice->add("DEUTSCH", 	     "de_DE", language == "de_DE");
-	language_choice->add("GREEK",                "el_GR", language == "el_GR");
+	language_choice->add("ΕΛΛΗΝΙΚΆ",                "el_GR", language == "el_GR");
 	language_choice->add("ENGLISH (US)", 	     "en_US", language == "en_US" || language == "en");
 	language_choice->add("ENGLISH (UK)", 	     "en_GB", language == "en_GB");
 	language_choice->add("ESPAÑOL", 	     "es_ES", language == "es_ES" || language == "es");
@@ -1488,24 +1523,24 @@ void GuiMenu::openSystemSettings()
 	language_choice->add("FRANÇAIS",             "fr_FR", language == "fr_FR" || language == "fr");
 	language_choice->add("GALEGO",               "gl_ES", language == "gl_ES");
 	language_choice->add("עברית",                "he_IL", language == "he_IL");
-	language_choice->add("HUNGARIAN",            "hu_HU", language == "hu_HU");
+	language_choice->add("HRVATSKI",            "hu_HU", language == "hu_HU");
 	language_choice->add("BAHASA INDONESIA",     "id_ID", language == "id_ID");
 	language_choice->add("ITALIANO",             "it_IT", language == "it_IT");
-	language_choice->add("JAPANESE", 	     "ja_JP", language == "ja_JP");
-	language_choice->add("KOREAN",   	     "ko_KR", language == "ko_KR" || language == "ko");
-	language_choice->add("NORWEGIAN BOKMAL",     "nb_NO", language == "nb_NO");
-	language_choice->add("DUTCH",                "nl_NL", language == "nl_NL");
-	language_choice->add("NORWEGIAN",            "nn_NO", language == "nn_NO");
+	language_choice->add("日本語", 	     "ja_JP", language == "ja_JP");
+	language_choice->add("한국어",   	     "ko_KR", language == "ko_KR" || language == "ko");
+	language_choice->add("NORSK BOKMÅL",     "nb_NO", language == "nb_NO");
+	language_choice->add("NEDERLANDS",                "nl_NL", language == "nl_NL");
+	language_choice->add("NORSK NYNORSK",            "nn_NO", language == "nn_NO");
 	language_choice->add("OCCITAN",              "oc_FR", language == "oc_FR");
-	language_choice->add("POLISH",               "pl_PL", language == "pl_PL");
+	language_choice->add("POLSKI",               "pl_PL", language == "pl_PL");
 	language_choice->add("PORTUGUÊS BRASILEIRO", "pt_BR", language == "pt_BR");
-	language_choice->add("PORTUGUÊS PORTUGAL",   "pt_PT", language == "pt_PT");
+	language_choice->add("PORTUGUÊS",   "pt_PT", language == "pt_PT");
 	language_choice->add("ROMÂNĂ",               "ro_RO", language == "ro_RO");
 	language_choice->add("РУССКИЙ",              "ru_RU", language == "ru_RU");
 	language_choice->add("SLOVENČINA", 	     "sk_SK", language == "sk_SK");
 	language_choice->add("SVENSKA", 	     "sv_SE", language == "sv_SE");
 	language_choice->add("TÜRKÇE",  	     "tr_TR", language == "tr_TR");
-	language_choice->add("Українська",           "uk_UA", language == "uk_UA");
+	language_choice->add("УКРАЇНСЬКА",           "uk_UA", language == "uk_UA");
 	language_choice->add("TIẾNG VIỆT",           "vi_VN", language == "vi_VN");
 	language_choice->add("简体中文", 	     "zh_CN", language == "zh_CN");
 	language_choice->add("正體中文", 	     "zh_TW", language == "zh_TW");
@@ -2387,7 +2422,7 @@ void GuiMenu::openSystemSettings()
 			// audio device
 			auto optionsAudio = std::make_shared<OptionListComponent<std::string> >(mWindow, _("AUDIO OUTPUT"), false);
 
-			std::string selectedAudio = ApiSystem::getInstance()->getCurrentAudioOutputDevice();
+			std::string selectedAudio = SystemConf::getInstance()->get("audio.device");
 			if (selectedAudio.empty())
 				selectedAudio = "auto";
 
@@ -2436,7 +2471,7 @@ void GuiMenu::openSystemSettings()
 		{
 			auto optionsAudioProfile = std::make_shared<OptionListComponent<std::string> >(mWindow, _("AUDIO PROFILE"), false);
 
-			std::string selectedAudioProfile = ApiSystem::getInstance()->getCurrentAudioOutputProfile();
+			std::string selectedAudioProfile = SystemConf::getInstance()->get("audio.profile");
 			if (selectedAudioProfile.empty())
 				selectedAudioProfile = "auto";
 
@@ -4089,19 +4124,19 @@ void GuiMenu::openGamesSettings()
 			lang_choices->add("FRANÇAIS", "Fr", currentLang == "Fr");
 			lang_choices->add("PORTUGUÊS", "Pt", currentLang == "Pt");
 			lang_choices->add("DEUTSCH", "De", currentLang == "De");
-			lang_choices->add("GREEK", "El", currentLang == "El");
+			lang_choices->add("ΕΛΛΗΝΙΚΆ", "El", currentLang == "El");
 			lang_choices->add("ESPAÑOL", "Es", currentLang == "Es");
-			lang_choices->add("CZECH", "Cs", currentLang == "Cs");
-			lang_choices->add("DANISH", "Da", currentLang == "Da");
-			lang_choices->add("CROATIAN", "Hr", currentLang == "Hr");
-			lang_choices->add("HUNGARIAN", "Hu", currentLang == "Hu");
+			lang_choices->add("ČEŠTINA", "Cs", currentLang == "Cs");
+			lang_choices->add("DANSK", "Da", currentLang == "Da");
+			lang_choices->add("HRVATSKI", "Hr", currentLang == "Hr");
+			lang_choices->add("MAGYAR", "Hu", currentLang == "Hu");
 			lang_choices->add("ITALIANO", "It", currentLang == "It");
-			lang_choices->add("JAPANESE", "Ja", currentLang == "Ja");
-			lang_choices->add("KOREAN", "Ko", currentLang == "Ko");
-			lang_choices->add("DUTCH", "Nl", currentLang == "Nl");
-			lang_choices->add("NORWEGIAN", "Nn", currentLang == "Nn");
-			lang_choices->add("POLISH", "Pl", currentLang == "Pl");
-			lang_choices->add("ROMANIAN", "Ro", currentLang == "Ro");
+			lang_choices->add("日本語", "Ja", currentLang == "Ja");
+			lang_choices->add("한국어", "Ko", currentLang == "Ko");
+			lang_choices->add("NEDERLANDS", "Nl", currentLang == "Nl");
+			lang_choices->add("NORSK", "Nn", currentLang == "Nn");
+			lang_choices->add("POLSKI", "Pl", currentLang == "Pl");
+			lang_choices->add("ROMÂNĂ", "Ro", currentLang == "Ro");
 			lang_choices->add("РУССКИЙ", "Ru", currentLang == "Ru");
 			lang_choices->add("SVENSKA", "Sv", currentLang == "Sv");
 			lang_choices->add("TÜRKÇE", "Tr", currentLang == "Tr");

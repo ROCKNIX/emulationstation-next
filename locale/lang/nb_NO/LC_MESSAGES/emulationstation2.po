@@ -2011,6 +2011,9 @@ msgstr "Slår også på emulatorens innebygde FPS-teller, hvis tilgjengelig."
 msgid "VSYNC"
 msgstr "VSYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr ""
 
@@ -2175,6 +2178,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "KONTROLLER EMULATIONSTATION KUN MED FØRSTE JOYSTICK"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "VÅPEN BEVEGELSE TOLERANSE"
 
@@ -2244,6 +2253,9 @@ msgstr "SE ETTER OPPDATERINGER"
 
 msgid "UPDATE TYPE"
 msgstr "OPPDATERINGSTYPE"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "BRUK OPPDATERING"
@@ -3472,8 +3484,8 @@ msgstr "4 spillere"
 msgid "never played"
 msgstr "aldri spilt"
 
-msgid "retroachievements"
-msgstr "retroachievements"
+msgid "RetroAchievements"
+msgstr "RetroAchievements"
 
 msgid "arcade"
 msgstr "arkade"

@@ -2021,6 +2021,9 @@ msgstr ""
 msgid "VSYNC"
 msgstr "V-SYNC"
 
+msgid "ANTI-ALIASING (MSAA)"
+msgstr ""
+
 msgid "FPS LIMIT"
 msgstr "FPS LIMIET"
 
@@ -2196,6 +2199,12 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr "BESTUUR EMULATIONSTATION ALLEEN MET DE EERSTE JOYSTICK"
 
+msgid "RIGHT ANALOG STICK CHANGES VOLUME"
+msgstr ""
+
+msgid "Move the right stick up/down to raise or lower the audio volume."
+msgstr ""
+
 msgid "GUN MOVE TOLERENCE"
 msgstr "GUN BEWEGING TOLERANTIE"
 
@@ -2265,6 +2274,9 @@ msgstr "CONTROLEER OP UPDATES"
 
 msgid "UPDATE TYPE"
 msgstr "UPDATE TYPE"
+
+msgid "ARCHITECTURE UPDATE"
+msgstr ""
 
 msgid "APPLY UPDATE"
 msgstr "UPDATE TOEPASSEN"
@@ -3502,7 +3514,7 @@ msgstr "4 spelers"
 msgid "never played"
 msgstr "nooit gespeeld"
 
-msgid "retroachievements"
+msgid "RetroAchievements"
 msgstr "retroprestaties"
 
 msgid "arcade"
