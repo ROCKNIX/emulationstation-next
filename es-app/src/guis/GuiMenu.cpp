@@ -2760,7 +2760,7 @@ void GuiMenu::openSystemSettings()
         s->addEntry(_("MULTISCREENS"), true, [this] { openMultiScreensSettings(); });
 #endif
 
-#if defined(BATOCERA) || defined(ROCKNIX)
+#ifdef BATOCERA
 	int red, green, blue;
 	bool ledSupported = ApiSystem::getInstance()->getLED(red, green, blue);
 
