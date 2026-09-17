@@ -1946,12 +1946,15 @@ void GuiMenu::openSystemSettings()
 		if (!lfound)
 			optionsColors->add(selectedColors, selectedColors, true);
 		s->addWithLabel(_("LED COLOR"), optionsColors);
-		s->addSaveFunc([this, optionsColors, selectedColors]
-		{
-			if (optionsColors->changed()) {
-				SystemConf::getInstance()->set("led.color", optionsColors->getSelected());
-				Utils::Platform::runSystemCommand("/usr/bin/sh -lc \"/usr/bin/ledcontrol " + optionsColors->getSelected() + "\"" , "", nullptr);
-			}
+
+		optionsColors->setSelectedChangedCallback([](const std::string& newColor) {
+			SystemConf::getInstance()->set("led.color", newColor);
+			SystemConf::getInstance()->saveSystemConf();
+			Utils::Platform::runSystemCommand("/usr/bin/sh -lc \"/usr/bin/ledcontrol " + newColor + "\"", "", nullptr);
+		});
+
+		s->addSaveFunc([optionsColors] {
+			SystemConf::getInstance()->set("led.color", optionsColors->getSelected());
 		});
 	}
 
@@ -1965,13 +1968,16 @@ void GuiMenu::openSystemSettings()
 	        optionsLEDBrightness->add(_("MID"),"mid", selectedLEDBrightness == "mid");
 	        optionsLEDBrightness->add(_("MIN"),"min", selectedLEDBrightness == "min");
 	        s->addWithLabel(_("LED BRIGHTNESS"), optionsLEDBrightness);
-	        s->addSaveFunc([this, optionsLEDBrightness, selectedLEDBrightness]
-	        {
-	                if (optionsLEDBrightness->changed()) {
-	                        SystemConf::getInstance()->set("led.brightness", optionsLEDBrightness->getSelected());
-	                        Utils::Platform::runSystemCommand("/usr/bin/ledcontrol brightness " + optionsLEDBrightness->getSelected(), "", nullptr);
-	                }
-	        });
+
+		optionsLEDBrightness->setSelectedChangedCallback([](const std::string& newBrightness) {
+			SystemConf::getInstance()->set("led.brightness", newBrightness);
+			SystemConf::getInstance()->saveSystemConf();
+			Utils::Platform::runSystemCommand("/usr/bin/ledcontrol brightness " + newBrightness, "", nullptr);
+		});
+
+		s->addSaveFunc([optionsLEDBrightness] {
+			SystemConf::getInstance()->set("led.brightness", optionsLEDBrightness->getSelected());
+		});
 	}
 
 	if (Utils::Platform::GetEnv("DEVICE_ANALOG_STICKS_LED_CONTROL") == "true"){
