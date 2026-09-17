@@ -1,6 +1,7 @@
 #include "GuiAnalogSticksLedControls.h"
 
 #include <cstdlib>
+#include <cstdio>
 #include "components/SliderComponent.h"
 #include "SystemConf.h"
 #include "utils/Platform.h"
@@ -57,8 +58,9 @@ GuiAnalogSticksLedControls::GuiAnalogSticksLedControls(Window* window) : GuiSett
 	addWithLabel(_("BLUE"), right_blue);
 
 	const std::string analogSticksLedScript = "/usr/bin/analog_sticks_ledcontrol";
-	mMenu.addButton(_("APPLY"), "apply", [this, analogSticksLedScript, brightness,
-		left_red, left_green, left_blue, right_red, right_green, right_blue]
+
+	auto applyChanges = [analogSticksLedScript, brightness,
+		left_red, left_green, left_blue, right_red, right_green, right_blue]()
 	{
 		char buffer[128];
 
@@ -71,8 +73,16 @@ GuiAnalogSticksLedControls::GuiAnalogSticksLedControls(Window* window) : GuiSett
 			static_cast<uint8_t>(left_green->getValue() * 255),
 			static_cast<uint8_t>(left_blue->getValue() * 255)
 		);
-		
+
 		Utils::Platform::runSystemCommand(analogSticksLedScript + " " + buffer, "", nullptr);
 		SystemConf::getInstance()->set("analogsticks.led", buffer);
-	});
+	};
+
+	brightness->setOnValueChanged([applyChanges](const float&)  { applyChanges(); });
+	left_red->setOnValueChanged([applyChanges](const float&)    { applyChanges(); });
+	left_green->setOnValueChanged([applyChanges](const float&)  { applyChanges(); });
+	left_blue->setOnValueChanged([applyChanges](const float&)   { applyChanges(); });
+	right_red->setOnValueChanged([applyChanges](const float&)   { applyChanges(); });
+	right_green->setOnValueChanged([applyChanges](const float&) { applyChanges(); });
+	right_blue->setOnValueChanged([applyChanges](const float&)  { applyChanges(); });
 }
