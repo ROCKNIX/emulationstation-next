@@ -5549,29 +5549,10 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	optionsAdhocID->add(_("3 (CLIENT 2)"),"3", selectedAdhocID == "3");
 	optionsAdhocID->add(_("4 (CLIENT 3)"),"4", selectedAdhocID == "4");
 
-	auto optionsChannels = std::make_shared<OptionListComponent<std::string> >(mWindow, _("LOCAL NETWORK CHANNEL"), false);
-
-	std::vector<std::string> availableChannels = ApiSystem::getInstance()->getAvailableChannels();
-	std::string selectedChannel = SystemConf::getInstance()->get("wifi.adhoc.channel");
-
-	if (selectedChannel.empty())
-		selectedChannel = "6";
-
-	bool wfound = false;
-	for (auto it = availableChannels.begin(); it != availableChannels.end(); it++)
-	{
-		optionsChannels->add((*it), (*it), selectedChannel == (*it));
-		if (selectedChannel == (*it))
-			wfound = true;
-	}
-
-	if (!wfound)
-		optionsChannels->add(selectedChannel, selectedChannel, true);
-
 	if (baseAdhocEnabled)
 	{
 		s->addWithLabel(_("LOCAL PLAY ID"), optionsAdhocID);
-		s->addWithLabel(_("LOCAL NETWORK CHANNEL"), optionsChannels);
+		s->addSaveFunc([optionsAdhocID] { SystemConf::getInstance()->set("wifi.adhoc.id", optionsAdhocID->getSelected()); });
 	}
 
 
@@ -5638,13 +5619,12 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 		}
 	});
 
-	enable_adhoc->setOnChangedCallback([this, s, baseAdhocEnabled, baseWifiEnabled, enable_wifi, enable_adhoc, optionsAdhocID, selectedAdhocID, optionsChannels, selectedChannel]
+	enable_adhoc->setOnChangedCallback([this, s, baseAdhocEnabled, baseWifiEnabled, enable_wifi, enable_adhoc, optionsAdhocID, selectedAdhocID]
 	{
 		bool wifienabled = enable_wifi->getState();
 		bool adhocenabled = enable_adhoc->getState();
 
 		SystemConf::getInstance()->set("wifi.adhoc.id", optionsAdhocID->getSelected());
-		SystemConf::getInstance()->set("wifi.adhoc.channel", optionsChannels->getSelected());
 
 		SystemConf::getInstance()->set("global.netplay.host", "192.168.80.1");
 		SystemConf::getInstance()->set("global.netplay.port", "55435");
