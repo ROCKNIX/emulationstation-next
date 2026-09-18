@@ -241,7 +241,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 				row.addElement(ed, false);
 
 				auto spacer = std::make_shared<GuiComponent>(mWindow);
-				spacer->setSize(Renderer::getScreenWidth() * 0.0025f, 0);
+				spacer->setSize(Renderer::getMenuRect().w * 0.0025f, 0);
 				row.addElement(spacer, false);
 
 				// pass input to the actual RatingComponent instead of the spacer
@@ -255,7 +255,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 				row.addElement(ed, false);
 
 				auto spacer = std::make_shared<GuiComponent>(mWindow);
-				spacer->setSize(Renderer::getScreenWidth() * 0.0025f, 0);
+				spacer->setSize(Renderer::getMenuRect().w * 0.0025f, 0);
 				row.addElement(spacer, false);
 
 				// pass input to the actual DateTimeEditComponent instead of the spacer
@@ -276,7 +276,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 			row.addElement(ed, true);
 
 			auto spacer = std::make_shared<GuiComponent>(mWindow);
-			spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+			spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 			row.addElement(spacer, false);
 
 			auto bracket = std::make_shared<ImageComponent>(mWindow);
@@ -322,7 +322,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 				row.addElement(ed, true);
 
 				auto spacer = std::make_shared<GuiComponent>(mWindow);
-				spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+				spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 				row.addElement(spacer, false);
 
 				auto bracket = std::make_shared<ImageComponent>(mWindow);
@@ -388,14 +388,14 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 	// resize + center	
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
 	{
-		float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
-		setSize(width, Renderer::getScreenHeight() * 0.82f);
+		float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
+		setSize(width, Renderer::getMenuRect().h * 0.82f);
 	}
 
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 }
 
 void GuiMetaDataEd::onSizeChanged()
