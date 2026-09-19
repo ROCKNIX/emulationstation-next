@@ -36,9 +36,9 @@ SliderComponent::SliderComponent(Window* window, float min, float max, float inc
 	mKnob.setColorShift(mColor);
 	
 	if (Renderer::isSmallScreen())
-		setSize(Renderer::getScreenWidth() * 0.25f, menuTheme->Text.font->getLetterHeight());
+		setSize(Renderer::getMenuRect().w * 0.25f, menuTheme->Text.font->getLetterHeight());
 	else
-		setSize(Renderer::getScreenWidth() * 0.15f, menuTheme->Text.font->getLetterHeight());
+		setSize(Renderer::getMenuRect().w * 0.15f, menuTheme->Text.font->getLetterHeight());
 }
 
 int calculatePrecision(float step)

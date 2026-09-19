@@ -16,10 +16,10 @@
 #include <string>
 #include "LocaleES.h"
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
-#define IMAGESIZE (Renderer::getScreenHeight() * (48.0 / 720.0))
-#define IMAGESPACER (Renderer::getScreenHeight() * (10.0 / 720.0))
-#define PROGRESSHEIGHT (Renderer::getScreenHeight() * 0.008f)
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
+#define IMAGESIZE (Renderer::getMenuRect().h * (48.0 / 720.0))
+#define IMAGESPACER (Renderer::getMenuRect().h * (10.0 / 720.0))
+#define PROGRESSHEIGHT (Renderer::getMenuRect().h * 0.008f)
 
 void GuiRetroAchievements::show(Window* window)
 {
@@ -331,14 +331,14 @@ GuiRetroAchievements::GuiRetroAchievements(Window* window, RetroAchievementInfo 
 
 void GuiRetroAchievements::centerWindow()
 {
-	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+	float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		mMenu.setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		mMenu.setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.901f);
+		mMenu.setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.901f);
 
-	mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+	mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 }
 
 bool GuiRetroAchievements::input(InputConfig* config, Input input)

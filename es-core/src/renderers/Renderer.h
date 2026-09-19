@@ -186,6 +186,15 @@ namespace Renderer
 	int         getScreenOffsetX();
 	int         getScreenOffsetY();
 	int         getScreenRotate ();
+
+	// Sub-rectangle of the canvas that menus/dialogs/overlays are laid out in.
+	// Defaults to the whole canvas; see the definition in Renderer.cpp.
+	Rect        getMenuRect     ();
+
+	// Top-left coordinate that centres a box of the given size in the menu
+	// region. Equivalent to (screen - size) / 2 when no menu region is set.
+	float       getMenuCenterX  (float width);
+	float       getMenuCenterY  (float height);
 	float		getScreenProportion();
 	std::string getAspectRatio();
 	bool		isVerticalScreen();

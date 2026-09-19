@@ -1143,14 +1143,14 @@ void Window::renderAsyncNotifications(const Transform4x4f& trans)
 {
 	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
 
-#define PADDING_H  (Renderer::getScreenWidth()*0.01)
+#define PADDING_H  (Renderer::getMenuRect().w*0.01)
 
-	float posY = Renderer::getScreenHeight() * 0.02f;
+	float posY = Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.02f;
 
 	bool first = true;
 	for (auto child : mAsyncNotificationComponent)
 	{		
-		float posX = Renderer::getScreenWidth()*0.99f - child->getSize().x();
+		float posX = Renderer::getMenuRect().x + Renderer::getMenuRect().w*0.99f - child->getSize().x();
 
 		float offset = child->getSize().y() + PADDING_H;
 

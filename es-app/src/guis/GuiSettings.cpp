@@ -34,23 +34,23 @@ GuiSettings::GuiSettings(Window* window,
 	if (customButton != "-----")
 		mMenu.addButton(_("BACK"), _("go back"), [this] { close(); });
 
-	setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+	setSize((float)Renderer::getMenuRect().w, (float)Renderer::getMenuRect().h);
 	
 	if (animate)
 	{
 		if (Renderer::ScreenSettings::fullScreenMenus())
-			mMenu.animateTo((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+			mMenu.animateTo(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 		else
 			mMenu.animateTo(
-				Vector2f((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.5),
-				Vector2f((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f));
+				Vector2f(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.5),
+				Vector2f(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f));
 	}
 	else
 	{
 		if (Renderer::ScreenSettings::fullScreenMenus())
-			mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+			mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 		else
-			mMenu.setPosition((mSize.x() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
+			mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f);
 	}	
 }
 
@@ -193,7 +193,7 @@ void GuiSettings::addInputTextConfigRow(const std::string& title, const std::str
 	row.addElement(ed, false);
 
 	auto spacer = std::make_shared<GuiComponent>(mWindow);
-	spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+	spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 	row.addElement(spacer, false);
 
 	auto bracket = std::make_shared<ImageComponent>(mWindow);
@@ -279,7 +279,7 @@ void GuiSettings::addInputTextRow(const std::string& title, const std::string& v
 	row.addElement(ed, false);
 
 	auto spacer = std::make_shared<GuiComponent>(mWindow);
-	spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+	spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 	row.addElement(spacer, false);
 
 	auto bracket = std::make_shared<ImageComponent>(mWindow);
@@ -347,7 +347,7 @@ void GuiSettings::addFileBrowser(const std::string& title, const std::string& se
 	row.addElement(ed, true);
 
 	auto spacer = std::make_shared<GuiComponent>(window);
-	spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+	spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 	row.addElement(spacer, false);
 
 	auto bracket = std::make_shared<ImageComponent>(window);

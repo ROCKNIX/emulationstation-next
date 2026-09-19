@@ -45,8 +45,8 @@ GuiTextEditPopup::GuiTextEditPopup(Window* window, const std::string& title, con
 		textHeight *= 6;
 	mText->setSize(0, textHeight);
 
-	setSize(Renderer::getScreenWidth() * 0.5f, mTitle->getFont()->getHeight() + textHeight + mButtonGrid->getSize().y() + 40);
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+	setSize(Renderer::getMenuRect().w * 0.5f, mTitle->getFont()->getHeight() + textHeight + mButtonGrid->getSize().y() + 40);
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 }
 
 void GuiTextEditPopup::onSizeChanged()

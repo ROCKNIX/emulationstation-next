@@ -46,11 +46,11 @@ GuiKeyboardLayout::GuiKeyboardLayout(Window* window, const std::function<void(co
 		}
 	}
 
-	setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+	setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 
 	mKeyboard.setOrigin(0.5f, 0.5f);
-	mKeyboard.setPosition(Renderer::getScreenWidth() / 2.0f, Renderer::getScreenHeight() / 2.0f);
-	mKeyboard.setMaxSize(Renderer::getScreenWidth() * KB_WIDTH, Renderer::getScreenHeight() * KB_WIDTH);
+	mKeyboard.setPosition(Renderer::getMenuCenterX(0), Renderer::getMenuCenterY(0));
+	mKeyboard.setMaxSize(Renderer::getMenuRect().w * KB_WIDTH, Renderer::getMenuRect().h * KB_WIDTH);
 	addChild(&mKeyboard);
 
 	auto path = ResourceManager::getInstance()->getResourcePath(":/kblayout.svg");

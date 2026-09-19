@@ -8,7 +8,7 @@
 #include "guis/GuiMsgBox.h"
 #include "SaveStateRepository.h"
 
-#define WINDOW_HEIGHT Renderer::getScreenHeight() * 0.40f
+#define WINDOW_HEIGHT Renderer::getMenuRect().h * 0.40f
 
 static int slots = 6; // 5;
 
@@ -38,9 +38,9 @@ GuiSaveState::GuiSaveState(Window* window, FileData* game, const std::function<v
 	addChild(&mLayout);
 	
 	float cellProportion = 1.77;
-	float screenProportion = (float)Renderer::getScreenWidth() / (float)Renderer::getScreenHeight();
+	float screenProportion = (float)Renderer::getMenuRect().w / (float)Renderer::getMenuRect().h;
 
-	float sh = (float)Math::min(Renderer::getScreenHeight(), Renderer::getScreenWidth());
+	float sh = (float)Math::min(Renderer::getMenuRect().h, Renderer::getMenuRect().w);
 	sh = (float) theme->TextSmall.font->getSize() / sh;
 
 	std::string xml =
@@ -91,7 +91,7 @@ GuiSaveState::GuiSaveState(Window* window, FileData* game, const std::function<v
 	std::map<std::string, std::string> emptyMap;
 	mTheme->loadFile("imageviewer", emptyMap, xml, false);
 
-	//mGrid->setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+	//mGrid->setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	mGrid->applyTheme(mTheme, "grid", "gamegrid", 0);
 	mGrid->setCursorChangedCallback([&](const CursorState& /*state*/) { updateHelpPrompts(); });
 
@@ -166,12 +166,12 @@ void GuiSaveState::onSizeChanged()
 		const float height = Math::round(help.font->getLetterHeight() * 1.25f);
 
 		float helpBottom = help.position.y() + (height * mOrigin.y());
-		float helpBottomSpace = 0; // Renderer::getScreenHeight() - helpBottom;
+		float helpBottomSpace = 0; // Renderer::getMenuRect().h - helpBottom;
 
 		float helpTop = help.position.y() - (height * mOrigin.y()); // +height / 2;
 		
 		helpSize = helpTop;
-		helpSize = Renderer::getScreenHeight() - helpSize + helpBottomSpace;
+		helpSize = Renderer::getMenuRect().h - helpSize + helpBottomSpace;
 		helpSize = helpSize / mSize.y() + 0.06;
 	}
 
@@ -193,10 +193,10 @@ void GuiSaveState::onSizeChanged()
 
 void GuiSaveState::centerWindow()
 {
-	setSize(Renderer::getScreenWidth(), WINDOW_HEIGHT);
+	setSize(Renderer::getMenuRect().w, WINDOW_HEIGHT);
 	animateTo(
-		Vector2f((Renderer::getScreenWidth() - getSize().x()) / 2, Renderer::getScreenHeight()),
-		Vector2f((Renderer::getScreenWidth() - getSize().x()) / 2, Renderer::getScreenHeight() - WINDOW_HEIGHT),
+		Vector2f(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h),
+		Vector2f(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h - WINDOW_HEIGHT),
 		AnimateFlags::OPACITY | AnimateFlags::POSITION);
 }
 

@@ -14,9 +14,9 @@
 #include "GuiGameAchievements.h"
 #include "views/ViewController.h"
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
-#define IMAGESIZE (Renderer::getScreenHeight() * (48.0 / 720.0))
-#define IMAGESPACER (Renderer::getScreenHeight() * (10.0 / 720.0))
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
+#define IMAGESIZE (Renderer::getMenuRect().h * (48.0 / 720.0))
+#define IMAGESPACER (Renderer::getMenuRect().h * (10.0 / 720.0))
 
 void GuiGameAchievements::show(Window* window, int gameId)
 {
@@ -183,14 +183,14 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 
 void GuiGameAchievements::centerWindow()
 {
-	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+	float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		mMenu.setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		mMenu.setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.901f);
+		mMenu.setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.901f);
 
-	mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+	mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 }
 
 void GuiGameAchievements::render(const Transform4x4f& parentTrans)
@@ -202,9 +202,9 @@ void GuiGameAchievements::render(const Transform4x4f& parentTrans)
 		auto theme = ThemeData::getMenuTheme();
 
 		float h = theme->TextSmall.font->sizeText("A8O\rA8O", 1.1).y();
-		float sz = mMenu.getHeaderGridHeight() + Renderer::getScreenHeight() * 0.005;
+		float sz = mMenu.getHeaderGridHeight() + Renderer::getMenuRect().h * 0.005;
 
-		float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+		float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 		float iw = mMenu.getTitleHeight() / width;
 
 		float xx = mMenu.getSize().x() - (mMenu.getSize().x() * iw);

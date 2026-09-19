@@ -13,7 +13,7 @@
 #include <cstring>
 #include "SystemConf.h"
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
 
 GuiBezelInstaller::GuiBezelInstaller(Window* window)
 	: GuiComponent(window), mMenu(window, _("THE BEZEL PROJECT").c_str()), mReloadList(1)
@@ -119,11 +119,11 @@ void GuiBezelInstaller::loadBezelsAsync()
 void GuiBezelInstaller::centerWindow()
 {
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		mMenu.setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		mMenu.setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
+		mMenu.setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.875f);
 
-	mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+	mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 }
 
 void GuiBezelInstaller::processBezel(BatoceraBezel bezel)

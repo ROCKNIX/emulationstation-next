@@ -7,7 +7,7 @@
 #include "LocaleES.h"
 #include "TextToSpeech.h"
 
-#define HORIZONTAL_PADDING_PX  (Renderer::getScreenWidth()*0.01)
+#define HORIZONTAL_PADDING_PX  (Renderer::getMenuRect().w*0.01)
 
 GuiMsgBox::GuiMsgBox(Window* window, const std::string& text, const std::string& name1, const std::function<void()>& func1, GuiMsgBoxIcon icon) 
 	: GuiMsgBox(window, text, name1, func1, "", nullptr, "", nullptr, icon) { }
@@ -36,8 +36,8 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	mBackground.setCornerSize(theme->Background.cornerSize);
 	mBackground.setPostProcessShader(theme->Background.menuShader);
 
-	float width = Renderer::getScreenWidth() * 0.6f; // max width
-	float minWidth = Renderer::getScreenWidth() * 0.3f; // minimum width
+	float width = Renderer::getMenuRect().w * 0.6f; // max width
+	float minWidth = Renderer::getMenuRect().w * 0.3f; // minimum width
 	
 	mImage = nullptr;
 
@@ -75,7 +75,7 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
   // ensure the tailscale message doesn't wrap, and no icon (for more room)
 	if (text.find("tailscale.com") != std::string::npos)
 	{
-			width = Renderer::getScreenWidth() * 0.9f; // max width
+			width = Renderer::getMenuRect().w * 0.9f; // max width
 	} else if (!imageFile.empty() && ResourceManager::getInstance()->fileExists(imageFile) && !Renderer::isSmallScreen())
 	{
 		mImage = std::make_shared<ImageComponent>(window);
@@ -89,7 +89,7 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	}
 
 	mMsg = std::make_shared<TextComponent>(mWindow, text, ThemeData::getMenuTheme()->Text.font, ThemeData::getMenuTheme()->Text.color, mImage == nullptr || Renderer::isSmallScreen() ? ALIGN_CENTER : ALIGN_LEFT); // CENTER
-	mMsg->setPadding(Vector4f(Renderer::getScreenWidth()*0.015f, 0, Renderer::getScreenWidth()*0.015f, 0));
+	mMsg->setPadding(Vector4f(Renderer::getMenuRect().w*0.015f, 0, Renderer::getMenuRect().w*0.015f, 0));
 	
 	mGrid.setEntry(mMsg, Vector2i(mImage == nullptr ? 0 : 1, 0), false, false, Vector2i(mImage == nullptr ? 2 : 1, 1));
 
@@ -141,17 +141,17 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	
 	float msgHeight = Math::max(Font::get(FONT_SIZE_LARGE)->getHeight(), mMsg->getSize().y()*1.225f);
 	
-	if (msgHeight + mButtonGrid->getSize().y() > Renderer::getScreenHeight())
+	if (msgHeight + mButtonGrid->getSize().y() > Renderer::getMenuRect().h)
 	{
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 		if (mImage != nullptr)
-			mMsg->setSize(Renderer::getScreenWidth() - mImage->getSize().x() - 4* HORIZONTAL_PADDING_PX, 0);
+			mMsg->setSize(Renderer::getMenuRect().w - mImage->getSize().x() - 4* HORIZONTAL_PADDING_PX, 0);
 	}
 	else
 		setSize(width + HORIZONTAL_PADDING_PX*2, msgHeight + mButtonGrid->getSize().y());
 
 	// center for good measure
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2.0f, (Renderer::getScreenHeight() - mSize.y()) / 2.0f);
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 
 	addChild(&mBackground);
 	addChild(&mGrid);

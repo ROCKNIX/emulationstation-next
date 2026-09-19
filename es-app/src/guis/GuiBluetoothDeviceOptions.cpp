@@ -21,7 +21,7 @@ GuiBluetoothDeviceOptions::GuiBluetoothDeviceOptions(Window* window, const std::
     mMenu.addButton(_("FORGET"), "forget", [&] { onForgetDevice(); });
     mMenu.addButton(_("BACK"), "back", [&] { delete this; });
 
-    mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+    mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 }
 
 bool GuiBluetoothDeviceOptions::input(InputConfig* config, Input input)

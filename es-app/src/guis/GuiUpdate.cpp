@@ -14,7 +14,7 @@ GuiUpdate::GuiUpdate(Window* window) : GuiComponent(window), mBusyAnim(window)
 {
 	LOG(LogInfo) << "Starting GuiUpdate";
 
-	setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+	setSize((float)Renderer::getMenuRect().w, (float)Renderer::getMenuRect().h);
 
 	mState = 0;	
     mLoading = true;
