@@ -5808,6 +5808,21 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 		SystemConf::getInstance()->set("zerotier.up", ztEnabled ? "1" : "0");
 	});
 
+	const std::string singboxConfigFile = "/storage/.config/sing-box/config.json";
+	if (Utils::FileSystem::exists(singboxConfigFile)) {
+		auto singbox = std::make_shared<SwitchComponent>(mWindow);
+		bool sbUp = SystemConf::getInstance()->get("singbox.up") == "1";
+		singbox->setState(sbUp);
+		s->addWithDescription(_("VLESS/REALITY, AMNEZIAWG (SING-BOX)"), _("Obfuscated proxy - also WireGuard, Shadowsocks, Hysteria2, TUIC, VMess. TUN transparent routing."), singbox);
+		singbox->setOnChangedCallback([singbox] {
+			if (singbox->getState())
+				Utils::Platform::runSystemCommand("systemctl start sing-box", "", nullptr);
+			else
+				Utils::Platform::runSystemCommand("systemctl stop sing-box", "", nullptr);
+			SystemConf::getInstance()->set("singbox.up", singbox->getState() ? "1" : "0");
+		});
+	}
+
 	mWindow->pushGui(s);
 }
 
