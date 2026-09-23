@@ -9,23 +9,21 @@
 class GuiWifi : public GuiComponent
 {
 public:
-	GuiWifi(Window* window, const std::string title, std::string data, const std::function<void(std::string)>& onsave);
+	GuiWifi(Window* window, const std::string title);
 	bool input(InputConfig* config, Input input) override;
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 
 private:
 	void	load(std::vector<std::string> ssids);
 
-	void	onSave(const std::string& value);
 	void	onManualInput();
 	void	onRefresh();
+
+	void connectNetwork(const std::string& ssid, bool isSaved);
 
 	MenuComponent mMenu;
 
 	std::string mTitle;
-	std::string mInitialData;
-
-	std::function<void(std::string)> mSaveFunction;
 
 	bool		mWaitingLoad;
 };

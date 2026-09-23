@@ -253,6 +253,9 @@ public:
 	virtual std::vector<std::string> getIpAddresses();
 	virtual std::string getIpAddress();
 	virtual bool isWifiAPModeSupported();
+	virtual std::vector<std::string> getSavedWifiNetworks();
+	virtual bool forgetWifiNetwork(const std::string& ssid);
+	virtual bool connectSavedWifiNetwork(const std::string& ssid);
 
 	// BlueTooth methods
 	virtual bool enableBluetooth();

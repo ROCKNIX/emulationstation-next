@@ -5438,11 +5438,6 @@ std::vector<std::pair<std::string, std::string>> getCountryCodes()
     };
 }
 
-void GuiMenu::openWifiSettings(Window* win, std::string title, std::string data, const std::function<void(std::string)>& onsave)
-{
-	win->pushGui(new GuiWifi(win, title, data, onsave));
-}
-
 void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 {
 	bool baseWifiEnabled = SystemConf::getInstance()->getBool("wifi.enabled");
@@ -5539,9 +5534,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	{
 		if (!baseAdhocEnabled)
 		{
-			s->addInputTextConfigRow(_("WI-FI SSID"), "wifi.ssid", false, false, &openWifiSettings);
-			s->addInputTextConfigRow(_("WI-FI KEY"), "wifi.key", true);
-
+			s->addEntry(_("WI-FI NETWORKS"), true, [this] { mWindow->pushGui(new GuiWifi(mWindow, _("WI-FI NETWORKS"))); });
 #if !WIN32
 		        // Batocera-specific WI-FI COUNTRY option
 		        auto country_codes = getCountryCodes();
@@ -5599,7 +5592,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 #if !WIN32
 			std::string newCountry = SystemConf::getInstance()->get("wifi.country");
 
-			if (baseSSID != newSSID || baseKEY != newKey || baseCountry != newCountry || !baseWifiEnabled)
+			if (baseCountry != newCountry || !baseWifiEnabled)
 			{
 				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey, newCountry))
 					window->pushGui(new GuiMsgBox(window, _("WI-FI ENABLED")));
@@ -5607,7 +5600,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 					window->pushGui(new GuiMsgBox(window, _("WI-FI CONFIGURATION ERROR")));
 			}
 #else
-			if (baseSSID != newSSID || baseKEY != newKey || !baseWifiEnabled)
+			if (!baseWifiEnabled)
 			{
 				if (ApiSystem::getInstance()->enableWifi(newSSID, newKey))
 					window->pushGui(new GuiMsgBox(window, _("WI-FI ENABLED")));

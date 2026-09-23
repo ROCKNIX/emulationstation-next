@@ -612,6 +612,18 @@ bool ApiSystem::isWifiAPModeSupported()
 	return executeScript("wifictl has_ap_mode");
 }
 
+std::vector<std::string> ApiSystem::getSavedWifiNetworks() {
+	return executeEnumerationScript("wifictl list_saved");
+}
+
+bool ApiSystem::forgetWifiNetwork(const std::string& ssid) {
+	return executeScript("wifictl forget_saved " + Utils::String::shellQuote(ssid));
+}
+
+bool ApiSystem::connectSavedWifiNetwork(const std::string& ssid) {
+	return executeScript("wifictl connect_saved " + Utils::String::shellQuote(ssid));
+}
+
 bool ApiSystem::enableBluetooth()
 {
 	return executeScript("rocknix-bluetooth enable 2>&1 >/dev/null");
