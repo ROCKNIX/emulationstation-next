@@ -1,4 +1,6 @@
 #include "FileData.h"
+#include "AppWindow.h"
+#include "CaptureRotation.h"
 
 #include "utils/FileSystemUtil.h"
 #include "utils/StringUtil.h"
@@ -31,9 +33,20 @@
 #include "TextToSpeech.h"
 #include "LocaleES.h"
 #include "guis/GuiMsgBox.h"
+#include "ThreadedCloudSync.h"
+#include "CloudTransferJob.h"
+#include "ProxyCards.h"
+#include "guis/GuiCloudTransfer.h"
+#include "guis/GuiLoading.h"
+#include "views/ViewController.h"
+#include <chrono>
+#include <thread>
+#include <atomic>
+#include "OfflineAchievements.h"
 #include "Paths.h"
 #include "resources/TextureData.h"
 #include "views/gamelist/GameNameFormatter.h"
+#include "LaunchCommand.h"
 #include "watchers/WatchersManager.h"
 
 using namespace Utils::Platform;
@@ -65,6 +78,48 @@ static std::map<std::string, std::function<BindableProperty(FileData*)>> propert
 };
 
 FileData* FileData::mRunningGame = nullptr;
+
+// Counts game exits, so the work an exit hands to a worker thread (the
+// capture, then the exit sync -- fork #290) can tell whether another game
+// has been launched and left since it was posted. See launchGame.
+static std::atomic<unsigned> sExitGeneration{ 0 };
+// Counts game starts (GetGamesStarted).
+static std::atomic<unsigned> sGamesStarted{ 0 };
+
+unsigned FileData::GetGamesStarted()
+{
+	return sGamesStarted.load();
+}
+// PLAY NOW through the offline achievements' send card: the launch it
+// leads to comes back through this function (launchNow goes through
+// ViewController::launch), so the answer is kept for that one launch or
+// the question would be asked again on the next frame, without end (the
+// #292 proof on the VM, 2026-09-26).
+static std::atomic<bool> sPlayThroughSend{ false };
+// The exit capture still recording (audit #307 PL-061): the exit generation
+// whose cloud_capture is running, 0 when none. The launch waits for it, as
+// it waits for a sync or a transfer to be gone: a game launched under it
+// writes a save the capture is hashing, and the manifest records a hash the
+// file no longer has.
+static std::atomic<unsigned> sCaptureInFlight{ 0 };
+// When it started (steady clock, ms), for the one case the gate lets a
+// launch go over it: a capture so old it is hung, not slow.
+static std::atomic<long long> sCaptureStartedMs{ 0 };
+// The capture a launch is waiting on behind the spinner: its exit sync is
+// the gate's to decide (a launch that goes owns it; one that is refused
+// leaves it to the capture), so the capture's own post leaves it alone.
+static std::atomic<unsigned> sCaptureWaitedOn{ 0 };
+static const long CaptureHungSeconds = 120;
+
+static long long steadyMs()
+{
+	return (long long) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+static long captureAgeSeconds()
+{
+	return (long) ((steadyMs() - sCaptureStartedMs.load()) / 1000);
+}
 
 FileData::FileData(FileType type, const std::string& path, SystemData* system)
 	: mPath(path), mType(type), mSystem(system), mParent(nullptr), mDisplayName(nullptr), mMetadata(type == GAME ? GAME_METADATA : FOLDER_METADATA) // metadata is REALLY set in the constructor!
@@ -617,7 +672,7 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 		else
 #endif
 #if ROCKNIX
-			command = Utils::String::replace(command, "%NETPLAY%", "--connect " + options.ip + " --port " + std::to_string(options.port) + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname"));
+			command = Utils::String::replace(command, "%NETPLAY%", "--connect " + Utils::String::shellQuote(options.ip) + " --port " + std::to_string(options.port) + " --nick " + Utils::String::shellQuote(SystemConf::getInstance()->get("global.netplay.nickname"))); // fork #275
 #else
 			command = Utils::String::replace(command, "%NETPLAY%", "-netplaymode " + mode + " -netplayport " + std::to_string(options.port) + " -netplayip " + options.ip + session + pass);
 #endif
@@ -630,7 +685,7 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 		else
 #endif
 #if ROCKNIX
-			command = Utils::String::replace(command, "%NETPLAY%", "--host --port " + SystemConf::getInstance()->get("global.netplay.port") + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname"));
+			command = Utils::String::replace(command, "%NETPLAY%", "--host --port " + Utils::String::shellQuote(SystemConf::getInstance()->get("global.netplay.port")) + " --nick " + Utils::String::shellQuote(SystemConf::getInstance()->get("global.netplay.nickname"))); // fork #275
 #else
 			command = Utils::String::replace(command, "%NETPLAY%", "-netplaymode host");
 #endif
@@ -654,6 +709,12 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 
 		command = options.saveStateInfo->setupSaveState(this, command);		
 	}
+
+	// The pair the emulator will actually be handed, read from the finished
+	// command (fork #21 R5): a savestate config's rewrite above and the netplay
+	// client override both diverge from getEmulator()/getCore().
+	options.launchedEmulator = launchArgument(command, "--emulator", emulator);
+	options.launchedCore = launchArgument(command, "--core", core);
 
 	return command;
 }
@@ -696,9 +757,301 @@ std::string FileData::getMessageFromExitCode(int exitCode)
 	return _("UKNOWN ERROR") + " : " + std::to_string(exitCode);
 }
 
+// The launch a STOP IT AND PLAY leads to, on the next frame: the dialog or
+// spinner that asked is off the stack first, and the launch effect and the
+// emulator take the screen from the view, as a press on the game would.
+//
+// A save state chosen in the manager is carried by its file (options.
+// saveStateFile, rememberSaveState) and found again here, when the launch
+// runs: the repository's refresh -- the manager's jobs call it as they land
+// -- deletes every state object, and a launch deferred behind a gate held a
+// copy of the pointer for as long as the gate took (#308 8-es-menus-and-
+// core claude F-ES-11). A state gone by then is not handed over: the game
+// starts as it would with none chosen, and the log says so.
+static void launchNow(Window* window, FileData* game, const LaunchGameOptions& options)
+{
+	window->postToUiThread([game, options]
+	{
+		LaunchGameOptions now = options;
+		if (!now.saveStateFile.empty())
+		{
+			now.saveStateInfo = nullptr;
+			if (SaveStateRepository::isEnabled(game))
+				for (auto* state : game->getSourceFileData()->getSystem()->getSaveStateRepository()->getSaveStates(game))
+					if (state->fileName == now.saveStateFile)
+					{
+						now.saveStateInfo = state;
+						break;
+					}
+			if (now.saveStateInfo == nullptr)
+				LOG(LogWarning) << "launch: the save state chosen before the wait is gone (" << now.saveStateFile << "); the game starts without it";
+		}
+		ViewController::get()->launch(game, now);
+	});
+}
+
+// The save state the launch was handed, by its file, while the pointer is
+// the repository's live object (launchNow finds it again by it). The three
+// shared states -- none, the auto-save, a new game -- are never deleted and
+// need no name.
+static void rememberSaveState(FileData* game, LaunchGameOptions& options)
+{
+	options.saveStateFile.clear();
+	SaveState* state = options.saveStateInfo;
+	if (state == nullptr || !SaveStateRepository::isEnabled(game))
+		return;
+	SaveStateRepository* repo = game->getSourceFileData()->getSystem()->getSaveStateRepository();
+	if (state == SaveStateRepository::getEmptySaveState() || state == repo->getDefaultAutoSaveSaveState() || state == repo->getDefaultNewGameSaveState())
+		return;
+	options.saveStateFile = state->fileName;
+}
+
+// Wait behind a spinner for a sync or transfer that has been told to stop,
+// then launch (D-CLOUD-129). stillRunning is asked every 50 ms; hardStop,
+// when given, is sent once at five seconds for an rclone slow to act on
+// SIGTERM; at twenty the wait gives up and says so -- a run that will not
+// die is not one to start a game over (cancelForLaunch's rule, on a longer
+// leash and behind a spinner rather than a frozen menu).
+static void launchWhenGone(Window* window, FileData* game, const LaunchGameOptions& options,
+	const std::function<bool()>& stillRunning, const std::function<void()>& hardStop)
+{
+	window->pushGui(new GuiLoading<bool>(window, _("STOPPING IT SO YOU CAN PLAY..."),
+		[stillRunning, hardStop](IGuiLoadingHandler*)
+		{
+			const auto started = std::chrono::steady_clock::now();
+			bool hard = false;
+			while (stillRunning())
+			{
+				const long ms = (long) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - started).count();
+				if (ms >= 20000)
+					return false;
+				if (!hard && ms >= 5000 && hardStop != nullptr)
+				{
+					hardStop();
+					hard = true;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			}
+			return true;
+		},
+		[window, game, options](bool gone)
+		{
+			if (!gone)
+			{
+				LOG(LogWarning) << "launch: the sync or transfer did not stop within 20 s; the game was not started";
+				window->pushGui(new GuiMsgBox(window, _("IT DIDN'T STOP IN TIME. TRY AGAIN IN A MOMENT.")));
+				return;
+			}
+			launchNow(window, game, options);
+		}));
+}
+
+// The last game's saves still being recorded (the capture in launchGame, on
+// a thread of its own since fork #290; audit #307 PL-061): true when the
+// launch may go on now. Bookkeeping with no network, so no question
+// (D-UI-095): the launch waits for it. Most captures are done within a
+// moment, and a moment is waited for here, on this thread, so a spinner
+// does not flash (es-ui-style-guide.md, Waiting). A longer one is waited
+// for behind the spinner, bounded.
+//
+// At the bound the launch is refused and says why (audit of the fixes, E2
+// gpt G-E2-03): it used to start anyway, under the capture it was waiting
+// on, and every later launch skipped the same capture -- the overlap the
+// gate exists to prevent, only later. A capture is local hashing of one
+// game's saves and ends in a second or two; one still running after ten
+// is stalled, and the next press waits for it again. Only a capture so old
+// it is hung (CaptureHungSeconds) stops holding the device, with a warning:
+// a player kept from every game for bookkeeping is the worse failure.
+//
+// The exit sync is the gate's to decide while a launch waits (claude
+// G-E2-06): a launch that goes owns it -- the generation moves at the
+// moment it goes, so the capture's post leaves the sync to that game's
+// exit and the player is not asked about a sync that started while they
+// waited -- and a launch refused at the bound leaves it to the capture,
+// whose post runs it when the capture ends. The generation used to move as
+// the spinner went up, before the launch was certain.
+static bool captureGate(Window* window, FileData* game, const LaunchGameOptions& options)
+{
+	const unsigned capturing = sCaptureInFlight.load();
+	if (capturing == 0)
+		return true;
+	if (captureAgeSeconds() >= CaptureHungSeconds)
+	{
+		LOG(LogWarning) << "launch: the last game's capture has run " << captureAgeSeconds() << " s and is taken as hung; the game starts";
+		return true;
+	}
+
+	const auto started = std::chrono::steady_clock::now();
+	while (sCaptureInFlight.load() == capturing && std::chrono::steady_clock::now() - started < std::chrono::milliseconds(300))
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+	if (sCaptureInFlight.load() != capturing)
+	{
+		LOG(LogInfo) << "launch: the last game's saves were recorded first";
+		return true;
+	}
+
+	LOG(LogInfo) << "launch: waiting for the last game's saves to be recorded";
+	sCaptureWaitedOn = capturing;
+	window->pushGui(new GuiLoading<bool>(window, _("RECORDING YOUR LAST GAME'S SAVES..."),
+		[capturing](IGuiLoadingHandler*)
+		{
+			const auto waited = std::chrono::steady_clock::now();
+			while (sCaptureInFlight.load() == capturing)
+			{
+				if (std::chrono::steady_clock::now() - waited >= std::chrono::seconds(10))
+					return false;
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			}
+			return true;
+		},
+		[window, game, options, capturing](bool)
+		{
+			// Decided by the capture itself, not the wait's answer: one that
+			// ended as the bound came has ended.
+			if (sCaptureInFlight.load() == capturing)
+			{
+				sCaptureWaitedOn = 0;
+				LOG(LogWarning) << "launch: the last game's capture did not finish within 10 s; the game was not started";
+				window->pushGui(new GuiMsgBox(window, _("YOUR LAST GAME'S SAVES ARE STILL BEING RECORDED. TRY AGAIN IN A MOMENT.")));
+				return;
+			}
+			++sExitGeneration;
+			sCaptureWaitedOn = 0;
+			launchNow(window, game, options);
+		}));
+	return false;
+}
+
 bool FileData::launchGame(Window* window, LaunchGameOptions options)
 {
 	LOG(LogInfo) << "Attempting to launch game...";
+
+	// PLAY NOW's answer is for the launch it leads to and no other (#308
+	// 8-es-menus-and-core claude F-ES-07): taken here, on the way in,
+	// whether or not the send is still running. It was taken only where the
+	// send was, so a send that ended between the press and the relaunch left
+	// it set, and a later launch over a later send asked nothing. A relaunch
+	// that meets another question first asks the send's again after it.
+	const bool playThroughSend = sPlayThroughSend.exchange(false);
+	rememberSaveState(this, options);
+
+	// Not while saves are moving -- unless the sync is one EmulationStation
+	// started on its own. A cloud sync reads and writes the same save files
+	// the emulator is about to open, and the archive step tars up /storage
+	// while it runs: starting a game in the middle of that can upload a
+	// half-written save or restore over one the game has already loaded.
+	//
+	// The startup sync and the after-a-game sync run without a press. From
+	// #101 (maintainer, 2026-09-09) a launch cancelled them on its own --
+	// picking a game was the choice -- and since 2026-09-16 (D-CLOUD-130)
+	// it asks first, like every other sync: the maintainer met the exit
+	// sync's stop as "it told me it was stopping so I couldn't play" and
+	// wants one behaviour for every sync or transfer a launch would
+	// interrupt. Stopping is safe because the scripts are rclone copy --
+	// each file written under a temporary name and renamed when complete,
+	// nothing deleted -- so a copy cut short leaves no partial file and the
+	// next run finishes it; the wait for the process to be gone is what
+	// keeps a rename from landing after the emulator has the save open.
+	// Before #101 only the network wait could be cancelled (fork #94), and a
+	// transfer that had lost its link was refused for as long as rclone's
+	// own timeouts let it run (#103).
+	//
+	// A sync the player asked for, and a back up, restore or match they
+	// started on the transfer page (fork #187, D-CLOUD-113; while that page
+	// could be left with the run going, before D-UI-078), used to refuse
+	// the launch outright: theirs to wait for.
+	// Maintainer, 2026-09-15, having met the refusal on the RG SP: "We
+	// should say for the user, would you like to cancel and play, or would
+	// you like to stop the sync or continue ... If it shows a modal anyways
+	// when the sync is in progress and someone tries to start the new game,
+	// we might as well give them the option as to whether they'd like to
+	// cancel or keep waiting." So each is a question with two answers
+	// (D-CLOUD-129), and since D-CLOUD-130 the automatic syncs ask the same
+	// question: "If we want consistent behavior on how user-started syncs or
+	// transfers deal with a potential interruption by a game launch, we
+	// should have a consistent behavior."
+	// STOP IT AND PLAY sends the run's process group SIGTERM,
+	// waits behind a spinner for it to be gone -- the automatic sync's wait,
+	// for the same reason: a rename must not land under a game that has the
+	// save open -- and then launches through ViewController, launch effect
+	// and all; KEEP WAITING (B as well) leaves it running. Stopping is safe
+	// for the reason the automatic cancel is: the scripts are rclone copy,
+	// each file renamed into place whole, so the next run finishes what this
+	// one did not, and a match's deletions stop where they are. The run's
+	// outcome reads SKIPPED - YOU STARTED A GAME, as the card's does.
+	//
+	// One question for any sync on the card, whoever started it. STOP IT AND
+	// PLAY cancels it (cancelForLaunch with the player's answer, which sends
+	// the group SIGTERM and waits its two seconds) and launches; a sync slow
+	// to die is waited for behind the spinner rather than refused.
+	if (!captureGate(window, this, options))
+		return false;
+
+	if (ThreadedCloudSync::isRunning())
+	{
+		window->pushGui(new GuiMsgBox(window,
+			_("YOUR SAVES ARE SYNCING WITH THE CLOUD.") + "\n\n" + _("IF YOU STOP IT, THE NEXT SYNC FINISHES WHAT THIS ONE DID NOT."),
+			_("STOP IT AND PLAY"), [this, window, options]
+			{
+				LOG(LogInfo) << "launch: the player chose to stop the sync for a game";
+				ThreadedCloudSync::CancelRefusal again = ThreadedCloudSync::CancelRefusal::Stopping;
+				if (ThreadedCloudSync::cancelForLaunch(&again, true) || !ThreadedCloudSync::isRunning())
+					launchNow(window, this, options);
+				else
+					launchWhenGone(window, this, options, [] { return ThreadedCloudSync::isRunning(); }, nullptr);
+			},
+			_("KEEP WAITING"), nullptr));
+		return false;
+	}
+
+	if (const std::shared_ptr<CloudTransferJob> transfer = CloudTransferJob::current(); transfer != nullptr && !transfer->finished())
+	{
+		window->pushGui(new GuiMsgBox(window,
+			GuiCloudTransfer::stillRunningSentence(transfer) + "\n\n" + _("IF YOU STOP IT, WHAT IT HAS NOT MOVED YET WAITS FOR THE NEXT RUN."),
+			_("STOP IT AND PLAY"), [this, window, options]
+			{
+				LOG(LogInfo) << "launch: the player chose to stop the transfer for a game";
+				CloudTransferJob::stopForLaunch(false);
+				launchWhenGone(window, this, options, [] { return CloudTransferJob::running(); }, [] { CloudTransferJob::stopForLaunch(true); });
+			},
+			_("KEEP WAITING"), nullptr));
+		return false;
+	}
+
+	// The offline achievements' two jobs ask the same question (fork #293,
+	// D-UI-095). The send is the proxy's and cannot be stopped from here,
+	// so its question offers to play through it: PLAY NOW launches at once
+	// and the proxy goes on sending behind the game. The top-up can be
+	// stopped: STOP IT AND PLAY signals the ctl and waits for it to be
+	// gone, and the ctl runs again next time the device is connected. The
+	// safe verb is last in both (D-UI-096).
+	if (ProxyCards::sendRunning() && !playThroughSend)
+	{
+		window->pushGui(new GuiMsgBox(window,
+			_("OFFLINE ACHIEVEMENTS ARE BEING SENT.") + "\n\n" + _("IT'LL BE A MOMENT."),
+			_("PLAY NOW"), [this, window, options]
+			{
+				LOG(LogInfo) << "launch: the player chose to play through the send";
+				sPlayThroughSend = true;
+				launchNow(window, this, options);
+			},
+			_("KEEP WAITING"), nullptr));
+		return false;
+	}
+
+	if (ProxyCards::topUpRunning())
+	{
+		window->pushGui(new GuiMsgBox(window,
+			_("YOUR OFFLINE ACHIEVEMENTS ARE BEING UPDATED.") + "\n\n" + _("IF YOU STOP IT, IT'LL TRY AGAIN NEXT TIME YOU'RE CONNECTED."),
+			_("STOP IT AND PLAY"), [this, window, options]
+			{
+				LOG(LogInfo) << "launch: the player chose to stop the top-up for a game";
+				ProxyCards::stopTopUp();
+				launchWhenGone(window, this, options, [] { return ProxyCards::topUpRunning(); }, nullptr);
+			},
+			_("KEEP WAITING"), nullptr));
+		return false;
+	}
 
 	FileData* gameToUpdate = getSourceFileData();
 	if (gameToUpdate == nullptr)
@@ -725,11 +1078,12 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 
 	time_t tstart = time(NULL);
 
-	LOG(LogInfo) << "	" << command;
+	LOG(LogInfo) << "	" << Utils::String::maskSecrets(command);
 
 	auto p2kConv = convertP2kFile();
 
 	mRunningGame = gameToUpdate;
+	sGamesStarted++;
 
 	// Pause watchers before game launch
 	WatchersManager::pause();
@@ -756,6 +1110,54 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 
 		getSourceFileData()->getSystem()->getSaveStateRepository()->refresh();
 	}
+
+	// Record what this session wrote (fork #21 R5). On every exit: whatever
+	// the exit code, whatever the cloud toggle says, whether or not another
+	// sync holds the lock -- a save written and not recorded is exactly what
+	// the reconciler cannot explain later. Network-free, takes no lock and
+	// spawns no rclone: a handful of stats and at most a few hundred KB of
+	// hashing. It ran here, synchronously, while the window was still down,
+	// and on the RG35XX SP that was three seconds of nothing on screen
+	// between the emulator's exit and the interface's first frame (fork
+	// #290); the command is built here and run below, on the worker that
+	// then starts the exit sync, so it still finishes before the sync
+	// starts and the manifest the push carries is current. The paths are
+	// read here, after onGameEnded above, which renumbers slot files
+	// and restores .state.auto -- the paths only settle there. The emulator
+	// and core are the ones the command carried (launchedEmulator/
+	// launchedCore), never getEmulator()/getCore() re-read now. --started is
+	// tstart: a member with no entry is recorded only if this session wrote
+	// it, so nothing stamps a file it did not write. A system with no
+	// <emulators> element (tools, imageviewer) reaches here with an empty
+	// pair; nothing there writes a save, so there is nothing to record and
+	// no failure to stamp -- an empty --emulator would otherwise be a usage
+	// row in capture-failures on every run of such a system.
+	std::string capture;
+	if (Utils::FileSystem::exists("/usr/bin/cloud_capture") && !options.launchedEmulator.empty())
+	{
+		capture = std::string("/usr/bin/cloud_capture")
+			+ " --system "   + Utils::String::shellQuote(system->getName())
+			+ " --rom "      + Utils::String::shellQuote(gameToUpdate->getPath())
+			+ " --emulator " + Utils::String::shellQuote(options.launchedEmulator)
+			+ " --core "     + Utils::String::shellQuote(options.launchedCore)
+			+ " --started "  + std::to_string(static_cast<long long>(tstart))
+			+ " --exit "     + std::to_string(exitCode);
+	}
+
+	// What the display did with this game's frame, for its captures (fork
+	// #245, D-UI-081): the core's rotation request is in the launch log
+	// only while the log is this session's, so it is read here. Only after a
+	// session that ran: a launch that failed before RetroArch's banner (a
+	// missing core, a bad ROM) exits non-zero, and its log is the previous
+	// game's section or no banner at all -- recordAfterSession then wrote
+	// that game's turn, or 0, as this game's own, from=own-launch (#308
+	// 8-es claude F-ES-08). A crash after a real session keeps the record it
+	// had. CaptureRotation checks the rest: the log's age against the
+	// launch, and no record from a log with no launch in it.
+	if (exitCode == 0)
+		CaptureRotation::recordAfterSession(gameToUpdate, options.launchedEmulator, tstart);
+	else
+		LOG(LogInfo) << "capture rotation: not recorded, the launch exited " << exitCode;
 
 	if (!p2kConv.empty()) // delete .keys file if it has been converted from p2k
 		Utils::FileSystem::removeFile(p2kConv);
@@ -798,6 +1200,106 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	}
 
 	window->reactivateGui();
+
+	// A screenshot taken in this session is in a folder the viewer scanned
+	// at boot. Re-read the folders that changed, once the launch has fully
+	// unwound (#82; the rescan may delete this very FileData when the game
+	// was an image in the viewer).
+	window->postToUiThread([] { SystemData::rescanChangedFolders(); });
+
+	// Sync saves to the cloud, visibly.
+	//
+	// This was an OS event hook -- /usr/bin/scripts/game-end/, run by the
+	// fireEvent above -- which backgrounded cloud_backup with its output sent
+	// to /dev/null. It worked, and no player could ever tell: a silent
+	// background job that a reboot kills looks exactly like one that never
+	// started, and the first question after exiting a game is whether the save
+	// is safe. Running it here puts the answer on the progress card and leaves
+	// the outcome on it, which is what every other cloud operation does.
+	//
+	// It replaces the hook rather than joining it. The hook had no caller but
+	// this line, so there is nothing else to keep working -- and two paths to
+	// one operation is what the cloud menu was just collapsed to avoid.
+	//
+	// Not gated on exitCode: an emulator that crashed may still have written a
+	// save, and that is the copy most worth having.
+	//
+	// --saves-only --recent: the after-every-game job is the saves this
+	// session touched, pushed now. The system-settings archive is the
+	// occasional job and has its own row. Comparing every save on the device
+	// against the cloud was 18 seconds of somebody's time to move nothing,
+	// most of it remote round trips that had nothing to do with the game
+	// just played. With no network, cloud_backup answers
+	// CloudExit::NoNetwork at once rather than waiting for a probe to time
+	// out.
+	//
+	// The capture first, then the sync, both off the interface thread (fork
+	// #290): the window is back and drawing before either starts, where the
+	// capture used to run before the window came back and the RG35XX SP
+	// showed nothing for its three seconds. The sync card is created on the
+	// interface thread, so the worker posts it there once the capture is
+	// done. A game launched and left in between owns the outcome: the loop
+	// that runs posted tasks does not turn while a game runs, so this task
+	// runs only after that game's exit, when that exit's own task is the
+	// one to act -- its --recent run carries this session's saves as well.
+	const bool exitSync = SystemConf::getInstance()->get("cloudsaves.gameexit") == "1"
+		&& Utils::FileSystem::exists("/usr/bin/cloud_backup");
+	const unsigned generation = ++sExitGeneration;
+	if (!capture.empty())
+	{
+		sCaptureStartedMs = steadyMs();
+		sCaptureInFlight = generation;   // before the thread, so a launch on the next frame sees it
+	}
+	std::thread([window, capture, exitSync, generation]
+	{
+		bool captureFailed = false;
+		if (!capture.empty())
+		{
+			const int captureCode = ApiSystem::executeScriptLegacy(capture, nullptr).second;
+			if (captureCode != 0)
+			{
+				LOG(LogWarning) << "cloud_capture exited " << captureCode << " -- see /var/log/cloud_sync.log and /storage/.cache/cloud_sync/capture-failures";
+				captureFailed = true;
+			}
+			// Only this exit's: a later exit's capture owns the slot now.
+			unsigned mine = generation;
+			sCaptureInFlight.compare_exchange_strong(mine, 0);
+		}
+		AppWindow::post(window, [window, exitSync, generation, captureFailed]
+		{
+			// A capture that could not record says so once, as a toast, in
+			// the player's words (fork #293 item 3, D-UI-095): what did not
+			// happen and what is in place. Said before the sync card starts,
+			// so it shows after the card (D-UI-093 puts a toast's words back
+			// on the queue when a card takes the screen). And said whether or
+			// not another game has been launched since: a later game makes
+			// this exit's sync its own, not this capture's failure (#308
+			// 8a-es-app gpt F-ES-05; the check below returned before it).
+			if (captureFailed)
+				window->displayNotificationMessage(_U("\uF0C2  ") + _("COULDN'T RECORD THIS SESSION'S SAVES. THEY'RE STILL ON THIS DEVICE."));
+			if (generation != sExitGeneration.load() || mRunningGame != nullptr)
+			{
+				LOG(LogInfo) << "exit: another game was launched since; its exit syncs";
+				return;
+			}
+			// A launch is waiting on this capture behind the spinner: if it
+			// goes it owns the sync, as above; it can only be refused while
+			// the capture runs, and this capture has ended (captureGate).
+			if (sCaptureWaitedOn.load() == generation)
+			{
+				LOG(LogInfo) << "exit: a launch waited for this capture; its game's exit syncs";
+				return;
+			}
+			if (exitSync && !ThreadedCloudSync::isRunning())
+			{
+				ThreadedCloudSync::start(window, "/usr/bin/cloud_backup --yes --saves-only --recent --automatic",
+					_("SYNC SAVES"), _("SYNCING SAVES TO THE CLOUD"), ThreadedCloudSync::Origin::Exit);
+			}
+			// Nothing else is said at exit (fork #292, D-RA-030): the offline
+			// achievements go up when RetroAchievements answers, with a card
+			// of their own on the link's return (ProxyCards).
+		});
+	}).detach();
 
 	if (system != nullptr && system->getTheme() != nullptr)
 		AudioManager::getInstance()->changePlaylist(system->getTheme(), true);

@@ -38,6 +38,12 @@ public:
 private:
 	// std::string getDefaultSavesPath();
 
+	// A state whose file is gone is not handed out (fork #205, D-UI-073): the
+	// manager's deletions land on a worker, and the page that refreshes this
+	// repository may be gone before one does.
+	static bool onDisk(const SaveState* state);
+	static bool anyOnDisk(const std::vector<SaveState*>& states);
+
 	SystemData* mSystem;
 	std::map<std::string, std::vector<SaveState*>> mStates;
 

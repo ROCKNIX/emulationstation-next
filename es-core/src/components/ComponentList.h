@@ -15,6 +15,15 @@ namespace ComponentListFlags
 		UPDATE_WHEN_SELECTED,
 		UPDATE_NEVER
 	};
+
+	// A row that cannot act yet is dimmed, not hidden (es-ui-style-guide.md):
+	// the theme's colour at this alpha. ComponentList::render sets every
+	// element's colour from the theme every frame, so a dim that is to last
+	// is applied inside the element's own setColor -- MultiLineMenuEntry and
+	// SwitchComponent carry setDimmed for it -- and never once at
+	// construction, which the first frame undoes (fork #182).
+	const unsigned char DIMMED_ALPHA = 0x50;
+	inline unsigned int dimmed(unsigned int color) { return (color & 0xFFFFFF00) | DIMMED_ALPHA; }
 };
 
 struct ComponentListElement

@@ -6,6 +6,8 @@
 #include "Settings.h"
 #include "Sound.h"
 #include "SystemData.h"
+#include "DisplayAspect.h"
+#include "PlatformId.h"
 #include "SystemConf.h"
 #include "guis/GuiMsgBox.h"
 #include "Window.h"
@@ -689,35 +691,49 @@ std::vector<HelpPrompt> ISimpleGameListView::getHelpPrompts()
 	}
 
 	bool invertNorthButton = Settings::getInstance()->getBool("GameOptionsAtNorth");
+	const bool kidMode = UIModeController::getInstance()->isUIModeKid();
+
+	// What the buttons on this page actually do, so the bar promises nothing
+	// else (#210). X opens the game options with GAME OPTIONS AT NORTH on and
+	// the save state manager with it off (the short-press handler above), and
+	// the manager refuses a cursor that has no save states at all
+	// (showSelectedGameSaveSnapshots -> SaveStateRepository::isEnabled). So
+	// SAVE STATES is named only where it can happen: it used to be on the A
+	// prompt of every list -- SCREENSHOTS, TOOLS, an image viewer, a system
+	// with no save state config -- where the hold did nothing and the same
+	// row already said FAVORITE on X because the gate below had refused it.
+	// GAME OPTIONS is named wherever X opens it, which the FAVORITE-only
+	// fallback used to hide on exactly those lists.
+	const bool saveStates = cursorHasSaveStatesEnabled();
 
 	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK"), [&] { goBack(); }));
 
 	if (invertNorthButton)
-		prompts.push_back(HelpPrompt(BUTTON_OK, _("SAVE STATES (HOLD)"), [&] { showSelectedGameSaveSnapshots(); }));
+	{
+		if (saveStates)
+			prompts.push_back(HelpPrompt(BUTTON_OK, _("SAVE STATES (HOLD)"), [&] { showSelectedGameSaveSnapshots(); }));
+	}
 	else 
 		prompts.push_back(HelpPrompt(BUTTON_OK, _("GAME OPTIONS (HOLD)"), [&] { showSelectedGameOptions(); }));
 
-	if (!UIModeController::getInstance()->isUIModeKid())
+	if (!kidMode)
 		prompts.push_back(HelpPrompt("select", _("OPTIONS"), [&] { showGamelistOptions(); }));
 
-	if (cursorHasSaveStatesEnabled())
+	if (invertNorthButton)
 	{
-		if (invertNorthButton)
-		{
-			if (UIModeController::getInstance()->isUIModeKid())
-				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS"), [&] { showSelectedGameOptions(); }));
-			else
-				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameOptions(); }));
-		}
+		if (kidMode)
+			prompts.push_back(HelpPrompt("x", _("GAME OPTIONS"), [&] { showSelectedGameOptions(); }));
 		else
-		{
-			if (UIModeController::getInstance()->isUIModeKid())
-				prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
-			else
-				prompts.push_back(HelpPrompt("x", _("SAVE STATES") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameSaveSnapshots(); }));
-		}
+			prompts.push_back(HelpPrompt("x", _("GAME OPTIONS") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameOptions(); }));
 	}
-	else if (!UIModeController::getInstance()->isUIModeKid())
+	else if (saveStates)
+	{
+		if (kidMode)
+			prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
+		else
+			prompts.push_back(HelpPrompt("x", _("SAVE STATES") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameSaveSnapshots(); }));
+	}
+	else if (!kidMode)
 		prompts.push_back(HelpPrompt("x", _("FAVORITE")));
 
 	prompts.push_back(HelpPrompt("y", _("SEARCH") + std::string("/") + _("RANDOM"), [&] { showQuickSearch(); }));
@@ -735,6 +751,17 @@ void ISimpleGameListView::updateThemeExtrasBindings()
 
 	for (auto extra : mThemeExtras)
 		BindingManager::updateBindings(extra, file);
+
+	// A screenshot under the SCREENSHOTS entry is drawn at the aspect of the
+	// system it was taken in (fork #243, D-UI-080). The picture a theme binds
+	// with {game:image} is an extra of this view, so it is applied here;
+	// the details container does the same for its md_image and its own
+	// extras. A file of any other system resets them.
+	const bool screenshots = system != nullptr && system->hasPlatformId(PlatformIds::IMAGEVIEWER);
+	const DisplayAspect::Transform transform = screenshots ? DisplayAspect::forScreenshot(file) : DisplayAspect::Transform();
+	const std::string imageBound = file->getImagePath();
+	for (auto extra : mThemeExtras)
+		DisplayAspect::applyToBoundImages(extra, imageBound, transform);
 }
 
 bool ISimpleGameListView::onAction(const std::string& action)
@@ -843,7 +870,7 @@ bool ISimpleGameListView::onAction(const std::string& action)
 		{
 			auto path = Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId));
 			if (path != 0)
-				GuiGameAchievements::show(mWindow, path);
+				GuiGameAchievements::show(mWindow, path, game->getMetadata(MetaDataId::CheevosHash));
 		}
 
 		return true;

@@ -6,9 +6,14 @@
 #include "scrapers/Scraper.h"
 #include "EmulationStation.h"
 
-#if defined(SCREENSCRAPER_DEV_LOGIN)
+#if defined(SCREENSCRAPER_DEV_LOGIN) || defined(SCREENSCRAPER_RUNTIME_DEV_LOGIN)
 
 #define VERSIONED_SOFT_NAME std::string(SCREENSCRAPER_SOFTNAME) + " " + static_cast<std::string>(PROGRAM_VERSION_STRING)
+
+// The developer pair every request carries, as the "devid=..&devpassword=.."
+// query fragment. Compiled in when SCREENSCRAPER_DEV_LOGIN is defined; read
+// from settings otherwise. Empty means not entered -- ask before scraping.
+std::string screenScraperDevLogin();
 
 namespace pugi { class xml_document; }
 

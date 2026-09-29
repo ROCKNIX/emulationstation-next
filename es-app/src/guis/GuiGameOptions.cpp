@@ -125,7 +125,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 				mMenu.addWithDescription(_("VIEW THIS GAME'S ACHIEVEMENTS"), msg, nullptr, [window, game, this]
 				{
-					GuiGameAchievements::show(window, Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId)));
+					GuiGameAchievements::show(window, Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId)), game->getMetadata(MetaDataId::CheevosHash));
 					close();
 				}, "", false, true);
 			}
@@ -133,7 +133,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 			{
 				mMenu.addEntry(_("VIEW THIS GAME'S ACHIEVEMENTS"), false, [window, game, this]
 				{
-					GuiGameAchievements::show(window, Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId)));
+					GuiGameAchievements::show(window, Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId)), game->getMetadata(MetaDataId::CheevosHash));
 					close();
 				});
 			}

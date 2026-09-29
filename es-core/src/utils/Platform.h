@@ -66,6 +66,14 @@ namespace Utils
 
 		BatteryInformation queryBatteryInformation();
 
+		// One address on one interface, and whether that interface is a link
+		// of the device's own -- up, with a carrier, not loopback, not
+		// point-to-point -- as against a tunnel such as tailscale0, which
+		// keeps its fixed address whether or not any network carries it
+		// (fork #279). queryIPAddresses() is the physical ones, IPv4 first,
+		// and is what every "is the device connected" question reads.
+		struct InterfaceAddress { std::string address; std::string interface; bool physical; };
+		std::vector<InterfaceAddress> queryInterfaceAddresses();
 		std::vector<std::string> queryIPAddresses();
 		std::string queryIPAddress();
 		std::string getArchString();
@@ -81,6 +89,11 @@ namespace Utils
 		int runSystemCommand(const std::string& cmd_utf8, const std::string& name, Window* window); // run a utf-8 encoded in the shell (requires wstring conversion on Windows)
 		std::string GetEnv(const std::string& var);
 		std::string GetShOutput(const std::string& mStr);
+		// GetShOutput concatenates its input into a single string, dropping the
+		// last character of every chunk it reads -- which is the newline. That is
+		// what its single-line callers want, and useless for a command that emits
+		// one record per line. This returns the lines instead.
+		std::vector<std::string> GetShOutputLines(const std::string& mStr);
 	}
 }
 

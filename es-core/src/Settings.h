@@ -61,6 +61,12 @@ public:
 	void loadFile();
 	bool saveFile();
 
+	// True when this start found es_settings.cfg missing, empty or unparsable
+	// and loaded its last-known-good record (es_settings.cfg.backup) in its
+	// place, writing that back as the live file. main() tells the player once,
+	// after the interface is up (D-CLOUD-079).
+	static bool wasRecovered() { return sRecovered; }
+
 	SettingType getSettingType(const std::string& name);
 	std::vector<std::string> getSettingsNames();
 
@@ -131,6 +137,7 @@ public:
 
 private:
 	static Settings* sInstance;
+	static bool sRecovered;
 
 	Settings();
 

@@ -58,6 +58,9 @@ public:
 
 	Vector2i getCursor();
 	bool moveCursor(Vector2i dir);
+	// Would a press in this direction move the focus? The same search
+	// moveCursor() runs, with nothing moved.
+	bool canMoveCursor(const Vector2i& dir) const;
 	void setCursorTo(Vector2i pos);
 	void setCursorTo(const std::shared_ptr<GuiComponent>& comp);
 	bool isCursorTo(const std::shared_ptr<GuiComponent>& comp);

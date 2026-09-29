@@ -1,4 +1,6 @@
 #include "views/gamelist/GridGameListView.h"
+#include "PlatformId.h"
+#include "DisplayAspect.h"
 
 #include "animations/LambdaAnimation.h"
 #include "views/UIModeController.h"
@@ -32,6 +34,18 @@ GridGameListView::GridGameListView(Window* window, FolderData* root, const std::
 	mGrid.setDefaultZIndex(20);
 	mGrid.setCursorChangedCallback([&](const CursorState& /*state*/) { updateInfoPanel(); });
 	addChild(&mGrid);
+
+	// The SCREENSHOTS system in grid style: each tile is a capture of its
+	// own game, drawn at that game's aspect and turn (fork #243, #245).
+	if (mRoot != nullptr && mRoot->getSystem() != nullptr && mRoot->getSystem()->hasPlatformId(PlatformIds::IMAGEVIEWER))
+	{
+		mGrid.setTileDecorator([](GridTileComponent* tile, FileData* const& file)
+		{
+			const DisplayAspect::Transform t = DisplayAspect::forScreenshot(file);
+			tile->setDisplayAspect(t.aspect);
+			tile->setDisplayRotation(t.turns);
+		});
+	}
 	
 	if (!themeName.empty())
 		setThemeName(themeName);

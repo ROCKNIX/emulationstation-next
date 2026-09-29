@@ -17,17 +17,28 @@
 #define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
 #define IMAGESIZE (Renderer::getScreenHeight() * (48.0 / 720.0))
 #define IMAGESPACER (Renderer::getScreenHeight() * (10.0 / 720.0))
+// Where the completion bar sits when the header lines leave it room: the
+// layout as it has always been at 1280x800, as fractions of the header's
+// text column (the part of the header left of the game image).
+#define PROGRESS_LEFT  0.55f
+#define PROGRESS_WIDTH 0.36f
 
-void GuiGameAchievements::show(Window* window, int gameId)
+void GuiGameAchievements::show(Window* window, int gameId, const std::string& cheevosHash)
 {
 	window->pushGui(new GuiLoading<GameInfoAndUserProgress>(window, _("PLEASE WAIT"),
-		[window, gameId](auto gui)
+		[window, gameId, cheevosHash](auto gui)
 	{
-		return RetroAchievements::getGameInfoAndUserProgress(gameId);
+		return RetroAchievements::getGameInfoAndUserProgress(gameId, "", cheevosHash);
 	},
 		[window](GameInfoAndUserProgress ra)
 	{
-		if (ra.ID == 0 && !ra.Title.empty())
+		// Offline, and the proxy has never cached this game: not an error,
+		// and not an empty page -- the one line that says what makes it
+		// viewable (#180). The row that does it is named as the cards name
+		// theirs (es-player-text.md, Recover).
+		if (ra.NotOnDevice)
+			window->pushGui(new GuiMsgBox(window, _("YOU'RE NOT ONLINE, AND THIS GAME'S ACHIEVEMENTS AREN'T SAVED ON THIS DEVICE YET. SCAN GAMES FOR OFFLINE ACHIEVEMENTS, OR START THE GAME ONCE WHILE YOU'RE CONNECTED."), _("OK")));
+		else if (ra.ID == 0 && !ra.Title.empty())
 			window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + "\r\n" + ra.Title, _("OK")));
 		else if (ra.ID == 0)
 			window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED"), _("OK")));
@@ -58,6 +69,14 @@ public:
 			desc += _U("  \uf091  ") + _("Unlocked on") + ": " + mGameInfo.DateEarnedHardcore + _U(" - ") + _("HARDCORE MODE");
 		else if (!mGameInfo.DateEarned.empty())
 			desc += _U("  \uf091  ") + _("Unlocked on") + ": " + mGameInfo.DateEarned;			
+		// From the device the cache knows the unlock and not its date, and
+		// an award still queued is said so in the words the sync cards use
+		// (D-RA-017: achievements are sent). Appended to the same line, so
+		// the row stays two lines (D-UI-023).
+		else if (mGameInfo.UnlockedOnDevice && mGameInfo.Pending)
+			desc += _U("  \uf091  ") + _("Unlocked - will be sent when you're connected");
+		else if (mGameInfo.UnlockedOnDevice)
+			desc += _U("  \uf091  ") + _("Unlocked");
 
 		mText = std::make_shared<TextComponent>(mWindow, mGameInfo.Title, theme->Text.font, theme->Text.color);
 		mText->setVerticalAlignment(ALIGN_TOP);
@@ -85,7 +104,7 @@ public:
 		mImage->setMaxSize(height - IMAGESPACER, height - IMAGESPACER);
 		mImage->setImage(mGameInfo.getBadgeUrl());
 
-		if (mGameInfo.DateEarnedHardcore.empty() && mGameInfo.DateEarned.empty())
+		if (!mGameInfo.isUnlocked())
 			mImage->setOpacity(120);
 
 		setSize(0, height);
@@ -138,21 +157,33 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 
 	for (auto game : ra.Achievements)
 	{
-		if (!game.DateEarned.empty() || !game.DateEarnedHardcore.empty())
+		if (game.isUnlocked())
 			userPoints += Utils::String::toInteger(game.Points);
 
 		totalPoints += Utils::String::toInteger(game.Points);
 	}
 
+	std::string header;
+
 	if (ra.Achievements.size() == 0)
 		setSubTitle(_("THIS GAME HAS NO ACHIEVEMENTS YET"));
+	else if (ra.FromDevice)
+	{
+		// The proxy is casual-only and its cache holds no hardcore count, so
+		// that line is not made up; its place says where this came from.
+		header = _("Achievements (softcore)") + ": \t" + std::to_string(ra.NumAwardedToUser) + "/" + std::to_string(ra.NumAchievements);
+		header += "\r\n" + _("Points") + ": \t" + std::to_string(userPoints) + "/" + std::to_string(totalPoints);
+		header += "\r\n" + _("YOU'RE OFFLINE. SHOWING YOUR MOST RECENT PROGRESS.");
+
+		setSubTitle(header);
+	}
 	else
 	{
-		auto txt = _("Achievements (softcore)") + ": \t" + std::to_string(ra.NumAwardedToUser) + "/" + std::to_string(ra.NumAchievements);
-		txt += "\r\n" + _("Achievements (hardcore)") + ": \t" + std::to_string(ra.NumAwardedToUserHardcore) + "/" + std::to_string(ra.NumAchievements);
-		txt += "\r\n" + _("Points") + ": \t" + std::to_string(userPoints) + "/" + std::to_string(totalPoints);
+		header = _("Achievements (softcore)") + ": \t" + std::to_string(ra.NumAwardedToUser) + "/" + std::to_string(ra.NumAchievements);
+		header += "\r\n" + _("Achievements (hardcore)") + ": \t" + std::to_string(ra.NumAwardedToUserHardcore) + "/" + std::to_string(ra.NumAchievements);
+		header += "\r\n" + _("Points") + ": \t" + std::to_string(userPoints) + "/" + std::to_string(totalPoints);
 
-		setSubTitle(txt);
+		setSubTitle(header);
 	}
 
 	auto image = std::make_shared<WebImageComponent>(mWindow);
@@ -166,6 +197,9 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 		char trstring[256];
 		snprintf(trstring, 256, _("%d%% complete").c_str(), percent);
 		mProgress = std::make_shared<RetroAchievementProgress>(mWindow, ra.NumAwardedToUser, ra.NumAwardedToUserHardcore, ra.Achievements.size(), Utils::String::trim(trstring));
+		// A row one header line tall: bar and percentage on its one centre
+		// line, not the summary column's bar-over-label stack (fork #193).
+		mProgress->setLabelBeside(true);
 	}
 
 	for (auto game : ra.Achievements)
@@ -179,6 +213,47 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 	}
 
 	centerWindow();	
+
+	// The bar goes beside the header lines where they end before its place,
+	// and under them where they do not (#160: at 640x480 with a larger menu
+	// font the lines ran past it, and the bar and its percentage were drawn
+	// over them). Decided once, here, because the second layout needs the
+	// header one line taller and the header's height is the subtitle's:
+	// an empty fourth line is the bar's row. Measured on the subtitle as
+	// the menu draws it -- its font, its tab stops, its padding -- so a
+	// larger font setting or a longer translation moves the decision, not
+	// the bar over the text.
+	//
+	// The measure is a left-aligned block's right edge, and the menu
+	// left-aligns the header wherever it has a title image (in both menu
+	// modes since #160's second half: under full-screen menus the block
+	// stayed centred, and the bar landed on lines whose measured edge said
+	// there was room). A centred block has no fixed right edge -- it moves
+	// with the column -- so if the header ever comes back centred the bar
+	// takes the row below, the one place it cannot overlap.
+	auto lines = mMenu.getSubTitle();
+	if (mProgress != nullptr && lines != nullptr)
+	{
+		const float textRight = lines->getPosition().x() + lines->getPadding().x()
+			+ lines->getFont()->sizeTabbedText(lines->getText(), lines->getLineSpacing()).x();
+
+		if (lines->getHorizontalAlignment() != ALIGN_LEFT || textRight > headerTextColumn() * PROGRESS_LEFT)
+		{
+			mProgressBelow = true;
+			setSubTitle(header + "\r\n");
+			centerWindow();
+		}
+	}
+}
+
+// The header's text column: what is left of the menu's width once the game
+// image has its share, as MenuComponent::setTitleImage divides it.
+float GuiGameAchievements::headerTextColumn()
+{
+	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+	float iw = mMenu.getTitleHeight() / width;
+
+	return mMenu.getSize().x() - (mMenu.getSize().x() * iw);
 }
 
 void GuiGameAchievements::centerWindow()
@@ -197,24 +272,50 @@ void GuiGameAchievements::render(const Transform4x4f& parentTrans)
 {
 	GuiSettings::render(parentTrans);
 
-	if (mProgress != nullptr)
+	if (mProgress == nullptr)
+		return;
+
+	auto lines = mMenu.getSubTitle();
+	if (lines == nullptr)
+		return;
+
+	// The bar and its percentage share the header line they sit on: the row
+	// is one line tall and the component centres both on half of it (fork
+	// #193). It used to keep the summary page's shape -- the bar in the
+	// upper half of the line, the percentage centred in the lower half -- so
+	// the number sat below and to the right of a bar whose empty part was
+	// not drawn: at 640x480 a 4% bar was a blue dash at the left with "4%
+	// complete" floating under the middle of the row, and the two never
+	// shared a line. The row starts where the text does, its top padding
+	// included, so a line's centre and the row's are the same point.
+	const float lineHeight = lines->getFont()->getHeight(lines->getLineSpacing());
+	const float textTop = lines->getPosition().y() + lines->getPadding().y();
+
+	if (mProgressBelow)
 	{
-		auto theme = ThemeData::getMenuTheme();
+		// Its own row: the empty last line of the header, as wide as the
+		// lines above it and starting where they start -- which for a
+		// centred header is where the widest line starts.
+		const Vector2f text = lines->getFont()->sizeTabbedText(lines->getText(), lines->getLineSpacing());
 
-		float h = theme->TextSmall.font->sizeText("A8O\rA8O", 1.1).y();
-		float sz = mMenu.getHeaderGridHeight() + Renderer::getScreenHeight() * 0.005;
+		float left = lines->getPosition().x() + lines->getPadding().x();
+		if (lines->getHorizontalAlignment() == ALIGN_CENTER)
+			left += (lines->getSize().x() - lines->getPadding().x() - lines->getPadding().z() - text.x()) / 2.0f;
 
-		float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
-		float iw = mMenu.getTitleHeight() / width;
-
-		float xx = mMenu.getSize().x() - (mMenu.getSize().x() * iw);
-
-		mProgress->setPosition(xx * 0.55f, sz);
-		mProgress->setSize(xx * 0.36f, h);
-
-		Transform4x4f trans = parentTrans * mMenu.getTransform();
-		mProgress->render(trans);
+		mProgress->setPosition(left, textTop + text.y() - lineHeight);
+		mProgress->setSize(text.x(), lineHeight);
 	}
+	else
+	{
+		// Beside the first line, on that line's centre.
+		const float column = headerTextColumn();
+
+		mProgress->setPosition(column * PROGRESS_LEFT, textTop);
+		mProgress->setSize(column * PROGRESS_WIDTH, lineHeight);
+	}
+
+	Transform4x4f trans = parentTrans * mMenu.getTransform();
+	mProgress->render(trans);
 }
 
 bool GuiGameAchievements::input(InputConfig* config, Input input)

@@ -202,6 +202,15 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 
 	//set curl to connection timeout
 	err = curl_easy_setopt(mHandle, CURLOPT_CONNECTTIMEOUT_MS, options != nullptr ? options->connectTimeout : 10000L);
+	if (err == CURLE_OK && options != nullptr && options->timeout > 0)
+		err = curl_easy_setopt(mHandle, CURLOPT_TIMEOUT_MS, options->timeout);
+	// A transfer under one byte a second for stallTimeout seconds ends with
+	// CURLE_OPERATION_TIMEDOUT: the bound for a request that may be long but
+	// never silent (ROCKNIX fork #299).
+	if (err == CURLE_OK && options != nullptr && options->stallTimeout > 0)
+		err = curl_easy_setopt(mHandle, CURLOPT_LOW_SPEED_LIMIT, 1L);
+	if (err == CURLE_OK && options != nullptr && options->stallTimeout > 0)
+		err = curl_easy_setopt(mHandle, CURLOPT_LOW_SPEED_TIME, options->stallTimeout);
 	if (err != CURLE_OK)
 	{
 		mStatus = REQ_IO_ERROR;

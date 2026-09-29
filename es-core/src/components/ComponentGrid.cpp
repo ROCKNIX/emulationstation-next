@@ -378,6 +378,41 @@ bool ComponentGrid::moveCursor(Vector2i dir)
 	return false;
 }
 
+// Would a press in this direction move the focus? The linear scan
+// moveCursor() does -- first focusable cell along dir that is not the one
+// under the cursor already -- with nothing moved and nothing signalled.
+//
+// getHelpPrompts() below used to answer that question from the grid's
+// dimensions alone: more than one column means left/right, more than one
+// row means up/down. A grid is routinely larger than the set of cells
+// anybody can reach, so that claim is often false. A GuiMsgBox is a 2x2
+// whose only focusable cell is the button row, and the button row is
+// itself an Nx2 grid whose second row is a two-pixel spacer -- so both
+// grids offered a direction that leads nowhere, and every one-button
+// dialog in the application drew OK CHOOSE CHOOSE (#115).
+//
+// A help prompt is a promise that a key does something. Ask the cursor
+// what the key would do, not the shape of the grid it sits in.
+bool ComponentGrid::canMoveCursor(const Vector2i& dir) const
+{
+	if (dir.x() == 0 && dir.y() == 0)
+		return false;
+
+	const GridEntry* current = getCellAt(mCursor);
+
+	Vector2i cursor = mCursor + dir;
+	while (cursor.x() >= 0 && cursor.y() >= 0 && cursor.x() < mGridSize.x() && cursor.y() < mGridSize.y())
+	{
+		const GridEntry* candidate = getCellAt(cursor);
+		if (candidate && candidate->canFocus && candidate != current)
+			return true;
+
+		cursor += dir;
+	}
+
+	return false;
+}
+
 void ComponentGrid::setCursorTo(Vector2i pos)
 {
 	assert(pos.x() >= 0 && pos.x() < mGridSize.x() && pos.y() >= 0 && pos.y() < mGridSize.y());
@@ -488,8 +523,9 @@ std::vector<HelpPrompt> ComponentGrid::getHelpPrompts()
 	if(e)
 		prompts = e->component->getHelpPrompts();
 	
-	bool canScrollVert = mGridSize.y() > 1;
-	bool canScrollHoriz = mGridSize.x() > 1;
+	// Only a direction that actually leads to another focusable cell.
+	bool canScrollVert = canMoveCursor(Vector2i(0, 1)) || canMoveCursor(Vector2i(0, -1));
+	bool canScrollHoriz = canMoveCursor(Vector2i(1, 0)) || canMoveCursor(Vector2i(-1, 0));
 	for(auto it = prompts.cbegin(); it != prompts.cend(); it++)
 	{
 		if(it->first == "up/down/left/right")

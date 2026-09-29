@@ -1,9 +1,11 @@
 #include "SwitchComponent.h"
 
 #include "resources/Font.h"
+#include "components/ComponentList.h"
 #include "LocaleES.h"
 
-SwitchComponent::SwitchComponent(Window* window, bool state, bool hasAuto, bool autoState) : GuiComponent(window), mImage(window), mState(state), mInitialState(state), mHasAuto(hasAuto), mAutoState(autoState), mInitialAutoState(autoState)
+SwitchComponent::SwitchComponent(Window* window, bool state, bool hasAuto, bool autoState) : GuiComponent(window), mImage(window), mState(state), mInitialState(state), mHasAuto(hasAuto), mAutoState(autoState), mInitialAutoState(autoState),
+	mDimmed(false), mColor(0)
 {
 	float height = Font::get(FONT_SIZE_MEDIUM)->getLetterHeight();
 
@@ -11,8 +13,9 @@ SwitchComponent::SwitchComponent(Window* window, bool state, bool hasAuto, bool 
 	if (menuTheme->Text.font != nullptr)
 		height = menuTheme->Text.font->getHeight(1.1f);
 
+	mColor = menuTheme->Text.color;
 	mImage.setImage(menuTheme->Icons.off);
-	mImage.setColorShift(menuTheme->Text.color);
+	mImage.setColorShift(mColor);
 	mImage.setResize(0, height);
 
 	if (EsLocale::isRTL())
@@ -23,7 +26,14 @@ SwitchComponent::SwitchComponent(Window* window, bool state, bool hasAuto, bool 
 
 void SwitchComponent::setColor(unsigned int color) 
 {
-	mImage.setColorShift(color);
+	mColor = color;
+	mImage.setColorShift(mDimmed ? ComponentListFlags::dimmed(color) : color);
+}
+
+void SwitchComponent::setDimmed(bool dimmed)
+{
+	mDimmed = dimmed;
+	setColor(mColor);
 }
 
 void SwitchComponent::onOpacityChanged()

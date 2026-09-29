@@ -124,6 +124,20 @@ public:
 	void setProperty(const std::string name, const ThemeData::ThemeElement::Property& value) override;
 	void setTargetIsMax() { mTargetIsMax = true; }
 	bool getTargetIsMax() { return mTargetIsMax; }
+	// Draw the picture at this width-to-height instead of the file's own
+	// (0 = the file's). For a screenshot or a save-state thumbnail RetroArch
+	// wrote at the core's native size -- NES 256x240 for a 4:3 picture --
+	// the file's proportions are the pixel grid, not what was on screen
+	// (fork #243, D-UI-080). Every sizing mode respects it; the picture is
+	// scaled, never cropped differently.
+	void setDisplayAspect(float ratio);
+	float getDisplayAspect() const { return mDisplayAspect; }
+	// Quarter turns counter-clockwise the picture is shown at inside its
+	// layout box (fork #245, D-UI-081): a vertical arcade game's capture is
+	// the core's landscape frame, which RetroArch turns for the display and
+	// the capture does not. The texture coordinates turn, the quad stays.
+	void setDisplayRotation(int quarterTurns);
+	int getDisplayRotation() const { return mDisplayRotation; }
 
 	void setSaturation(float saturation);
 	void setCustomShader(const Renderer::ShaderInfo& customShader);
@@ -177,6 +191,8 @@ private:
 	bool mAllowFading;
 
 	std::string mPath;
+	float mDisplayAspect = 0.0f;
+	int mDisplayRotation = 0;
 
 	Alignment mHorizontalAlignment;
 	Alignment mVerticalAlignment;

@@ -292,10 +292,11 @@ void Window::input(InputConfig* config, Input input)
 // Notification messages
 static std::mutex mNotificationMessagesLock;
 
-void Window::displayNotificationMessage(std::string message, int duration)
+// The default duration of a toast, in ms: the "display titles" setting
+// within 2..120 s, else 10 s. Shared by displayNotificationMessage and the
+// re-queue in createAsyncNotificationComponent.
+static int notificationDuration(int duration)
 {
-	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
-
 	if (duration <= 0)
 	{
 		duration = Settings::getInstance()->getInt("audio.display_titles_time");
@@ -304,6 +305,14 @@ void Window::displayNotificationMessage(std::string message, int duration)
 
 		duration *= 1000;
 	}
+	return duration;
+}
+
+void Window::displayNotificationMessage(std::string message, int duration)
+{
+	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
+
+	duration = notificationDuration(duration);
 
 	NotificationMessage msg;
 	msg.first = message;
@@ -317,6 +326,14 @@ void Window::processNotificationMessages()
 	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
 
 	if (mNotificationMessages.empty())
+		return;
+
+	// One floating surface at a time (fork #283, D-UI-093): a toast waits
+	// while a progress card is up -- both sit at the top centre, and the
+	// SENT toast drew over the sync card on a handheld -- and shows once
+	// the card has gone. Nothing is dropped; the order is the order things
+	// happened.
+	if (!mAsyncNotificationComponent.empty())
 		return;
 	
 	NotificationMessage msg = mNotificationMessages.back();
@@ -1130,6 +1147,18 @@ AsyncNotificationComponent* Window::createAsyncNotificationComponent(bool action
 {
 	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
 
+	// The other half of one-surface-at-a-time (fork #283, D-UI-093): a card
+	// created while a toast is up takes the toast's place, and the toast's
+	// words go back on the queue to show after the card -- a toast is short
+	// and the card's run would otherwise pass unseen behind it. The queue is
+	// read from its back, so a toast returned last shows first.
+	if (!mNotificationPopups.empty())
+	{
+		for (auto ip : mNotificationPopups)
+			mNotificationMessages.push_back(NotificationMessage(ip->getMessage(), notificationDuration(-1)));
+		stopNotificationPopups();
+	}
+
 	AsyncNotificationComponent* pc = new AsyncNotificationComponent(this, actionLine);
 	mAsyncNotificationComponent.push_back(pc);
 	
@@ -1150,7 +1179,11 @@ void Window::renderAsyncNotifications(const Transform4x4f& trans)
 	bool first = true;
 	for (auto child : mAsyncNotificationComponent)
 	{		
-		float posX = Renderer::getScreenWidth()*0.99f - child->getSize().x();
+		// Centred, matching GuiInfoPopup -- which is what the app shows
+		// immediately after one of these finishes. At 0.9 of the screen a
+		// card hugging the right edge leaves a sliver of margin on one side
+		// and none of the balance that made a corner placement look chosen.
+		float posX = Renderer::getScreenWidth() * 0.5f - child->getSize().x() * 0.5f;
 
 		float offset = child->getSize().y() + PADDING_H;
 
@@ -1174,8 +1207,12 @@ void Window::renderAsyncNotifications(const Transform4x4f& trans)
 					(int)sz.x() + 2 * PADDING_H, 
 					(int)sz.y() + (first ? posY : 0)));
 			}
-			else 
-				child->setPosition(posX + (child->getSize().x() * (1.0 - fadingOut)), posY, 0);
+			else
+				// Appearing: fade in place. The slide this used to do came
+				// in off the right edge, which only reads as motion for a
+				// card anchored there; from the centre it is a lurch.
+				// AsyncNotificationComponent::update already ramps opacity.
+				child->setPosition(posX, posY, 0);
 		}
 		else 
 			child->setPosition(posX, posY, 0);

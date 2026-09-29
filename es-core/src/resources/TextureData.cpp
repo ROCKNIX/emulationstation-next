@@ -182,6 +182,19 @@ bool TextureData::initSVGFromMemory(const unsigned char* fileData, size_t length
 		return false;
 	}
 
+	if (!mTile)
+	{
+		// Record what was rasterised, not what was asked for. The clamp above can
+		// leave the bitmap smaller than the request, and rasterizeAt decides whether
+		// to re-rasterise by comparing the next request against these two; holding
+		// the pre-clamp size here made a larger request look already satisfied, so a
+		// logo first drawn by a game list header at 157x50 stayed 157x50 when the
+		// system view asked for 384x122, and was GPU-upscaled soft (#181). A tiled
+		// texture keeps the old bookkeeping: its bitmap size is its tile pitch.
+		mScalableMinimumSize = Vector2f((float)width, (float)height);
+		mPhysicalSize = mScalableMinimumSize;
+	}
+
 	unsigned char* dataRGBA = new unsigned char[width * height * 4];
 
 	double scale = ((float)((int)height)) / svgImage->height;
@@ -605,7 +618,20 @@ void TextureData::setMaxSize(const MaxSizeInfo& maxSize)
 		return;
 
 	if (mPhysicalSize.empty())
-		mMaxSize = maxSize;
+	{
+		// Not loaded yet. A shared texture gets here once per consumer, in whatever
+		// order they ask, and the first load honours whatever is left in mMaxSize.
+		// For an SVG that box decides the raster, so a later, smaller consumer must
+		// not shrink it: keep the larger box per axis, and the first raster fits the
+		// largest request while the smaller consumers downsample (#181). Bitmaps and
+		// tiles keep the old replace: a bitmap's box is only a cap, which rasterizeAt
+		// already grows on demand, and a tile's bitmap size is its pitch.
+		if (mMaxSize.empty() || mTile || !Utils::FileSystem::isSVG(mPath))
+			mMaxSize = maxSize;
+		else if (maxSize.x() > mMaxSize.x() || maxSize.y() > mMaxSize.y())
+			mMaxSize = MaxSizeInfo(Math::max(mMaxSize.x(), maxSize.x()), Math::max(mMaxSize.y(), maxSize.y()),
+				mMaxSize.externalZoom() || maxSize.externalZoom());
+	}
 	else
 	{
 		auto imageSize = Vector2i((int)Math::round(mPhysicalSize.x()), Math::round(mPhysicalSize.y()));
@@ -657,6 +683,28 @@ bool TextureData::rasterizeAt(float width, float height)
 
 			mScalableMinimumSize.x() = width;
 			mScalableMinimumSize.y() = height;
+
+			if (!mTile && !mMaxSize.empty() && !mPhysicalSize.empty())
+			{
+				// The reload rasterises at this height and then clamps to mMaxSize,
+				// which still holds the box of whichever consumer loaded the texture
+				// first. Grow it to the request, never shrink it, as the bitmap
+				// branch below already does, so the clamp cannot undo the reload
+				// (#181). The raster takes its width from the source aspect, not
+				// from the request, so make room for that width too: mPhysicalSize
+				// is the last raster, an integer bitmap whose true aspect is within
+				// half a pixel of x/y. Without it a consumer sized freely by the
+				// theme ("size" rather than "maxSize") could see the clamp trim a
+				// pixel and ask again at every layout.
+				float fitW = Math::round(h * (mPhysicalSize.x() + 0.5f) / mPhysicalSize.y()) + 1.0f;
+				float needW = Math::max((float)w, fitW);
+
+				if (mMaxSize.x() < needW || mMaxSize.y() < h)
+				{
+					LOG(LogDebug) << "Growing SVG max size from (" << mMaxSize.x() << ", " << mMaxSize.y() << ") to fit (" << width << ", " << height << ")";
+					mMaxSize = MaxSizeInfo(Math::max(mMaxSize.x(), needW), Math::max(mMaxSize.y(), (float)h), mMaxSize.externalZoom());
+				}
+			}
 
 			if (!isLoaded())
 				return true;

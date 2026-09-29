@@ -46,7 +46,7 @@ namespace Scripting
                 psi.showWindow = false;
                 psi.run();
 
-                LOG(LogDebug) << "  executing: " << command;
+                LOG(LogDebug) << "  executing: " << Utils::String::maskSecrets(command);
 
                 std::this_thread::yield();
             }
@@ -119,14 +119,14 @@ namespace Scripting
         std::string stem = Utils::FileSystem::getStem(script);       
         if ((allowAsync && !Utils::String::endsWith(stem, "-wait")) || (eventName != "quit" && Utils::String::endsWith(stem, "-nowait")))
         {            
-            LOG(LogDebug) << "  queuing: " << command;
+            LOG(LogDebug) << "  queuing: " << Utils::String::maskSecrets(command);
 
             // Start using a thread to avoid lags
             pushCommand(command);
         }
         else
         {
-            LOG(LogDebug) << "  executing: " << command;
+            LOG(LogDebug) << "  executing: " << Utils::String::maskSecrets(command);
 
             ProcessStartInfo psi;
             psi.command = command;

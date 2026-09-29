@@ -1,4 +1,5 @@
 #include "Log.h"
+#include "LogPolicy.h"
 
 #include "utils/FileSystemUtil.h"
 #include "utils/Platform.h"
@@ -131,14 +132,22 @@ private:
 
             drainBuffer();
 
-            if (mEmergency.load(std::memory_order_acquire)) 
-            {
-                mFile.flush();
+            // Every batch reaches the file before the worker sleeps again
+            // (fork #178). It used to be one flush in eight batches, which on
+            // an idle carousel left a line waiting for seven more wakes -- up
+            // to 100 s observed -- and a WARNING, with no second channel,
+            // waiting nowhere else. A flush is one write(2) of the buffered
+            // bytes to /var/log (a bind mount of /storage/.cache/log: page
+            // cache, no fsync), on this thread and never the render thread.
+            // Measured on a GENERIC_X64 guest at Info: about 195 lines in the
+            // first two seconds of boot, then a line every few seconds on the
+            // carousel. The worker coalesces what arrives while it writes, so
+            // flushes a second never exceed wakes a second; a hundred
+            // write(2)s in the busiest second of boot is nothing worth saving.
+            mFile.flush();
+
+            if (mEmergency.load(std::memory_order_acquire))
                 mEmergency.store(false, std::memory_order_release);
-            }
-                        
-            if (++mBatchCount % kFsyncEveryNBatches == 0)
-                mFile.flush();
 
             if (mShutdown) break;
         }
@@ -156,7 +165,7 @@ private:
     {
         mFile << e.msg << '\n';
 
-        if (e.level == LogError || mDebugToStderr) 
+        if (LogPolicy::mirrorToStderr(e.level, mDebugToStderr))
         {
 #if WIN32
             OutputDebugStringA(e.msg.c_str());
@@ -164,21 +173,6 @@ private:
 #else
             std::cerr << e.msg << '\n';
 #endif
-        }
-    }
-
-    static const char* levelTag(LogLevel l) 
-    {
-        switch (l) 
-        {
-        case LogError:   
-            return "ERROR";
-        case LogWarning: 
-            return "WARNING";
-        case LogDebug:   
-            return "DEBUG";
-        default:         
-            return "INFO";
         }
     }
 
@@ -199,9 +193,6 @@ private:
     std::atomic<bool>       mEnabled{ false };
     std::atomic<bool>       mEmergency{ false };
 
-    uint32_t mBatchCount{ 0 };
- 
-    static constexpr uint32_t kFsyncEveryNBatches = 8;
 };
 
 static inline uint64_t getOsThreadId()
@@ -233,13 +224,7 @@ std::ostringstream& Log::stream()
 
     tl_stream << "[" << std::to_string(getOsThreadId()) << "]\t";
 
-    switch (mLevel) 
-    {
-    case LogError:   tl_stream << "ERROR\t";   break;
-    case LogWarning: tl_stream << "WARNING\t"; break;
-    case LogDebug:   tl_stream << "DEBUG\t";   break;
-    default:         tl_stream << "INFO\t";    break;
-    }
+    tl_stream << LogPolicy::levelTag(mLevel) << '\t';
     return tl_stream;
 }
 
@@ -267,13 +252,7 @@ void Log::init()
     }
     else
     {
-        auto level = Settings::getInstance()->getString("LogLevel");
-        if (level == "debug")       lvl = LogDebug;
-        else if (level == "information") lvl = LogInfo;
-        else if (level == "warning")     lvl = LogWarning;
-        else if (level == "error")       lvl = LogError;
-        else if (level.empty())          lvl = LogError;
-        else                             lvl = (LogLevel)-1;  // disabled
+        lvl = (LogLevel) LogPolicy::parseLogLevel(Settings::getInstance()->getString("LogLevel"));
     }
 
     auto base = Paths::getLogPath() + "/es_log";

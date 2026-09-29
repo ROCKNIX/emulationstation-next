@@ -3,7 +3,11 @@
 
 #include "services/HttpServerThread.h"
 #include "guis/GuiDetectDevice.h"
+#include "guis/GuiMenu.h"
 #include "guis/GuiMsgBox.h"
+#include "guis/GuiCloudTransfer.h"
+#include "SystemConf.h"
+#include "guis/GuiSettings.h"
 #include "utils/FileSystemUtil.h"
 #include "views/ViewController.h"
 #include "CollectionSystemManager.h"
@@ -29,10 +33,16 @@
 #include "NetworkThread.h"
 #include "scrapers/ThreadedScraper.h"
 #include "ThreadedHasher.h"
+#include "SaveStateBookkeeper.h"
 #include <FreeImage.h>
 #include "ImageIO.h"
 #include "components/VideoVlcComponent.h"
 #include <csignal>
+#ifdef __GLIBC__
+#include <execinfo.h>
+#include <unistd.h>
+#include <string.h>
+#endif
 #include "InputConfig.h"
 #include "RetroAchievements.h"
 #include "TextToSpeech.h"
@@ -44,6 +54,12 @@
 #include <thread>
 #include "ZaparooSupport.h"
 #include "utils/ThreadPool.h"
+#include "utils/StringUtil.h"
+#include "LaunchCommand.h"
+#include "ThreadedCloudSync.h"
+#include "CloudExit.h"
+#include "JourneyTiers.h"
+#include "AppWindow.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -329,6 +345,9 @@ bool loadSystemConfigFile(Window* window, const char** errorString)
 //called on exit, assuming we get far enough to have the log initialized
 void onExit()
 {
+	// A deletion still on the worker is finished, then the log closes
+	// (D-UI-073, third rule). Idempotent: main's tail has usually done it.
+	SaveStateBookkeeper::shutdown();
 	Log::close();
 }
 
@@ -354,21 +373,75 @@ int setLocale(char * argv1)
 }
 
 
-void signalHandler(int signum) 
+// write(2) only: the one call a handler for a fault may make without
+// asking what the faulting thread was holding.
+static void crashWrite(const char* text)
 {
-	if (signum == SIGSEGV)
-		LOG(LogError) << "Interrupt signal SIGSEGV received.\n";
-	else if (signum == SIGFPE)
-		LOG(LogError) << "Interrupt signal SIGFPE received.\n";
-	else if (signum == SIGFPE)
-		LOG(LogError) << "Interrupt signal SIGFPE received.\n";
-	else
-		LOG(LogError) << "Interrupt signal (" << signum << ") received.\n";
+	(void) !write(STDERR_FILENO, text, strlen(text));
+}
 
-	Log::flush();
+// A fault (SIGSEGV, SIGFPE, SIGILL): say which, print the frames, die of it.
+//
+// Nothing here takes a lock or allocates. The handler used to LOG the
+// signal and flush the log, and Log's mutex is a plain std::mutex -- so a
+// fault raised while a thread was inside Log::write (the logger's own
+// buffer, a bad pointer in a message) deadlocked the handler on the lock
+// that thread still held, and a crash that essway would have restarted in
+// seconds sat as a hang nothing on the device watches (audit #258 PL-003;
+// D-SYS-006 is the watchdog question, still open). The signal's name goes
+// to stderr with write(2), which is the journal on ROCKNIX; the log file
+// says nothing about the fault, and the journal says everything.
+//
+// The frames, to stderr (the journal, where one log line had been the
+// whole record of a crash -- fork #246). glibc's backtrace is not
+// async-signal-safe either; a handler that has already decided the
+// process is done can afford the risk, and a frame list that prints nine
+// times in ten is worth more than a guaranteed silence. The addresses are
+// symbolised on the build host with addr2line against the same build's
+// unstripped binary (.claude/rules/device-builds.md, "Reading a crash").
+//
+// Then die of the signal itself, not of exit(): exit() ran the static
+// destructors on the faulting thread, so the core the kernel kept
+// described the teardown and not the fault, and the exit code hid the
+// signal from systemd. The default action dumps at the fault. Installed
+// with SA_RESETHAND (below), so a second fault inside this handler ends
+// the process by the default action rather than re-entering it.
+void signalHandler(int signum)
+{
+	crashWrite("EmulationStation: fatal signal ");
+	crashWrite(signum == SIGSEGV ? "SIGSEGV" : signum == SIGFPE ? "SIGFPE" : signum == SIGILL ? "SIGILL" : "(other)");
+	crashWrite(" received.\n");
 
-	// cleanup and close up stuff here  
-	exit(signum);
+#ifdef __GLIBC__
+	{
+		void* frames[64];
+		const int count = backtrace(frames, 64);
+		crashWrite("EmulationStation crash backtrace (innermost first; symbolise with addr2line):\n");
+		backtrace_symbols_fd(frames, count, STDERR_FILENO);
+	}
+#endif
+
+	signal(signum, SIG_DFL);
+	raise(signum);
+}
+
+// Ctrl-C is not a fault, and it is not an exit() either. Before #246 every
+// signal ended in exit(signum) from the handler; #246 moved SIGINT onto the
+// fault path with the rest, which dropped the atexit hooks (the save state
+// bookkeeper's join, D-UI-073) without saying so. Putting exit() back was
+// tried first (audit #258 PL-003) and died of SIGSEGV in the teardown on
+// guest d -- exit() from a handler skips the end of main(), so the static
+// destructors met a window and a renderer still in use, which is the very
+// thing #246's comment on the faults describes. So the handler only sets a
+// flag, and the main loop ends the same way a QUIT event ends it: the
+// end of main() runs, the bookkeeper is joined, the log is closed. On a
+// device nothing sends SIGINT -- essway stops the unit with SIGTERM -- so
+// this is the developer's terminal and the harness's kill.
+static volatile sig_atomic_t sInterrupted = 0;
+
+void interruptHandler(int)
+{
+	sInterrupted = 1;
 }
 
 void playVideo()
@@ -445,6 +518,10 @@ void playVideo()
 	window.deinit(true);
 }
 
+// The startup game's capture could not record: said as a toast once the
+// window is up, in the words the exit after any game uses (fork #293).
+static bool sStartupCaptureFailed = false;
+
 void launchStartupGame()
 {
 	auto gamePath = SystemConf::getInstance()->get("global.bootgame.path");
@@ -456,8 +533,161 @@ void launchStartupGame()
 	{
 		InputManager::getInstance()->init();
 		command = Utils::String::replace(command, "%CONTROLLERSCONFIG%", InputManager::getInstance()->configureEmulators());
-		Utils::Platform::ProcessStartInfo(command).run();		
-	}	
+
+		time_t tstart = time(NULL);
+		int exitCode = Utils::Platform::ProcessStartInfo(command).run();
+
+		// A boot-launched session is a game exit too (fork #21 R5), and the
+		// one FileData::launchGame never sees: a save it wrote has no entry
+		// and an mtime below every later session's --started, so unless it is
+		// recorded here nothing ever records it. No system is loaded yet
+		// (loadSystemConfigFile runs later in main), so the stored command is
+		// the only source -- the -P token is the system, --emulator=/--core=
+		// the frozen pair, read the way runemu.sh reads them. A command with
+		// no emulator token has nothing that writes a save (tools), so there
+		// is nothing to record.
+		std::string system = launchToken(command, "-P");
+		std::string emulator = launchArgument(command, "--emulator", "");
+		if (Utils::FileSystem::exists("/usr/bin/cloud_capture") && !system.empty() && !emulator.empty())
+		{
+			std::string capture = std::string("/usr/bin/cloud_capture")
+				+ " --system "   + Utils::String::shellQuote(system)
+				+ " --rom "      + Utils::String::shellQuote(gamePath)
+				+ " --emulator " + Utils::String::shellQuote(emulator)
+				+ " --core "     + Utils::String::shellQuote(launchArgument(command, "--core", ""))
+				+ " --started "  + std::to_string(static_cast<long long>(tstart))
+				+ " --exit "     + std::to_string(exitCode);
+			int captureCode = ApiSystem::executeScriptLegacy(capture, nullptr).second;
+			if (captureCode != 0)
+			{
+				LOG(LogWarning) << "cloud_capture exited " << captureCode << " after the startup game -- see /var/log/cloud_sync.log and /storage/.cache/cloud_sync/capture-failures";
+				// Said once the window exists (fork #293 item 3): this runs
+				// before the window is created.
+				sStartupCaptureFailed = true;
+			}
+		}
+	}
+}
+
+// The startup saves sync (fork #94), run from here so it is seen.
+//
+// It ran from autostart/102-cloud-saves until now: headless, beside
+// EmulationStation's start, writing a log on tmpfs and two stamps and nothing
+// on the screen. Maintainer, 2026-09-09: "How do I know if saves were synced
+// during startup? It doesn't show any foreground identifier, like when you
+// update game lists." The exit sync had a card and an outcome all along
+// (ThreadedCloudSync); this gives the startup one the same card, and moves
+// the run to the only process that can draw it. The autostart keeps the
+// capture pass and drops the sync, so this is the one place it starts.
+//
+// The transfer is the autostart's: restore, then back up, both
+// `copy --update --saves-only`, so the newest copy of every save ends up on
+// both sides and nothing is deleted; both halves run whatever the first
+// did, and the run's status is the first failure. Around it, what the
+// autostart did not do, each because a card and a launch gate now hang on
+// this command where nothing hung on the old one:
+//
+// - No default route, no wait. `ip route show default`, the same test
+//   cloud_backup's check_network_link makes, and exit CloudExit::NoNetwork
+//   at once -- the scripts' own "no network", so the card says SKIPPED -
+//   NO NETWORK CONNECTION within a second and the launch gate is never
+//   held on a device booted offline. The wait is for the other case: a
+//   link that is up while the connection behind it has not settled.
+// - The wait itself is cloud_net_ready's (fork #103): NetworkManager's
+//   `connected`, held for a short grace, rather than the first ping that
+//   gets through -- which on an SDIO Wi-Fi module is seconds after
+//   association and the least stable moment there is (#102). It prints
+//   ">>> doing network" once when it starts waiting, so the card can say
+//   what that time is -- CHECKING THE CONNECTION... when the interface
+//   already has a link, WAITING FOR A NETWORK, UP TO 60 SECONDS... when
+//   it has none (fork #192) -- rather than Working..., and
+//   gives up at 60 s with the no-network code. An image without it falls
+//   back to the route check and probe loop, which prints the same line at
+//   the first failed probe and keeps the same 60 s of wall clock, checked
+//   before each sleep: the autostart's `seq 1 30` was described as a
+//   minute but was not one -- each failed probe is ping's own -W2 plus the
+//   2 s sleep, 4 s, so thirty of them are two minutes, longer when the
+//   resolver, which -W does not bound, hangs on a link with no DNS behind
+//   it. `timeout 4` bounds the probe, the clock bounds the loop.
+//
+// The command runs under setsid with a ">>> pid" first line, which
+// ThreadedCloudSync gives every command (see there). A game launched while
+// this sync runs cancels it in whatever phase it is in, waits for it to be
+// gone, and goes ahead (#101, maintainer's decision, superseding the
+// refusal of D-CLOUD-038/053 and #87 for the syncs EmulationStation starts
+// on its own; FileData::launchGame has the reasoning). Behind it, the
+// scripts' flock answers CloudExit::LockHeld to any second writer.
+static void startStartupSavesSync(Window* window)
+{
+	if (SystemConf::getInstance()->get("cloudsaves.startup") != "1")
+		return;
+	if (!Utils::FileSystem::exists("/storage/.config/rclone/rclone.conf", false)
+		|| !Utils::FileSystem::exists("/usr/bin/cloud_restore")
+		|| !Utils::FileSystem::exists("/usr/bin/cloud_backup"))
+		return;
+
+	// ThreadedCloudSync runs this under setsid and prints the ">>> pid" line
+	// itself, for every command; it used to be done here, for this one.
+	// The early exits are the scripts' own no-network code, spelled from
+	// the constant so this shell cannot drift from what the card reads.
+	//
+	// Whether the network is ready is cloud_net_ready's question (fork
+	// #103). It exits 0 once NetworkManager has reported connected and held
+	// it for a short grace, and prints ">>> doing network" once if it has to
+	// wait -- the line the probe loop printed, so the card and the launch
+	// gate read it unchanged; the card's words for it follow the link the
+	// interface sees (fork #192), and the bound it says is read back out of
+	// the --wait below, so the two cannot drift. The loop it replaces started the sync on the
+	// first ping that got through, which on an SDIO Wi-Fi module is seconds
+	// after association and the least stable moment there is (#102); one
+	// ping is not a settled connection either, only a packet that once made
+	// it. Its exit code passes through: 69 is the no-network sentinel by
+	// contract, at once when there is no default route and at the deadline
+	// when the connection never settled, and anything else is a failure the
+	// card should call one.
+	//
+	// The route check and probe loop stay as the fallback for an image
+	// without cloud_net_ready, so this and the script can ship in either
+	// order.
+	//
+	// Both halves run whatever the first did, and each reports itself to
+	// the card as it ends (">>> tier <label>|<rc>"): a restore that finished
+	// under a backup that did not is reported as COULDN'T FINISH with that
+	// DID NOT FINISH, where the exit code alone read the whole run as
+	// failed (D-UI-028). Each half also announces itself before it starts
+	// (">>> doing receive", ">>> doing send"), which is what gives the card's
+	// bar its two halves and its line the half's name -- RECEIVING, then
+	// SENDING, in front of each compare count -- so the second "113 OF 113"
+	// is visibly a different step from the first (D-UI-052, #157).
+	const std::string noNetwork = std::to_string(CloudExit::NoNetwork);
+	const std::string command =
+		"if [ -x /usr/bin/cloud_net_ready ]; then"
+		" /usr/bin/cloud_net_ready --wait 60; _w=$?; [ \"$_w\" = 0 ] || exit \"$_w\";"
+		" else"
+		" if ! ip -4 route show default 2>/dev/null | grep -q ."
+		" && ! ip -6 route show default 2>/dev/null | grep -q .; then exit " + noNetwork + "; fi;"
+		" _t0=$(date +%s); _up=0; _n=0;"
+		" while :; do"
+		" timeout 4 ping -q -c1 -W2 google.com >/dev/null 2>&1 && _up=1 && break;"
+		" _n=$((_n+1)); [ \"$_n\" = 1 ] && echo \">>> doing network\";"
+		" [ $(( $(date +%s) - _t0 )) -lt 60 ] || break;"
+		" sleep 2;"
+		" done;"
+		" [ \"$_up\" = 1 ] || exit " + noNetwork + ";"
+		" fi;"
+		" echo \">>> doing receive\";"
+		" /usr/bin/cloud_restore --yes --method=copy --update --saves-only --automatic; _r=$?;"
+		" echo \">>> tier RESTORING SAVES|$_r\";"
+		" echo \">>> doing send\";"
+		" /usr/bin/cloud_backup --yes --method=copy --update --saves-only --automatic; _b=$?;"
+		" echo \">>> tier BACKING UP SAVES|$_b\";"
+		" [ \"$_r\" != 0 ] && exit \"$_r\"; exit \"$_b\"";
+
+	// SYNC SAVES is the title the manual sync row already prints when it is
+	// done; the running line says which sync this is, since the player did
+	// not press anything to start it.
+	ThreadedCloudSync::start(window, command, _("SYNC SAVES"), _("SYNCING SAVES AT STARTUP"),
+		ThreadedCloudSync::Origin::Startup);
 }
 
 // #include "utils/MathExpr.h"
@@ -472,10 +702,29 @@ int main(int argc, char* argv[])
 #endif
 
 	// signal(SIGABRT, signalHandler);
-	signal(SIGFPE, signalHandler);
-	signal(SIGILL, signalHandler);
-	signal(SIGINT, signalHandler);
-	signal(SIGSEGV, signalHandler);
+	// The faults through sigaction with SA_RESETHAND: the handler runs once,
+	// and a fault inside it -- a bad frame pointer under backtrace, say --
+	// meets the default action instead of the handler again (#258 PL-003).
+	{
+		struct sigaction fault;
+		memset(&fault, 0, sizeof(fault));
+		fault.sa_handler = signalHandler;
+		sigemptyset(&fault.sa_mask);
+		fault.sa_flags = SA_RESETHAND | SA_NODEFER;
+		sigaction(SIGFPE, &fault, nullptr);
+		sigaction(SIGILL, &fault, nullptr);
+		sigaction(SIGSEGV, &fault, nullptr);
+	}
+	signal(SIGINT, interruptHandler);
+#ifdef __GLIBC__
+	// backtrace() loads libgcc's unwinder on its first call; take that first
+	// call here, while nothing is on fire, so the one in the handler does no
+	// loading in a process that has just faulted (glibc's own advice).
+	{
+		void* warm[2];
+		backtrace(warm, 2);
+	}
+#endif
 	// signal(SIGTERM, signalHandler);
 
 	srand((unsigned int)time(NULL));
@@ -608,6 +857,15 @@ int main(int argc, char* argv[])
 		// we can't handle es_systems.cfg file problems inside ES itself, so display the error message then quit
 		window.pushGui(new GuiMsgBox(&window, errorMsg, _("QUIT"), [] { Utils::Platform::quitES(); }));
 	}
+	else if (!(splashScreen && splashScreenProgress))
+	{
+		// The loader starts the startup indexes -- INDEX NEW GAMES AT STARTUP,
+		// the netplay one -- only when it is handed a window, and it is handed
+		// one only for the splash screen's progress. ROCKNIX starts the
+		// interface with --no-splash, so on its devices the setting never did
+		// anything (fork #183). The window exists either way; start them here.
+		SystemData::startIndexesAtStart(&window);
+	}
 
 	SystemConf* systemConf = SystemConf::getInstance();
 
@@ -671,8 +929,191 @@ int main(int argc, char* argv[])
 		std::remove(markerFile.c_str());
 	}
 
+	// Two one-shot markers can both be waiting after a one-touch restore.
+	// Order matters and is deliberate: a settings restore ships a
+	// sanitized system.cfg with `wifi.key` removed, so it leaves the
+	// device without Wi-Fi - and the journey continuation below downloads
+	// from the cloud. Credentials are therefore pushed LAST so they land
+	// on top and are dealt with first; only then does the player reach
+	// the download prompt, by which time the network is back.
+	//
+	// The marker is backuptool's now: `backuptool restore --then-cloud`
+	// touches it only after its extract has been verified (D-CLOUD-078), where
+	// GuiMenu used to touch it before running the restore -- so a restore
+	// that failed, or never ran, still produced YOUR SETTINGS WERE RESTORED
+	// at the next boot. And it is consumed by the choice, not by the display:
+	// removed on YES as the download starts and on LATER as the player
+	// declines, so a crash or a power cut while the prompt is on screen
+	// leaves it for the next boot rather than losing the continuation.
+	std::string journeyMarker = "/storage/.config/.cloud-journey-pending";
+	bool journeyPending = Utils::FileSystem::exists(journeyMarker);
+	// What else the restore form had ticked (JourneyTiers, audit #307
+	// PL-029): the continuation is built from it, and the prompt names it.
+	// Read uncached, like every file another process leaves. A record with
+	// no marker is a settings restore that failed or never ran, and goes.
+	// A marker with no record is one an earlier build left, and keeps the
+	// continuation and the prompt it always had (D-WORKFLOW-050).
+	const std::string journeyRecord = JourneyTiers::PATH;
+	JourneyTiers::Tiers journeyTiers;
+	if (Utils::FileSystem::exists(journeyRecord, false))
+	{
+		if (journeyPending)
+			journeyTiers = JourneyTiers::parse(Utils::FileSystem::readAllText(journeyRecord));
+		else
+			Utils::FileSystem::removeFile(journeyRecord);
+	}
+	if (journeyPending && journeyTiers.known && !journeyTiers.any())
+	{
+		// Nothing else was ticked: nothing to offer. This build's form asks
+		// for no marker then; one left anyway is consumed here.
+		LOG(LogInfo) << "journey: the marker's record names nothing to restore; consumed";
+		std::remove(journeyMarker.c_str());
+		Utils::FileSystem::removeFile(journeyRecord);
+		journeyPending = false;
+	}
+	if (journeyPending)
+	{
+		std::string question;
+		if (!journeyTiers.known)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nDOWNLOAD YOUR GAMES, BIOS FILES, AND SAVES FROM THE CLOUD NOW?");
+		else if (journeyTiers.saves && journeyTiers.content && journeyTiers.media)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR SAVES, ROMS, BIOS, AND GAME CONTENT FROM THE CLOUD NOW?");
+		else if (journeyTiers.saves && journeyTiers.content)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR SAVES, ROMS, AND BIOS FROM THE CLOUD NOW?");
+		else if (journeyTiers.saves && journeyTiers.media)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR SAVES AND GAME CONTENT FROM THE CLOUD NOW?");
+		else if (journeyTiers.content && journeyTiers.media)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR ROMS, BIOS, AND GAME CONTENT FROM THE CLOUD NOW?");
+		else if (journeyTiers.saves)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR SAVES FROM THE CLOUD NOW?");
+		else if (journeyTiers.content)
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR ROMS AND BIOS FROM THE CLOUD NOW?");
+		else
+			question = _("YOUR SETTINGS WERE RESTORED.\n\nRESTORE YOUR GAME CONTENT FROM THE CLOUD NOW?");
+		window.pushGui(new GuiMsgBox(&window, question, _("YES"),
+			[&window, journeyMarker, journeyRecord, journeyTiers] {
+			std::remove(journeyMarker.c_str());
+			Utils::FileSystem::removeFile(journeyRecord);
+			// The first thing a new device does, on the transfer page every
+			// other cloud run of this size uses (#114). It was a fullscreen
+			// console until now: raw script output, no outcome, and nothing
+			// to press when it went wrong.
+			//
+			// Each part reports itself as it ends and the run's status is
+			// accumulated rather than taken from the last part
+			// (JourneyTiers::command, the restore form's composition): ROMs
+			// that could not be reached used to skip the saves silently, which
+			// on a device with nothing on it is the half that matters most.
+			const std::string cmd = JourneyTiers::command(journeyTiers);
+			// How many items the page counts from before a script says. An
+			// earlier build's continuation: the content script announces how
+			// many systems it has, and the two single-item phases after it --
+			// the saves restore and the settings-archive phase inside the same
+			// script -- are what the count keeps room for. This build's: one
+			// for saves, one per system the picker's selection names.
+			int items = 2, itemsAfterContent = 2;
+			if (journeyTiers.known)
+			{
+				items = journeyTiers.saves ? 1 : 0;
+				itemsAfterContent = 0;
+				if (journeyTiers.content || journeyTiers.media)
+					for (auto& line : Utils::String::split(Utils::FileSystem::readAllText("/storage/.cache/cloud_sync/content-systems"), '\n', true))
+						if (!Utils::String::trim(line).empty())
+							items++;
+			}
+			LOG(LogInfo) << "journey: the continuation starts (" << (journeyTiers.known ? "the ticked tiers" : "an earlier build's marker: everything") << ")";
+			window.pushGui(new GuiCloudTransfer(&window, cmd, _("RESTORING FROM THE CLOUD"), items, itemsAfterContent));
+			}, _("LATER"), [journeyMarker, journeyRecord] {
+			std::remove(journeyMarker.c_str());
+			Utils::FileSystem::removeFile(journeyRecord);
+			}));
+	}
+
+	// Either configuration file was found missing, empty or damaged at this
+	// start and its last-known-good record was loaded and written back in its
+	// place (Settings::loadFile, SystemConf::loadSystemConf; D-CLOUD-079).
+	// Said once, here, where the interface is up to say it: the alternative
+	// was the RG SP's morning -- every setting back at its default and no
+	// word why (fork #102). Pushed before the one-shot prompts above so it
+	// sits under them and is read after they are dealt with.
+	if (Settings::wasRecovered() || SystemConf::wasRecovered())
+		window.pushGui(new GuiMsgBox(&window, _("YOUR SETTINGS FILE WAS DAMAGED. THE LAST GOOD COPY WAS RESTORED."), _("OK")));
+
+	// A settings restore that was cut off -- the power gone while the archive
+	// was being written over the live tree -- was undone at this boot by
+	// chksysconfig from the copy backuptool had taken aside, or could not be;
+	// the marker says which (D-CLOUD-078, KILL18). Consumed on OK, not on
+	// display, so a power cut with the message up leaves it for the next
+	// boot. Read uncached: another process wrote it.
+	const std::string revertedMarker = "/storage/.config/.restore-reverted";
+	if (Utils::FileSystem::exists(revertedMarker, false))
+	{
+		const std::string how = Utils::String::trim(Utils::FileSystem::readAllText(revertedMarker));
+		window.pushGui(new GuiMsgBox(&window, how == "reverted"
+			? _("YOUR SETTINGS RESTORE WAS INTERRUPTED. YOUR PREVIOUS SETTINGS WERE PUT BACK. TRY THE RESTORE AGAIN.")
+			: _("YOUR SETTINGS RESTORE WAS INTERRUPTED AND COULDN'T BE UNDONE. RESTORE YOUR SETTINGS AGAIN."),
+			_("OK"), [revertedMarker] { std::remove(revertedMarker.c_str()); }));
+	}
+
+	// A finished backup restore leaves a one-shot marker (see backuptool).
+	// The page itself clears it on FINISH, not here: consuming it on
+	// display would lose the flow for good if the device crashed or the
+	// player walked away mid-way.
+	if (Utils::FileSystem::exists("/storage/.config/.restore-finish-pending"))
+		GuiMenu::openRestoreRelink(&window, true);
+
+	// A credential can go missing without a marker to say so (#109).
+	//
+	// Settings backups strip secrets on purpose, so a restore leaves the
+	// RetroAchievements username behind with no password and no token.
+	// `backuptool restore` writes the marker above and the page opens; a
+	// restore done by hand over SSH -- which is how the RG SP was put back
+	// together on 2026-09-09 -- writes no marker, and the account was
+	// simply signed out for a day with nothing on any screen saying why.
+	//
+	// So notice the shape instead of waiting to be told about it: a
+	// username with neither a password nor a token is an account that
+	// cannot sign in, whatever lost the credential. The token is what an
+	// earlier sign-in leaves behind, so a device that still has one is
+	// still signed in and is not asked anything.
+	//
+	// Not while the marker's own flow is running -- that page is already
+	// on the stack and covers this and every other credential. Once per
+	// boot by construction: this runs once, and a NOT NOW is answered by
+	// asking again at the next startup, by which time the account is
+	// either back or still signed out.
+	if (!Utils::FileSystem::exists("/storage/.config/.restore-finish-pending")
+		&& !SystemConf::getInstance()->get("global.retroachievements.username").empty()
+		&& SystemConf::getInstance()->get("global.retroachievements.password").empty()
+		&& SystemConf::getInstance()->get("global.retroachievements.token").empty())
+	{
+		LOG(LogInfo) << "retroachievements: username set with no password and no token, offering re-entry";
+		window.pushGui(new GuiMsgBox(&window,
+			_("YOUR RETROACHIEVEMENTS PASSWORD IS MISSING, SO YOU'RE SIGNED OUT.\n\nENTER IT NOW? IF NOT, IT'S IN GAME SETTINGS > RETROACHIEVEMENTS SETTINGS."),
+			_("YES"), [&window] { GuiMenu::openRestoreRelink(&window, false); },
+			_("NOT NOW"), nullptr));
+	}
+
 	// Create a flag in  temporary directory to signal READY state
 	ApiSystem::getInstance()->setReadyFlag();
+
+	// Here and not earlier: this is the point where the interface is up --
+	// the theme is loaded (goToStart), the splash has closed, the one-shot
+	// boot prompts above are on the stack, and the READY flag has just said
+	// so to everything outside. The main loop below draws the card from its
+	// first frame; a start any earlier would put it over the splash, or on
+	// screen before the theme it is styled by had loaded.
+	//
+	// Not after a one-touch restore. The journey prompt above offers
+	// `cloud_content_restore --all && cloud_restore --yes` on this same
+	// boot, and both take the sync lock: a startup sync already holding it
+	// would turn the player's YES into "Another cloud sync is already
+	// running. Skipped." in a console. That restore brings the saves down
+	// anyway, so nothing is lost by sitting this boot out.
+	if (sStartupCaptureFailed)
+		window.displayNotificationMessage(_U("\uF0C2  ") + _("COULDN'T RECORD THIS SESSION'S SAVES. THEY'RE STILL ON THIS DEVICE."));
+	if (!journeyPending)
+		startStartupSavesSync(&window);
 
 	// Play music
 	AudioManager::getInstance()->init();
@@ -715,6 +1156,17 @@ int main(int argc, char* argv[])
 	while(running)
 	{
 		SDL_Event event;
+
+		// SIGINT (interruptHandler): quit through the loop's own end, so
+		// the teardown below runs on this thread (#258 PL-003). The waits
+		// below are bounded (the screensaver's is 100 ms at most), so the
+		// flag is seen promptly.
+		if (sInterrupted)
+		{
+			LOG(LogInfo) << "SIGINT received; quitting";
+			running = false;
+			continue;
+		}
 
 		int screenSaverTimeout = screensaver.getNextUpdateTimeout();
 		bool screenSaverWait = screenSaverTimeout > 0;
@@ -862,12 +1314,18 @@ int main(int argc, char* argv[])
 		Renderer::swapBuffers();		
 	}
 
+	// The loop has ended: a worker that finishes from here on posts to
+	// nothing (AppWindow; #308 8-es claude F-ES-26). Before any teardown, so
+	// no post lands in a window on its way out.
+	AppWindow::closing();
+
 	if (Utils::Platform::isFastShutdown())
 		Settings::getInstance()->setBool("IgnoreGamelist", true);
 
 	WatchersManager::stop();
 	ThreadedHasher::stop();
 	ThreadedScraper::stop();
+	SaveStateBookkeeper::shutdown();
 
 	ApiSystem::getInstance()->deinit();
 

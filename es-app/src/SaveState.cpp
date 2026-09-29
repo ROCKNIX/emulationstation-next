@@ -2,6 +2,7 @@
 #include "SystemData.h"
 #include "FileData.h"
 #include "utils/StringUtil.h"
+#include "utils/CommandLineUtil.h"
 #include "ApiSystem.h"
 #include "FileData.h"
 #include "SaveStateRepository.h"
@@ -38,30 +39,14 @@ std::string SaveState::getScreenShot() const
   return screenshot;
 }
 
+// The option's value swapped in the launch command: the joined
+// "--core=<v>" ROCKNIX passes (runemu.sh:23-26, fork #21) or the legacy
+// "-core <v>", found only as a whole word of the command and never inside
+// a quoted argument such as the ROM's path (#308 F-CS-33). The rule and its
+// cases are Utils::CommandLine's (es-app/tests/unit/CommandLineTests.cpp).
 static std::string _changeCommandlineArgument(const std::string& commandLine, const std::string& parameter, const std::string& value)
 {
-	size_t corePos = commandLine.find(parameter.c_str());
-	if (corePos != std::string::npos) 
-	{
-		corePos += parameter.length();
-
-		while (corePos < commandLine.length() && commandLine[corePos] == ' ')
-			corePos++;
-
-		int count = 0;
-		while (corePos + count < commandLine.length() && commandLine[corePos+ count] != ' ')
-			count++;
-
-		std::string argument = commandLine;
-
-		if (count > 0)
-			argument = argument.erase(corePos, count);
-
-		argument = argument.insert(corePos, value);
-		return argument;
-	}
-
-	return commandLine;
+	return Utils::CommandLine::replaceOptionValue(commandLine, parameter, value);
 }
 
 std::string SaveState::setupSaveState(FileData* game, const std::string& command)
@@ -80,20 +65,6 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 
 	bool supportsIncremental = config != nullptr ? config->incremental : game->getSourceFileData()->getSystem()->getSaveStateRepository()->supportsIncrementalSaveStates();
 
-	// We start games with new slots : If the users saves the game, we don't loose the previous save
-	int nextSlot = SaveStateRepository::getNextFreeSlot(game, this->config);
-
-	if (!isSlotValid())
-	{
-		if (nextSlot > 0 && !SystemConf::getIncrementalSaveStatesUseCurrentSlot() && supportsIncremental)
-		{
-			// We start a game normally but there are saved games : Start game on next free slot to avoid loosing a saved game
-			return cmd + " -state_slot " + std::to_string(nextSlot);
-		}
-
-		return cmd;
-	}
-
 	bool incrementalSaveStates = SystemConf::getIncrementalSaveStates() && /*hasAutosave && */supportsIncremental;
 
 	std::string path = Utils::FileSystem::getParent(fileName);
@@ -101,28 +72,29 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 	if (slot == -1) // Run current AutoSave
 	{
 		if (racommands || fileName.empty())
-			cmd = cmd + " -autosave 1 -state_slot " + std::to_string(nextSlot);
+			cmd = cmd + " -autosave 1 -state_slot " + std::to_string(slot);
 		else
-			cmd = cmd + " -state_slot " + std::to_string(nextSlot) + " -state_file \"" + fileName + "\"";
+			cmd = cmd + " -autosave 1 -state_file \"" + fileName + "\"";
 	}
 	else
 	{
 		if (slot == -2) // Run new game without AutoSave
 		{
-			cmd = cmd + " -autosave 0 -state_slot " + std::to_string(nextSlot);
+			cmd = cmd + " -autosave 0";
 		}
 		else if (incrementalSaveStates)
 		{
 			if (racommands)
 			{
-				cmd = cmd + " -state_slot " + std::to_string(nextSlot); // slot
+				cmd = cmd + " -state_slot " + std::to_string(slot); // slot
 
 				// Run game, and activate AutoSave to load it
 				if (!fileName.empty())
 					cmd = cmd + " -autosave 1";
 			}
 			else
-				cmd = cmd + " -state_slot " + std::to_string(nextSlot) + " -state_file \"" + fileName + "\"";
+			  if (!fileName.empty())
+			    cmd = cmd + " -state_slot " + std::to_string(slot) + " -state_file \"" + fileName + "\"";
 		}
 		else
 		{
@@ -135,7 +107,8 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 					cmd = cmd + " -autosave 1";
 			}
 			else
-				cmd = cmd + " -state_slot " + std::to_string(slot) + " -state_file \"" + fileName + "\"";
+			  if (!fileName.empty())
+			    cmd = cmd + " -state_slot " + std::to_string(slot) + " -state_file \"" + fileName + "\"";
 		}
 
 		if (racommands) 
@@ -163,10 +136,20 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 			{
 				Utils::FileSystem::copyFile(fileName, autoFilename);
 
-				if (incrementalSaveStates && nextSlot >= 0 && slot + 1 != nextSlot)
+				// Copy file to new slot, if the users want to reload the saved game in the slot directly from retroach
+				//
+				// Only when that slot is another file. Batocera's no-next-slot
+				// patch (D-UI-057) changed the target from the next free slot
+				// to the launched one, so this named the launched state
+				// itself: removeFile deleted it and the copy from it then
+				// failed -- the player's state was gone, with only the .auto
+				// copy above left (#308 F-CS-14). With no free-slot target
+				// left there is nothing for it to copy, and onGameEnded's
+				// check below finds no mNewSlotFile.
+				const std::string newSlotFile = makeStateFilename(slot);
+				if (incrementalSaveStates && Utils::FileSystem::getGenericPath(newSlotFile) != Utils::FileSystem::getGenericPath(fileName))
 				{
-					// Copy file to new slot, if the users want to reload the saved game in the slot directly from retroach
-					mNewSlotFile = makeStateFilename(nextSlot);
+					mNewSlotFile = newSlotFile;
 					Utils::FileSystem::removeFile(mNewSlotFile);
 					if (Utils::FileSystem::copyFile(fileName, mNewSlotFile))
 						mNewSlotCheckSum = ApiSystem::getInstance()->getMD5(fileName, false);
@@ -206,8 +189,13 @@ void SaveState::onGameEnded(FileData* game)
 		}
 	}
 
-	if (this->config != nullptr && this->config->incremental)
-		SaveStateRepository::renumberSlots(game, this->config);
+	// No renumbering after a session (D-UI-069, maintainer 2026-09-16): a
+	// slot's number never changes once written. Upstream closes the gaps a
+	// deletion leaves by renaming every slot above it, which the save sync
+	// reads as a deletion plus a new file -- a re-upload, a delete the
+	// player never made, and on a second device a conflict out of nothing.
+	// Gaps stay; the tiles show dates, and RetroArch's auto-increment saves
+	// to the highest slot plus one whatever lies below.
 }
 
 void SaveState::remove() const

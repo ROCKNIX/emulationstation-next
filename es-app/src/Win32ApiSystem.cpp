@@ -313,7 +313,7 @@ int Win32ApiSystem::executeCMD(const char* lpCommandLine, std::string& output, c
 
 bool Win32ApiSystem::executeScript(const std::string command)
 {
-	LOG(LogInfo) << "Running " << command;
+	LOG(LogInfo) << "Running " << Utils::String::maskSecrets(command);
 
 	std::string executable;
 	std::string parameters;
@@ -338,7 +338,7 @@ bool Win32ApiSystem::executeScript(const std::string command)
 }
 
 std::pair<std::string, int> Win32ApiSystem::executeScript(const std::string command, const std::function<void(const std::string)>& func)
-{	LOG(LogInfo) << "Running " << command;
+{	LOG(LogInfo) << "Running " << Utils::String::maskSecrets(command);
 
 	std::string executable;
 	std::string parameters;
@@ -365,7 +365,7 @@ std::pair<std::string, int> Win32ApiSystem::executeScript(const std::string comm
 
 std::vector<std::string> Win32ApiSystem::executeEnumerationScript(const std::string command)
 {
-	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << command;
+	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << Utils::String::maskSecrets(command);
 
 	std::vector<std::string> res;
 

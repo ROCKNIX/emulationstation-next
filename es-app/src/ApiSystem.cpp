@@ -326,20 +326,18 @@ std::pair<std::string, int> ApiSystem::scrape(BusyComponent* ui)
 	return std::pair<std::string, int>(std::string(line), exitCode);
 }
 
-bool ApiSystem::ping() 
+bool ApiSystem::ping()
 {
-    // Google DNS
-    if (!executeScript("ping -c 1 -W 2 -t 255 8.8.8.8"))
-    {
-        // Cloudflare DNS
-        if (!executeScript("ping -c 1 -W 2 -t 255 1.1.1.1"))
-        {
-            // Quad9 DNS
-            return executeScript("ping -c 1 -W 2 -t 255 9.9.9.9");
-        }
-    }
-
-    return true;
+	// Google, Cloudflare and Quad9 DNS, stopping at the first answer as this
+	// always did -- in one shell, inside one time-box. Each ping bounds its
+	// own wait at two seconds, but only while the stack is healthy: a Wi-Fi
+	// driver that has wedged (fork #102) can leave ping sitting in sendto
+	// with nothing to time out, and the three-probe sequence with it. Five
+	// seconds is the whole sequence's budget whatever the kernel is doing.
+	// GNU timeout signals its entire process group when the box closes, so
+	// a ping still running goes with the shell rather than lingering on
+	// the pipe.
+	return executeScript("timeout 5 sh -c 'ping -c 1 -W 2 -t 255 8.8.8.8 || ping -c 1 -W 2 -t 255 1.1.1.1 || ping -c 1 -W 2 -t 255 9.9.9.9' >/dev/null 2>&1");
 }
 
 bool ApiSystem::torrentIsReadyForUpdate() {
@@ -540,6 +538,52 @@ bool ApiSystem::launchKodi(Window *window)
 	return exitCode == 0;
 }
 
+// The cloud sign-in page, which is a separate Wayland client that covers the
+// screen for as long as somebody is signing in.
+//
+// It is a takeover like Kodi or the file manager, and was not treated as one:
+// ES stayed up behind it, still rendering and still reading the gamepad. SDL
+// joystick events are not gated on window focus, so every d-pad press and
+// every A meant for the provider's page also drove the menu underneath.
+// Suspending ES stops that at the source and hands back the memory its
+// renderer and textures were holding, which is the difference between
+// comfortable and marginal when WebKit needs most of a gigabyte.
+//
+// `open` returns once the window is actually up, so the screen is never blank
+// between ES going down and the page appearing. `wait` blocks until the page
+// is gone *and* the gamepad has been released, which is what ES needs before
+// it re-initialises -- SDL re-opens the joystick on init and would otherwise
+// come back with no gamepad at all.
+bool ApiSystem::launchCloudSignIn(Window *window, bool phoneKeyboard)
+{
+	LOG(LogDebug) << "ApiSystem::launchCloudSignIn";
+
+	// --phone tells the window not to raise its own keyboard: somebody who
+	// chose to type on their phone does not want the screen they are reading
+	// the form on covered by a keyboard they did not ask for.
+	const char* open = phoneKeyboard
+		? "/usr/bin/cloud_oauth open --phone" : "/usr/bin/cloud_oauth open";
+	if (system(open) != 0)
+	{
+		LOG(LogWarning) << "cloud sign-in window did not open; staying put";
+		return false;
+	}
+
+	ApiSystem::launchExternalWindow_before(window);
+	int exitCode = system("/usr/bin/cloud_oauth wait");
+	if (WIFEXITED(exitCode))
+		exitCode = WEXITSTATUS(exitCode);
+	ApiSystem::launchExternalWindow_after(window);
+
+	// `wait` returns as soon as the sign-in lands, with the page still up
+	// saying "Finishing up" -- so this rebuild happens behind something
+	// rather than in front of a black screen. Now that we are drawing again,
+	// the page can go.
+	system("/usr/bin/cloud_oauth close");
+
+	return exitCode == 0;
+}
+
 bool ApiSystem::launchFileManager(Window *window) 
 {
 	LOG(LogDebug) << "ApiSystem::launchFileManager";
@@ -562,7 +606,14 @@ bool ApiSystem::enableWifi(std::string ssid, std::string key, std::string countr
 {
 	bool ret;
 
-	ret = executeScript("wifictl enable");
+	// Time-boxed, because both go through nmcli to NetworkManager and the
+	// caller is a menu callback. wifictl connect waits up to 90 s for the
+	// association on a healthy stack and settles ten status polls and two
+	// sleeps before that; with NetworkManager itself unresponsive each
+	// nmcli call has only D-Bus's own timeout, and nothing above added up
+	// to a bound. 150 s covers the healthy worst case with room; enable is
+	// an rfkill call that should take no time at all.
+	ret = executeScript("timeout 30 wifictl enable");
 	if (!ret)
 		return ret;
 	
@@ -570,7 +621,7 @@ bool ApiSystem::enableWifi(std::string ssid, std::string key, std::string countr
 	// passphrase have to be quoted as literals. Double quotes are not enough:
 	// they still let the shell expand $, ` and \, which silently corrupts any
 	// passphrase containing them (and lets a crafted SSID run commands).
-	return executeScript("wifictl connect " + Utils::String::shellQuote(ssid) +
+	return executeScript("timeout 150 wifictl connect " + Utils::String::shellQuote(ssid) +
 			     " " + Utils::String::shellQuote(key) +
 			     " " + Utils::String::shellQuote(country));
 }
@@ -584,7 +635,69 @@ bool ApiSystem::enableWifi(std::string ssid, std::string key)
 
 bool ApiSystem::disableWifi() 
 {
-	return executeScript("wifictl disable");
+	return executeScript("timeout 30 wifictl disable");
+}
+
+// The three below are one nmcli call each, over D-Bus to a NetworkManager
+// that can stop answering (fork #102), so each is time-boxed and read by
+// the word it prints -- a script that printed nothing and exited 0 is not
+// an answer (engineering-practices: guards fail closed). Names go through
+// shellQuote, as enableWifi's do: they are the player's and carry anything.
+
+bool ApiSystem::getCurrentWifiSsid(std::string& ssid)
+{
+	std::vector<std::string> lines;
+	auto result = executeScript("timeout 10 wifictl current", [&lines](const std::string line) { lines.push_back(line); });
+	ssid = WifiText::parseCurrent(lines);
+	// 0 with the SSID, 1 for "joined to none"; anything else (2 when
+	// NetworkManager could not be asked, 124 from timeout) is no answer.
+	if (result.second == 0)
+		return !ssid.empty();
+	ssid.clear();
+	return result.second == 1;
+}
+
+bool ApiSystem::getSavedWifiNetworks(std::vector<WifiText::SavedNetwork>& networks)
+{
+	std::vector<std::string> lines;
+	auto result = executeScript("timeout 15 wifictl saved", [&lines](const std::string line) { lines.push_back(line); });
+	networks = WifiText::parseSaved(lines);
+	if (result.second != 0)
+	{
+		networks.clear();
+		return false;
+	}
+	return true;
+}
+
+// The picker's press on a saved network: its profile, with the key
+// NetworkManager holds, through wifictl join -- bounded past the 90 s
+// association wait the script allows itself, as enableWifi's connect is. The
+// name is the player's and carries anything: shellQuote.
+WifiText::JoinAnswer ApiSystem::joinWifiNetwork(const std::string& name)
+{
+	std::vector<std::string> lines;
+	auto result = executeScript("timeout 120 wifictl join " + Utils::String::shellQuote(name),
+		[&lines](const std::string line) { lines.push_back(line); });
+	WifiText::JoinAnswer answer;
+	answer.code = result.second != 0 ? result.second : WifiText::parseJoin(lines) ? 0 : 1;
+	return answer;
+}
+
+bool ApiSystem::forgetWifiNetwork(const std::string& name, bool& disconnected)
+{
+	disconnected = false;
+	if (name.empty())
+		return false;
+
+	std::vector<std::string> lines;
+	auto result = executeScript("timeout 30 wifictl forget " + Utils::String::shellQuote(name),
+		[&lines](const std::string line) { lines.push_back(line); });
+	const WifiText::ForgetOutcome outcome = WifiText::parseForget(lines);
+	if (result.second != 0 || !outcome.forgotten)
+		return false;
+	disconnected = outcome.disconnected;
+	return true;
 }
 
 std::vector<std::string> ApiSystem::getIpAddresses()
@@ -609,7 +722,11 @@ bool ApiSystem::isWifiAPModeSupported()
 {
 	LOG(LogDebug) << "ApiSystem::isWifiAPModeSupported";
 
-	return executeScript("wifictl has_ap_mode");
+	// Bounded, not asynchronous: NETWORK SETTINGS asks this in its
+	// constructor. It is iwd over D-Bus, after a wait of up to five seconds
+	// for the adapter to appear -- no packets, but a Wi-Fi driver that has
+	// wedged can hold it, and the page should open regardless (fork #103).
+	return executeScript("timeout 10 wifictl has_ap_mode");
 }
 
 std::vector<std::string> ApiSystem::getSavedWifiNetworks() {
@@ -718,14 +835,18 @@ std::vector<std::string> ApiSystem::getSystemInformations()
 	return executeEnumerationScript("rocknix-info --full");
 }
 
-std::vector<BiosSystem> ApiSystem::getBiosInformations(const std::string system) 
+std::vector<BiosSystem> ApiSystem::getBiosInformations(const std::string system, bool all) 
 {
 	std::vector<BiosSystem> res;
 	BiosSystem current;
 	bool isCurrent = false;
 
+	// The default output lists problems only, which is what the launch-time
+	// check wants. --all adds every present file, for the BIOS CHECK page.
 	std::string cmd = "rocknix-systems";
-	if (!system.empty())
+	if (all)
+		cmd += " --all";
+	else if (!system.empty())
 		cmd += " --filter " + system;
 
 	auto systems = executeEnumerationScript(cmd);
@@ -899,7 +1020,9 @@ std::vector<std::string> ApiSystem::getAvailableAudioOutputDevices()
 
 std::vector<std::string> ApiSystem::getAvailableChannels()
 {
-	return executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wifictl channels\"");
+	// `iw list`, an nl80211 query the same constructor makes; bounded for
+	// the same reason as isWifiAPModeSupported.
+	return executeEnumerationScript("timeout 5 /usr/bin/sh -lc \"/usr/bin/wifictl channels\"");
 }
 
 std::vector<std::string> ApiSystem::getAvailableCpuGovernors()
@@ -2064,12 +2187,18 @@ bool ApiSystem::isLEDMonochrome()
 
 std::vector<std::string> ApiSystem::getWifiNetworks(bool scan)
 {
-	return executeEnumerationScript(scan ? "wifictl scanlist" : "wifictl list");
+	// Both are rescans: wifictl list waits for the adapter (up to 5 s), asks
+	// NetworkManager to rescan (-w 15), sleeps, then lists; scanlist adds a
+	// second rescan and sleep in front. The boxes sit past the healthy worst
+	// case so they only ever close on a NetworkManager that has stopped
+	// answering -- where, without them, each nmcli call would wait out
+	// D-Bus on its own and the caller would wait for all of them.
+	return executeEnumerationScript(scan ? "timeout 45 wifictl scanlist" : "timeout 30 wifictl list");
 }
 
 std::vector<std::string> ApiSystem::executeEnumerationScript(const std::string command)
 {
-	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << command;
+	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << Utils::String::maskSecrets(command);
 
 	std::vector<std::string> res;
 
@@ -2099,14 +2228,15 @@ std::vector<std::string> ApiSystem::executeScriptLegacy(const std::string& comma
 
 std::pair<std::string, int> ApiSystem::executeScriptLegacy(const std::string& command, const std::function<void(const std::string)>& func)
 {
-	std::cout << "ApiSystem::executeScriptLegacy -> " << command << std::endl;
-	LOG(LogInfo) << "ApiSystem::executeScriptLegacy -> " << command;
+	const std::string shown = Utils::String::maskSecrets(command);
+	std::cout << "ApiSystem::executeScriptLegacy -> " << shown << std::endl;
+	LOG(LogInfo) << "ApiSystem::executeScriptLegacy -> " << shown;
 
 	FILE *pipe = popen(command.c_str(), "r");
 	if (pipe == NULL)
 	{
-		LOG(LogError) << "Error executing " << command;
-		return std::pair<std::string, int>("Error starting command : " + command, -1);
+		LOG(LogError) << "Error executing " << shown;
+		return std::pair<std::string, int>("Error starting command : " + shown, -1);
 	}
 
 	std::stringstream output_stream;
@@ -2130,16 +2260,20 @@ std::pair<std::string, int> ApiSystem::executeScriptLegacy(const std::string& co
 
 std::pair<std::string, int> ApiSystem::executeScript(const std::string command, const std::function<void(const std::string)>& func)
 {
-	LOG(LogInfo) << "ApiSystem::executeScript -> " << command;
+	const std::string shown = Utils::String::maskSecrets(command);
+	LOG(LogInfo) << "ApiSystem::executeScript -> " << shown;
 
 	FILE *pipe = popen(command.c_str(), "r");
 	if (pipe == NULL)
 	{
-		LOG(LogError) << "Error executing " << command;
-		return std::pair<std::string, int>("Error starting command : " + command, -1);
+		LOG(LogError) << "Error executing " << shown;
+		return std::pair<std::string, int>("Error starting command : " + shown, -1);
 	}
 
-	char line[1024];
+	// Zeroed: the pair's first member is built from this buffer after the
+	// loop, and a command that printed nothing -- wifictl current with no
+	// network joined -- used to hand it back uninitialised.
+	char line[1024] = "";
 	while (fgets(line, 1024, pipe))
 	{
 		strtok(line, "\n");
@@ -2154,12 +2288,13 @@ std::pair<std::string, int> ApiSystem::executeScript(const std::string command, 
 
 bool ApiSystem::executeScript(const std::string command)
 {	
-	LOG(LogInfo) << "Running " << command;
+	const std::string shown = Utils::String::maskSecrets(command);
+	LOG(LogInfo) << "Running " << shown;
 
 	if (system(command.c_str()) == 0)
 		return true;
 	
-	LOG(LogError) << "Error executing " << command;
+	LOG(LogError) << "Error executing " << shown;
 	return false;
 }
 

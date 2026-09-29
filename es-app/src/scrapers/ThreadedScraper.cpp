@@ -1,16 +1,25 @@
 #include "ThreadedScraper.h"
 #include "Window.h"
 #include "FileData.h"
-#include "components/AsyncNotificationComponent.h"
 #include "LocaleES.h"
 #include "guis/GuiMsgBox.h"
 #include "Gamelist.h"
 #include "Log.h"
 
-#define GUIICON _U("\uF03E ")
-
 ThreadedScraper* ThreadedScraper::mInstance = nullptr;
 bool ThreadedScraper::mPaused = false;
+std::mutex ThreadedScraper::sProgressMutex;
+ThreadedScraper::Progress ThreadedScraper::sProgress;
+std::chrono::steady_clock::time_point ThreadedScraper::sStarted;
+
+ThreadedScraper::Progress ThreadedScraper::progress()
+{
+	std::unique_lock<std::mutex> lock(sProgressMutex);
+	Progress p = sProgress;
+	if (p.running && !p.finished)
+		p.elapsedMs = (int) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - sStarted).count();
+	return p;
+}
 
 ThreadedScraper::ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches, int threadCount)
 	: mSearchQueue(searches), mWindow(window)
@@ -22,8 +31,14 @@ ThreadedScraper::ThreadedScraper(Window* window, const std::queue<ScraperSearchP
 
 void ThreadedScraper::Process()
 {
-	mWndNotification = mWindow->createAsyncNotificationComponent();
-	mWndNotification->updateTitle(GUIICON + _("SCRAPING"));
+	{
+		// A fresh run: the page reads this from its first frame.
+		std::unique_lock<std::mutex> lock(sProgressMutex);
+		sProgress = Progress();
+		sProgress.running = true;
+		sProgress.total = mTotal;
+		sStarted = std::chrono::steady_clock::now();
+	}
 
 	for (int i = 0; i < mThreadCount; i++)
 	{
@@ -53,9 +68,6 @@ void ThreadedScraper::ProcessNextGame(ScraperThread* thread)
 
 ThreadedScraper::~ThreadedScraper()
 {
-	mWndNotification->close();
-	mWndNotification = nullptr;
-
 	for (auto scraperThread : mScraperThreads)
 		delete scraperThread;
 
@@ -146,12 +158,20 @@ void ThreadedScraper::processError(int status, const std::string statusString)
 		status == HttpReq::REQ_426_BLACKLISTED || status == HttpReq::REQ_FILESTREAM_ERROR || status == HttpReq::REQ_426_SERVERMAINTENANCE ||
 		status == HttpReq::REQ_403_BADLOGIN || status == HttpReq::REQ_401_FORBIDDEN)
 	{
+		// The whole run is refused: the page's outcome carries the
+		// scraper's words (one surface for one event, es-native-ui.md),
+		// where upstream raised a dialog over its card.
 		mExitCode = ASYNC_ERROR;
-		Window* w = mWindow;
-		mWindow->postToUiThread([statusString, w]() { w->pushGui(new GuiMsgBox(w, _("SCRAPE FAILED") + " : " + statusString)); });
+		std::unique_lock<std::mutex> lock(sProgressMutex);
+		sProgress.failed = true;
+		sProgress.failure = statusString;
 	}
 	else
+	{
 		mErrors.push_back(statusString);
+		std::unique_lock<std::mutex> lock(sProgressMutex);
+		sProgress.errors = (int) mErrors.size();
+	}
 }
 
 void ThreadedScraper::run()
@@ -209,25 +229,32 @@ void ThreadedScraper::run()
 		}
 	}
 	
-	if (mExitCode == ASYNC_DONE)
-		mWindow->displayNotificationMessage(GUIICON + _("SCRAPING FINISHED") + std::string(". ") + _("UPDATE GAMELISTS TO APPLY CHANGES."));
+	{
+		// How it ended, for the page: the elapsed time freezes here.
+		std::unique_lock<std::mutex> lock(sProgressMutex);
+		sProgress.finished = true;
+		sProgress.elapsedMs = (int) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - sStarted).count();
+		LOG(LogInfo) << "ThreadedScraper: finished " << sProgress.done << " of " << sProgress.total
+			<< " (errors " << sProgress.errors << (sProgress.cancelled ? ", cancelled" : "") << (sProgress.failed ? ", failed" : "") << ")";
+	}
 
 	delete this;
 	ThreadedScraper::mInstance = nullptr;
 }
 
+// Called as each game is handed to a thread: the games finished so far are
+// the ones neither queued nor in a thread's hands, and the game named is
+// the one just handed out.
 void ThreadedScraper::updateUI()
 {
-	int remaining = mTotal + 1 - mSearchQueue.size() - mScraperThreads.size();
-	if (remaining < 0)
-		remaining = 0;
+	int done = mTotal - (int) mSearchQueue.size() - (int) mScraperThreads.size();
+	if (done < 0)
+		done = 0;
 
-	std::string idx = std::to_string(remaining) + "/" + std::to_string(mTotal);	
-	int percentDone = remaining * 100 / (mTotal + 1);
-
-	mWndNotification->updateTitle(GUIICON + _("SCRAPING") + " " + idx);
-	mWndNotification->updateText(mCurrentGame);
-	mWndNotification->updatePercent(percentDone);
+	std::unique_lock<std::mutex> lock(sProgressMutex);
+	sProgress.done = done;
+	sProgress.total = mTotal;
+	sProgress.game = mCurrentGame;
 }
 
 void ThreadedScraper::acceptResult(ScraperThread& thread)
@@ -290,12 +317,19 @@ void ThreadedScraper::start(Window* window, const std::queue<ScraperSearchParams
 	}
 }
 
+// The player's CANCEL (D-UI-078): the run's loop ends at its next turn and
+// what was scraped stays scraped. Marked before the loop is told, so run()
+// finds it set however quickly it ends.
 void ThreadedScraper::stop()
 {
 	auto thread = ThreadedScraper::mInstance;
 	if (thread == nullptr)
 		return;
 
+	{
+		std::unique_lock<std::mutex> lock(sProgressMutex);
+		sProgress.cancelled = true;
+	}
 	try
 	{
 		thread->mExitCode = ASYNC_DONE;

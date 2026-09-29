@@ -1,4 +1,5 @@
 #include "views/ViewController.h"
+#include "DisplayAspect.h"
 
 #include "animations/Animation.h"
 #include "animations/LambdaAnimation.h"
@@ -16,6 +17,7 @@
 #include "Log.h"
 #include "Scripting.h"
 #include "Settings.h"
+#include "ThreadedHasher.h"
 #include "SystemData.h"
 #include "Window.h"
 #include "guis/GuiDetectDevice.h"
@@ -34,6 +36,12 @@
 #include "Gamelist.h"
 
 ViewController* ViewController::sInstance = nullptr;
+static bool sConfigurationReplaced = false;
+
+void ViewController::configurationReplaced()
+{
+	sConfigurationReplaced = true;
+}
 
 ViewController* ViewController::get()
 {
@@ -59,6 +67,14 @@ void ViewController::init(Window* window)
 void ViewController::saveState()
 {
 	if (sInstance == nullptr)
+		return;
+
+	// The files on disk are not the ones this process read (a factory reset
+	// removed them, a settings restore replaced them). Settings::loadFile
+	// cannot re-read a file that is gone and leaves the old map standing,
+	// so the saveFile below would write every pre-reset setting back with
+	// LastSystem (#308 8-es claude F-ES-10).
+	if (sConfigurationReplaced)
 		return;
 
 	if (Settings::getInstance()->getString("StartupSystem") != "lastsystem")
@@ -1040,6 +1056,66 @@ void ViewController::reloadSystemListViewTheme(SystemData* system)
 	mSystemListView->reloadTheme(system);
 }
 
+std::string ViewController::dropGameListView(SystemData* system, bool* wasCurrent)
+{
+	if (wasCurrent != nullptr)
+		*wasCurrent = false;
+
+	auto it = mGameListViews.find(system);
+	if (it == mGameListViews.cend())
+		return "";
+
+	IGameListView* view = it->second.get();
+	std::string cursorPath;
+	FileData* cursor = view->getCursor();
+	if (cursor != nullptr && !cursor->isPlaceHolder())
+		cursorPath = cursor->getPath();
+
+	if (mCurrentView != nullptr && mCurrentView.get() == view)
+	{
+		if (wasCurrent != nullptr)
+			*wasCurrent = true;
+		mDropped.position = view->getPosition();
+		mCurrentView->onHide();
+		mCurrentView = nullptr;
+	}
+
+	mGameListViews.erase(it);
+	return cursorPath;
+}
+
+void ViewController::remakeGameListView(SystemData* system, const std::string& cursorPath, bool wasCurrent)
+{
+	system->setUIModeFilters();
+	system->updateDisplayedGameCount();
+
+	std::shared_ptr<IGameListView> newView = getGameListView(system);
+	if (newView == nullptr)
+		return;
+
+	if (!cursorPath.empty())
+	{
+		for (auto file : system->getRootFolder()->getFilesRecursive(GAME, true))
+		{
+			if (file->getPath() == cursorPath)
+			{
+				newView->setCursor(file);
+				break;
+			}
+		}
+	}
+
+	if (wasCurrent)
+	{
+		mCurrentView = newView;
+		mCurrentView->setPosition(mDropped.position);
+		mCurrentView->onShow();
+	}
+
+	if (mCurrentView)
+		updateHelpPrompts();
+}
+
 void ViewController::reloadGameListView(IGameListView* view)
 {
 	if (view == nullptr)
@@ -1389,6 +1465,9 @@ void ViewController::reloadAllGames(Window* window, bool deleteCurrentGui, bool 
 
 	CollectionSystemManager::init(window);		
 	SystemData::loadConfig(window);
+	// The screenshot -> game cache was built from the library just replaced
+	// (DisplayAspect; #308 8-es claude F-ES-15, 8a gpt F-ES-09).
+	DisplayAspect::forgetScreenshots();
 	
 	ViewController::get()->goToSystemView(systemName, true, viewMode);	
 	ViewController::get()->reloadAll(nullptr, false); // Avoid reloading themes a second time
@@ -1404,6 +1483,16 @@ void ViewController::reloadAllGames(Window* window, bool deleteCurrentGui, bool 
 		Settings::setPackGamelists(false);
 		Settings::setBuildMultiDiskContentCache(false);
 	}
+
+	// ROCKNIX fork #299 (D-RA-035): UPDATE GAMELISTS is where new games are
+	// found, so it is where they are indexed for achievements too, as at
+	// startup -- and the index's end runs the offline achievements' full
+	// top-up when it hashed any, its card stacked under this update's. The
+	// start is SystemData::loadConfig's, above, which runs the startup index
+	// whenever it is handed a window (fork #183). A second start here, guarded
+	// only by isRunning(), fired exactly when that one had failed -- offline --
+	// and fetched the hash library again at once: twice the wait on the
+	// LOADING screen and two toasts (fork #300). One attempt per reload.
 }
 
 void ViewController::setActiveView(std::shared_ptr<GuiComponent> view)

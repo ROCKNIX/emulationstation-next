@@ -1,9 +1,11 @@
 #include "DetailedContainer.h"
+#include "DisplayAspect.h"
 
 #include "animations/LambdaAnimation.h"
 #include "views/ViewController.h"
 #include "FileData.h"
 #include "SystemData.h"
+#include "PlatformId.h"
 #include "LocaleES.h"
 #include "LangParser.h"
 #include "SaveStateRepository.h"
@@ -785,6 +787,8 @@ void DetailedContainer::loadThemedExtras(FileData* file)
 		resetThemedExtras();
 }
 
+// Set the display aspect on every image under comp whose path is the
+// file's image (fork #243), and clear it on the others.
 void DetailedContainer::updateControls(FileData* file, bool isClearing, int moveBy, bool isDeactivating)
 {
 	bool state = (file != NULL);
@@ -1049,6 +1053,23 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 
 		for (auto extra : mThemeExtras)
 			BindingManager::updateBindings(extra, file);
+
+		// A screenshot under the SCREENSHOTS entry is drawn at the aspect
+		// of the system it was taken in (fork #243, D-UI-080): RetroArch
+		// wrote it at the core's native size. Only the pictures bound to
+		// this file's image -- the theme's artwork element, the md_image
+		// -- get the aspect; every other image keeps its own, and a file
+		// of any other system resets them.
+		const bool screenshots = file->getSystem() != nullptr && file->getSystem()->hasPlatformId(PlatformIds::IMAGEVIEWER);
+		const DisplayAspect::Transform transform = screenshots ? DisplayAspect::forScreenshot(file) : DisplayAspect::Transform();
+		const std::string imageBound = file->getImagePath();
+		for (auto extra : mThemeExtras)
+			DisplayAspect::applyToBoundImages(extra, imageBound, transform);
+		if (mImage != nullptr)
+		{
+			mImage->setDisplayAspect(transform.aspect);
+			mImage->setDisplayRotation(transform.turns);
+		}
 	}
 
 	if (state && file != nullptr && !isClearing)

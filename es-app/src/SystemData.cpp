@@ -19,7 +19,12 @@
 #include "utils/Randomizer.h"
 #include "views/ViewController.h"
 #include "ThreadedHasher.h"
+#include "scrapers/ThreadedScraper.h"
+#include "FolderMerge.h"
+#include "DisplayAspect.h"
+#include "views/gamelist/IGameListView.h"
 #include <unordered_set>
+#include <chrono>
 #include <algorithm>
 #include <functional>
 #include "SaveStateRepository.h"
@@ -103,6 +108,7 @@ SystemData::SystemData(const SystemMetadata& meta, SystemEnvironmentData* envDat
 		if (!Settings::ParseGamelistOnly())
 		{
 			populateFolder(mRootFolder, fileMap);
+			mFolderScannedAt = Utils::FileSystem::getFileModificationDate(mEnvData->mStartPath).getTime();
 
 			if (!UIModeController::LoadEmptySystems())
 			{
@@ -293,6 +299,222 @@ void SystemData::setIsGameSystemStatus()
 	// if/when there are more in the future, maybe this can be a more complex method, with a proper list
 	// but for now a simple string comparison is more performant
 	mIsGameSystem = (mMetadata.name != "retropie" && mMetadata.name != "retrobat");
+}
+
+// Every collection entry that wraps `game`, taken out while `game` is still
+// alive: an entry reads its source on every call, its path included, so
+// once the source is deleted even finding the entry reads freed memory. As
+// CollectionSystemManager::deleteCollectionFiles does, except that a custom
+// collection is not marked to be saved -- the file left the folder, the
+// player did not delete it, and the collection's own list keeps its path
+// for the day it comes back -- and that an entry whose collection has no
+// view is deleted rather than left behind.
+static void dropCollectionEntries(FileData* game)
+{
+	CollectionSystemManager* manager = CollectionSystemManager::get();
+	if (manager == nullptr)
+		return;
+
+	std::vector<CollectionSystemData> all;
+	for (auto& c : manager->getAutoCollectionSystems())
+		all.push_back(c.second);
+	for (auto& c : manager->getCustomCollectionSystems())
+		all.push_back(c.second);
+
+	const std::string key = game->getFullPath();
+	for (auto& data : all)
+	{
+		if (!data.isPopulated || data.system == nullptr || data.system->getRootFolder() == nullptr)
+			continue;
+
+		FileData* entry = data.system->getRootFolder()->FindByPath(key);
+		if (entry == nullptr)
+			continue;
+
+		SystemData* shownIn = manager->getSystemToView(data.system);
+		std::shared_ptr<IGameListView> view = (shownIn != nullptr && ViewController::get() != nullptr)
+			? ViewController::get()->getGameListView(shownIn, false) : nullptr;
+		if (view != nullptr)
+			view->remove(entry);
+		else
+			delete entry;
+	}
+}
+
+// A folder that changed while EmulationStation was running is not seen
+// until its list is rebuilt, and UPDATE GAMELISTS was the only way: a
+// screenshot taken in a game -- an achievement's or a manual one -- sat
+// in /storage/roms/screenshots invisible to the SCREENSHOTS entry until
+// the whole library was rescanned (maintainer, 2026-09-08, #82). The same
+// for anything a cloud restore brings down.
+//
+// So after a game exits, and after a restore, each system whose folder's
+// modification time moved is re-read from disk. Only systems with no
+// gamelist take part: their list *is* the folder, so re-reading loses
+// nothing. A system with a gamelist keeps its metadata by staying out of
+// this, and is refreshed by UPDATE GAMELISTS as before. The directory's
+// mtime moves only when an entry is added or removed directly in it, so
+// the check is one stat per system and the rescan is rare.
+//
+// Callers post this to the UI thread rather than calling it from inside a
+// launch: the rescan deletes the FileData of files that left the folder,
+// and the game that was just launched may be one of them (an image in the
+// viewer).
+//
+// It deleted all of them, once: clear(), then read the folder again. Every
+// holder of one of those pointers then held freed memory, for files that
+// had not changed at all -- the view (fixed for #246 by dropping it first)
+// and, still, the collections' entries (recently played, favorites, all
+// games, the custom ones), a group system's folder for this system when it
+// is grouped, and the hasher's and scraper's queues (audit #307 PL-014).
+// So the folder is read into a tree of its own and merged (FolderMerge): a
+// file still there keeps its object, and everything holding it stays
+// right; a new file moves in and is indexed; only a file gone from the
+// folder is deleted, after every holder has let go of it -- the path a
+// player deleting a game takes (GuiGameOptions::deleteGame). A merge also
+// keeps what the session wrote into a kept file's metadata and no
+// gamelist holds yet: a system with a gamelist is never re-read here.
+
+void SystemData::rescanIfFolderChanged()
+{
+	if (mRootFolder == nullptr || mIsCollectionSystem || !mIsGameSystem || Settings::ParseGamelistOnly())
+		return;
+	if (Utils::FileSystem::exists(getGamelistPath(false)))
+		return;
+
+	const time_t mtime = Utils::FileSystem::getFileModificationDate(mEnvData->mStartPath).getTime();
+	if (mtime == mFolderScannedAt)
+		return;
+
+	// Not while something else walks these files from a thread of its own
+	// (the index's and the scraper's queues hold FileData*, and a file that
+	// left the folder is deleted here), nor under a running game. The
+	// folder's time is not recorded, so the next exit or restore re-reads it.
+	if (ThreadedHasher::isRunning() || ThreadedScraper::isRunning() || FileData::GetRunningGame() != nullptr)
+	{
+		LOG(LogInfo) << "SystemData::rescanIfFolderChanged: " << getName() << " changed on disk; not re-read while the index, the scraper or a game holds its files";
+		return;
+	}
+
+	LOG(LogInfo) << "SystemData::rescanIfFolderChanged: " << getName() << " changed on disk, re-reading " << mEnvData->mStartPath;
+	mFolderScannedAt = mtime;
+
+	// The views that show these files first, while their cursors are files
+	// that exist: this system's, and its group's when it is grouped, which
+	// shows the same pointers (fork #246). Each is made again below, found by
+	// path. The group's only if it had one: the player may never have opened it.
+	SystemData* group = isGroupChildSystem() ? getParentGroupSystem() : nullptr;
+	std::string cursorPath, groupCursorPath;
+	bool wasCurrent = false, groupWasCurrent = false, groupHadView = false;
+	if (ViewController::get() != nullptr)
+	{
+		cursorPath = ViewController::get()->dropGameListView(this, &wasCurrent);
+		if (group != nullptr && ViewController::get()->getGameListView(group, false) != nullptr)
+		{
+			groupHadView = true;
+			groupCursorPath = ViewController::get()->dropGameListView(group, &groupWasCurrent);
+		}
+	}
+
+	// A group system shows its grouped child's top level through a folder of
+	// its own (createGroupedSystems) holding the same pointers without owning
+	// them; deeper entries are reached through folders both share.
+	FolderData* groupFolder = nullptr;
+	if (group != nullptr && group->getRootFolder() != nullptr)
+		for (auto* child : group->getRootFolder()->getChildren())
+			if (child->getType() == FOLDER && child->getSystem() == this && ((FolderData*)child)->isVirtualStorage())
+			{
+				groupFolder = (FolderData*)child;
+				break;
+			}
+
+	FolderData* fresh = new FolderData(mEnvData->mStartPath, this);
+	std::unordered_map<std::string, FileData*> fileMap;
+	fileMap[mEnvData->mStartPath] = fresh;
+	populateFolder(fresh, fileMap);
+
+	// The merge's view of FileData (FolderMerge). A class local to this
+	// member, so it reaches FolderData's children the way SystemData does.
+	struct Tree
+	{
+		SystemData* system;
+		FolderData* root;
+		FolderData* groupFolder;
+		int vanishedCount;
+		int arrivedCount;
+
+		std::vector<FileData*> children(FileData* folder) { return ((FolderData*)folder)->getChildren(); }
+		std::string key(FileData* n) { return n->getPath(); }
+		bool isFolder(FileData* n) { return n->getType() == FOLDER; }
+		void detach(FileData* folder, FileData* n) { ((FolderData*)folder)->removeChild(n); }
+		void attach(FileData* folder, FileData* n)
+		{
+			((FolderData*)folder)->addChild(n);
+			if (folder == root && groupFolder != nullptr)
+				groupFolder->mChildren.push_back(n);
+		}
+		void vanished(FileData* n)
+		{
+			vanishedCount++;
+			std::vector<FileData*> games;
+			if (n->getType() == GAME)
+				games.push_back(n);
+			else
+				games = ((FolderData*)n)->getFilesRecursive(GAME);
+			for (auto* game : games)
+				dropCollectionEntries(game);
+			if (groupFolder != nullptr && n->getParent() == root)
+			{
+				auto& held = groupFolder->mChildren;
+				held.erase(std::remove(held.begin(), held.end(), n), held.end());
+			}
+			// Out of its folder and the index (~FileData), and a folder's own
+			// files with it (~FolderData).
+			delete n;
+		}
+		void arrived(FileData* n)
+		{
+			arrivedCount++;
+			if (n->getType() == GAME)
+				system->addToIndex(n);
+			else
+				for (auto* game : ((FolderData*)n)->getFilesRecursive(GAME))
+					system->addToIndex(game);
+		}
+	};
+	Tree tree{ this, mRootFolder, groupFolder, 0, 0 };
+	FolderMerge::merge<FileData>(mRootFolder, fresh, tree);
+
+	// What is left in the fresh tree is the twin of a kept file, never
+	// indexed and never shown. The index is set aside while they go, or each
+	// one's destructor would take its twin's count out of it.
+	FileFilterIndex* index = mFilterIndex;
+	mFilterIndex = nullptr;
+	delete fresh;
+	mFilterIndex = index;
+
+	LOG(LogInfo) << "SystemData::rescanIfFolderChanged: " << getName() << " " << tree.vanishedCount << " gone, " << tree.arrivedCount << " new";
+
+	// Which game a screenshot belongs to is cached by content name, misses
+	// included, and built from the library once (DisplayAspect): a library
+	// that changed makes both wrong -- a screenshot looked at before its ROM
+	// arrived kept its file's proportions (#308 8-es claude F-ES-15, 8a gpt
+	// F-ES-09).
+	if (tree.vanishedCount > 0 || tree.arrivedCount > 0)
+		DisplayAspect::forgetScreenshots();
+
+	if (ViewController::get() != nullptr)
+	{
+		ViewController::get()->remakeGameListView(this, cursorPath, wasCurrent);
+		if (groupHadView)
+			ViewController::get()->remakeGameListView(group, groupCursorPath, groupWasCurrent);
+	}
+}
+
+void SystemData::rescanChangedFolders()
+{
+	for (auto* system : sSystemVector)
+		system->rescanIfFolderChanged();
 }
 
 void SystemData::populateFolder(FolderData* folder, std::unordered_map<std::string, FileData*>& fileMap)
@@ -873,6 +1095,45 @@ void SystemData::loadAdditionnalConfig(pugi::xml_node& srcSystems)
 }
 
 //creates systems from information located in a config file
+void SystemData::startIndexesAtStart(Window* window, bool cheevosOnly)
+{
+	if (window == nullptr || ThreadedHasher::isRunning())
+		return;
+
+	// The link-up retry (cheevosOnly, from the network watcher, for as long
+	// as RetroAchievements' hash library has not come this session) at most
+	// once in ten minutes. The hasher fetches the library on this thread, so
+	// each attempt can hold the screen for the fetch's bound -- ten seconds
+	// to connect and thirty of stall with the link gone -- and a Wi-Fi that
+	// comes and goes started one at every return (#308 8-es claude F-ES-09;
+	// es-code-traps.md: moving the fetch off this thread is #300's). The
+	// startup run and UPDATE GAMELISTS are not held back.
+	if (cheevosOnly)
+	{
+		static bool tried = false;
+		static std::chrono::steady_clock::time_point lastTry;
+		const auto now = std::chrono::steady_clock::now();
+		if (tried && now - lastTry < std::chrono::minutes(10))
+		{
+			LOG(LogInfo) << "SystemData::startIndexesAtStart: the link is back; the index tried within ten minutes and waits";
+			return;
+		}
+		tried = true;
+		lastTry = now;
+	}
+
+	int checkIndex = 0;
+
+	if (Settings::CheevosCheckIndexesAtStart())
+		checkIndex |= (int) ThreadedHasher::HASH_CHEEVOS_MD5;
+
+	if (!cheevosOnly && SystemConf::getInstance()->getBool("global.netplay") && Settings::NetPlayCheckIndexesAtStart())
+		checkIndex |= (int) ThreadedHasher::HASH_NETPLAY_CRC;
+
+	if (checkIndex != 0)
+		ThreadedHasher::start(window, (ThreadedHasher::HasherType)checkIndex, false, true);
+}
+
 bool SystemData::loadConfig(Window* window)
 {
 	deleteSystems();
@@ -1037,19 +1298,10 @@ bool SystemData::loadConfig(Window* window)
 		}
 	}
 
-	if (window != nullptr && !ThreadedHasher::isRunning())
-	{
-		int checkIndex = 0;
-
-		if (Settings::CheevosCheckIndexesAtStart())
-			checkIndex |= (int) ThreadedHasher::HASH_CHEEVOS_MD5;
-
-		if (SystemConf::getInstance()->getBool("global.netplay") && Settings::NetPlayCheckIndexesAtStart())
-			checkIndex |= (int) ThreadedHasher::HASH_NETPLAY_CRC;
-
-		if (checkIndex != 0)
-			ThreadedHasher::start(window, (ThreadedHasher::HasherType)checkIndex, false, true);
-	}
+	// With a window (the splash screen's) the startup indexes start here; main
+	// starts them itself when it passed none (fork #183).
+	if (window != nullptr)
+		startIndexesAtStart(window);
 
 	ThemeFileCache::getInstance().clear();
 

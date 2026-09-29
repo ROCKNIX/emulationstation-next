@@ -11,6 +11,7 @@
 #include "guis/GuiMsgBox.h"
 #include "components/SwitchComponent.h"
 #include "components/OptionListComponent.h"
+#include "components/MultiLineMenuEntry.h"
 
 GuiSettings::GuiSettings(Window* window, const std::string& title, bool tabbedUI) : GuiSettings(window, title, "", nullptr, false, tabbedUI) { }
 
@@ -166,6 +167,12 @@ void GuiSettings::addSubMenu(const std::string& label, const std::function<void(
 void GuiSettings::addInputTextConfigRow(const std::string& title, const std::string& settingsID, bool password, bool storeInSettings
 	, const std::function<void(Window*, std::string/*title*/, std::string /*value*/, const std::function<void(std::string)>& onsave)>& customEditor)
 {
+	buildInputTextConfigRow(title, settingsID, password, storeInSettings, customEditor);
+}
+
+void GuiSettings::buildInputTextConfigRow(const std::string& title, const std::string& settingsID, bool password, bool storeInSettings
+	, const std::function<void(Window*, std::string/*title*/, std::string /*value*/, const std::function<void(std::string)>& onsave)>& customEditor)
+{
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;
 	unsigned int color = theme->Text.color;
@@ -198,7 +205,7 @@ void GuiSettings::addInputTextConfigRow(const std::string& title, const std::str
 
 	auto bracket = std::make_shared<ImageComponent>(mWindow);
 	bracket->setImage(theme->Icons.arrow);
-	bracket->setResize(Vector2f(0, lbl->getFont()->getLetterHeight()));
+	bracket->setResize(Vector2f(0, font->getLetterHeight()));
 
 	if (EsLocale::isRTL())
 		bracket->setFlipX(true);

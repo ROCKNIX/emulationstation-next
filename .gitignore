@@ -60,3 +60,6 @@ CPackSourceConfig.cmake
 # backup files
 *.orig
 *.rej
+
+# the unit test binaries build-tests/ holds are built, never tracked (audit #308, F-PB-19)
+build-tests/

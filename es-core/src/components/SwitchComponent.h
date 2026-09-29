@@ -30,7 +30,11 @@ public:
 
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 
-	void setColor(unsigned int color);
+	void setColor(unsigned int color) override;
+	// The same rule as MultiLineMenuEntry::setDimmed: the dim is applied on
+	// every setColor, which ComponentList calls each frame (fork #182).
+	void setDimmed(bool dimmed);
+	bool isDimmed() const { return mDimmed; }
 
 	inline void setOnChangedCallback(const std::function<void()>& callback) {
 		mOnChangedCallback = callback;
@@ -47,6 +51,10 @@ private:
 	bool mInitialAutoState;
 
 	std::function<void()> mOnChangedCallback; 
+
+	bool mDimmed;
+	// The colour the row last gave us, so setDimmed can re-apply it.
+	unsigned int mColor;
 };
 
 #endif // ES_CORE_COMPONENTS_SWITCH_COMPONENT_H

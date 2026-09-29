@@ -1,4 +1,5 @@
 #include "GuiImageViewer.h"
+#include "DisplayAspect.h"
 #include "ThemeData.h"
 
 #include "ApiSystem.h"
@@ -274,6 +275,15 @@ GuiImageViewer::GuiImageViewer(Window* window, bool linearSmooth) :
 	GuiComponent(window), mGrid(window), mPdfThreads(nullptr)
 {
 	g_isGuiImageViewerRunning = true;
+
+	// A screenshot in the viewer's grid is shown as the game was (fork
+	// #243, #245); any other picture keeps its own shape and turn.
+	mGrid.setTileDecorator([](GridTileComponent* tile, const std::string& path)
+	{
+		const DisplayAspect::Transform t = DisplayAspect::forScreenshotPath(path);
+		tile->setDisplayAspect(t.aspect);
+		tile->setDisplayRotation(t.turns);
+	});
 
 	setPosition(0, 0);
 	setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
@@ -664,7 +674,12 @@ void GuiImageViewer::showImage(Window* window, const std::string imagePath, bool
 
 	if (zoomSingleFile)
 	{
-		window->pushGui(new ZoomableImageComponent(window, imagePath));
+		// A screenshot is shown as the game was (fork #243, #245).
+		auto* image = new ZoomableImageComponent(window, imagePath);
+		const DisplayAspect::Transform t = DisplayAspect::forScreenshotPath(imagePath);
+		image->setDisplayAspect(t.aspect);
+		image->setDisplayRotation(t.turns);
+		window->pushGui(image);
 		return;
 	}
 

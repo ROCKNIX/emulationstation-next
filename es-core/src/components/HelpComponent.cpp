@@ -121,9 +121,17 @@ void HelpComponent::updateGrid()
 
 		auto lbl = std::make_shared<TextComponent>(mWindow, text, font, mStyle.textColor);
 		
-		width += icon->getSize().x() + lbl->getSize().x() + ICON_TEXT_SPACING + ENTRY_SPACING;
-		if (width >= maxWidth)
+		// Measure the candidate, then keep it only if it fits. The width used
+		// to grow before the test, so the entry that did not fit stayed in the
+		// total, the grid was sized to a box wider than what it draws, and with
+		// origin 0.5 the prompts sat left of centre by half the dropped entry
+		// -- 138 px on a 640x480 French game list, where the sixth prompt also
+		// vanished without a word (#210).
+		const float entryWidth = icon->getSize().x() + lbl->getSize().x() + ICON_TEXT_SPACING + ENTRY_SPACING;
+		if (width + entryWidth >= maxWidth)
 			break;
+
+		width += entryWidth;
 
 		if (mStyle.glowSize)
 		{
@@ -135,17 +143,27 @@ void HelpComponent::updateGrid()
 		items.push_back({ icon, lbl });
 	}
 
+	// The box is what the row draws, so the trailing spacer of the last entry
+	// is not part of it either: inside the size it shifted every prompt left
+	// of centre by half a spacer, on every screen and every page (#210).
+	float rowWidth = width;
+	if (!items.empty())
+		rowWidth -= ENTRY_SPACING;
+	if (rowWidth < 1.0f)
+		rowWidth = 1.0f;
+
 	mGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(items.size() * 4, 1));
-	mGrid->setSize(width, height);
+	mGrid->setSize(rowWidth, height);
 	for (unsigned int i = 0; i < items.size(); i++)
 	{
 		auto item = items.at(i);
+		const bool isLast = (i + 1 == items.size());
 
 		const int col = i * 4;
-		mGrid->setColWidthPerc(col, item.first->getSize().x() / width);
-		mGrid->setColWidthPerc(col + 1, ICON_TEXT_SPACING / width);
-		mGrid->setColWidthPerc(col + 2, item.second->getSize().x() / width);
-		mGrid->setColWidthPerc(col + 3, ENTRY_SPACING / width);
+		mGrid->setColWidthPerc(col, item.first->getSize().x() / rowWidth);
+		mGrid->setColWidthPerc(col + 1, ICON_TEXT_SPACING / rowWidth);
+		mGrid->setColWidthPerc(col + 2, item.second->getSize().x() / rowWidth);
+		mGrid->setColWidthPerc(col + 3, isLast ? 0.0f : ENTRY_SPACING / rowWidth);
 
 		mGrid->setEntry(item.first, Vector2i(col, 0), false, false);
 		mGrid->setEntry(item.second, Vector2i(col + 2, 0), false, false);

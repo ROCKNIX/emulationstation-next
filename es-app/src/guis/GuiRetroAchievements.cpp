@@ -12,6 +12,7 @@
 #include "SystemData.h"
 #include "FileData.h"
 #include "views/ViewController.h"
+#include "utils/HtmlColor.h"
 
 #include <string>
 #include "LocaleES.h"
@@ -19,7 +20,15 @@
 #define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
 #define IMAGESIZE (Renderer::getScreenHeight() * (48.0 / 720.0))
 #define IMAGESPACER (Renderer::getScreenHeight() * (10.0 / 720.0))
+// The bar's thickness on any panel, and the gap between it and a label
+// beside it: fractions of the screen, as everything on these pages is.
 #define PROGRESSHEIGHT (Renderer::getScreenHeight() * 0.008f)
+#define PROGRESSGAP (Renderer::getScreenHeight() * (10.0f / 720.0f))
+// How much of the text colour the empty part of the bar shows. It was black
+// at alpha 0x32, which on the shipped theme's near-black panel is not there
+// at all: a 4% bar was a blue dash with nothing to say what it was 4% of
+// (fork #193).
+#define TRACK_OPACITY 0x40
 
 void GuiRetroAchievements::show(Window* window)
 {
@@ -40,30 +49,66 @@ void GuiRetroAchievements::show(Window* window)
 		}));
 }
 
-RetroAchievementProgress::RetroAchievementProgress(Window* window, int valueSoftcore, int valueHardcore, int max, const std::string& label) : GuiComponent(window), 
-	mValueSoftCore(valueSoftcore), mValueHardCore(valueHardcore), mMax(max)
-{ 
+RetroAchievementProgress::RetroAchievementProgress(Window* window, int valueSoftcore, int valueHardcore, int max, const std::string& label) : GuiComponent(window),
+	mValueSoftCore(valueSoftcore), mValueHardCore(valueHardcore), mMax(max), mLabelBeside(false),
+	mBarX(0.0f), mBarY(0.0f), mBarW(0.0f), mBarH(0.0f)
+{
 	auto theme = ThemeData::getMenuTheme();
+	mColor = theme->Text.color;
 
-	mText = std::make_shared<TextComponent>(mWindow, label, theme->TextSmall.font, theme->Text.color);		
+	mText = std::make_shared<TextComponent>(mWindow, label, theme->TextSmall.font, mColor);
 	mText->setVerticalAlignment(Alignment::ALIGN_CENTER);
 	mText->setHorizontalAlignment(Alignment::ALIGN_CENTER);
+}
+
+void RetroAchievementProgress::setLabelBeside(bool beside)
+{
+	mLabelBeside = beside;
+	mText->setHorizontalAlignment(beside ? Alignment::ALIGN_RIGHT : Alignment::ALIGN_CENTER);
+	onSizeChanged();
 }
 
 void RetroAchievementProgress::onSizeChanged()
 {
 	GuiComponent::onSizeChanged();
 
-	float padding = mSize.x() * 0.1f;
-		
-	float y = (mSize.y() + PROGRESSHEIGHT) / 2.0f;
-		
-	mText->setPosition(padding, y);
-	mText->setSize(mSize.x() - 2.0f * padding, mText->getFont()->getLetterHeight());
+	mBarH = PROGRESSHEIGHT;
+
+	if (mLabelBeside)
+	{
+		// One centre line for both. The label's box is its words plus the
+		// gap, at the right edge and as tall as the row, so the text sits on
+		// half the height by its alignment; the bar takes the rest of the
+		// width and sits on the same half by its position -- in whole
+		// pixels, so a line a few pixels thick is crisp rather than smeared
+		// over two.
+		const float labelBox = mText->getFont()->sizeText(mText->getText()).x() + PROGRESSGAP;
+
+		mBarH = Math::max(1.0f, Math::round(mBarH));
+		mBarX = 0.0f;
+		mBarW = Math::round(Math::max(0.0f, mSize.x() - labelBox));
+		mBarY = Math::round((mSize.y() - mBarH) / 2.0f);
+
+		mText->setPosition(mSize.x() - labelBox, 0.0f);
+		mText->setSize(labelBox, mSize.y());
+		return;
+	}
+
+	// The bar above the label, both centred in the width with a tenth of it
+	// clear either side: the summary page's column, as it has always been.
+	const float padding = mSize.x() * 0.1f;
+
+	mBarX = padding;
+	mBarW = mSize.x() - 2.0f * padding;
+	mBarY = mSize.y() / 2.0f - 1.5f * mBarH;
+
+	mText->setPosition(padding, (mSize.y() + mBarH) / 2.0f);
+	mText->setSize(mBarW, mText->getFont()->getLetterHeight());
 }
 
 void RetroAchievementProgress::setColor(unsigned int color)
 {
+	mColor = color;
 	mText->setColor(color);
 }
 
@@ -77,34 +122,30 @@ void RetroAchievementProgress::render(const Transform4x4f& parentTrans)
 	auto rect = Renderer::getScreenRect(trans, mSize);
 	if (!Renderer::isVisibleOnScreen(rect))
 		return;
-		
-	int padding = mSize.x() * 0.1f;
-	int w = mSize.x() - 2.0 * padding;
-
-	float height = PROGRESSHEIGHT;
-	float y = mSize.y() / 2.0f - 1.5f * height;
 
 	Renderer::setMatrix(trans);
 
-	Renderer::drawRect(padding, y, w, height, 0x00000032, 0x00000032);
+	// The track first, so the fill reads as a share of something.
+	const unsigned int track = Utils::HtmlColor::applyColorOpacity(mColor, TRACK_OPACITY);
+	Renderer::drawRect(mBarX, mBarY, mBarW, mBarH, track, track);
 
 	if (mMax > 0)
 	{
 		if (mValueSoftCore > 0 && mValueSoftCore > mValueHardCore)
 		{
-			int cur = (w * mValueSoftCore) / mMax;
-			Renderer::drawRect(padding, y, cur, height, 0x0B71C1FF);
+			const float cur = (mBarW * mValueSoftCore) / mMax;
+			Renderer::drawRect(mBarX, mBarY, cur, mBarH, 0x0B71C1FF);
 		}
 
 		if (mValueHardCore > 0)
 		{
-			int cur = (w * mValueHardCore) / mMax;
-			Renderer::drawRect(padding, y, cur, height, 0xCC9900FF);
+			const float cur = (mBarW * mValueHardCore) / mMax;
+			Renderer::drawRect(mBarX, mBarY, cur, mBarH, 0xCC9900FF);
 		}
 	}
 
 	mText->render(trans);
-}	
+}
 
 #include <iostream>
 #include <string>
@@ -175,10 +216,15 @@ public:
 		
 		std::string desc; // = mGameInfo.points + " points";
 		
-		if (mGameInfo.scoreHardcore != mGameInfo.scoreSoftcore || mGameInfo.scoreHardcore == 0)
+		// The device's summary could not read what was earned for this game
+		// (#307 PL-057): say so, and draw no bar -- 0 OF 12 and an empty
+		// bar would read as nothing earned.
+		if (mGameInfo.progressUnknown)
+			desc = _("YOUR PROGRESS COULDN'T BE READ");
+		else if (mGameInfo.scoreHardcore != mGameInfo.scoreSoftcore || mGameInfo.scoreHardcore == 0)
 			desc = Utils::String::format(_("%d of %d softcore points").c_str(), mGameInfo.scoreSoftcore, mGameInfo.possibleScore);
 
-		if (mGameInfo.scoreHardcore != 0)
+		if (mGameInfo.scoreHardcore != 0 && !mGameInfo.progressUnknown)
 		{
 			if (!desc.empty())
 				desc = desc + " - ";
@@ -196,13 +242,16 @@ public:
 		setEntry(mItemTemplate, Vector2i(2, 1), false, true); // mText
 		setEntry(mSubstring, Vector2i(2, 2), false, true);
 
-		int percent = mGameInfo.totalAchievements == 0 ? 0 : Math::round(mGameInfo.wonAchievementsSoftcore * 100.0f / mGameInfo.totalAchievements);
-		
-		char trstring[256];
-		snprintf(trstring, 256, _("%d%% (%d of %d)").c_str(), percent, mGameInfo.wonAchievementsSoftcore, mGameInfo.totalAchievements);
-		mProgress = std::make_shared<RetroAchievementProgress>(mWindow, mGameInfo.wonAchievementsSoftcore, mGameInfo.wonAchievementsHardcore, mGameInfo.totalAchievements, Utils::String::trim(trstring));
+		if (!mGameInfo.progressUnknown)
+		{
+			int percent = mGameInfo.totalAchievements == 0 ? 0 : Math::round(mGameInfo.wonAchievementsSoftcore * 100.0f / mGameInfo.totalAchievements);
 
-		setEntry(mProgress, Vector2i(3, 0), false, true, Vector2i(1, 4));
+			char trstring[256];
+			snprintf(trstring, 256, _("%d%% (%d of %d)").c_str(), percent, mGameInfo.wonAchievementsSoftcore, mGameInfo.totalAchievements);
+			mProgress = std::make_shared<RetroAchievementProgress>(mWindow, mGameInfo.wonAchievementsSoftcore, mGameInfo.wonAchievementsHardcore, mGameInfo.totalAchievements, Utils::String::trim(trstring));
+
+			setEntry(mProgress, Vector2i(3, 0), false, true, Vector2i(1, 4));
+		}
 
 		float textHeight = theme->Text.font->getHeight();
 		int height = Math::max(IMAGESIZE + IMAGESPACER, textHeight + mSubstring->getSize().y());
@@ -229,7 +278,8 @@ public:
 			mImage->setColorShift(0x80808080);
 			mImage->setOpacity(120);
 			mSubstring->setOpacity(120);
-			mProgress->setOpacity(120);
+			if (mProgress)
+				mProgress->setOpacity(120);
 		}
 
 		setSize(0, height);
@@ -256,7 +306,8 @@ public:
 	virtual void setColor(unsigned int color)
 	{
 		mSubstring->setColor(color);
-		mProgress->setColor(color);
+		if (mProgress)
+			mProgress->setColor(color);
 	}
 
 	std::string gameId()
@@ -291,10 +342,27 @@ GuiRetroAchievements::GuiRetroAchievements(Window* window, RetroAchievementInfo 
 		return;
 	}
 
-	auto txt = _("Softcore points") + ":\t" + ra.softpoints; 
-	txt += "\r\n" + _("Points (hardcore)") + ":\t" + ra.points;
-	if (!ra.rank.empty())
-		txt += "\r\n" + _("Rank") + ":\t" + ra.rank;
+	std::string txt;
+	if (ra.fromDevice)
+	{
+		// The proxy's cache: the account's points as its cached sign-in last
+		// said them, when it has one, and no rank (fork #180). The line says
+		// where this came from, so a total that is a little behind is read
+		// as the device's copy and not as the account.
+		if (!ra.points.empty())
+		{
+			txt = _("Softcore points") + ":\t" + ra.softpoints;
+			txt += "\r\n" + _("Points (hardcore)") + ":\t" + ra.points + "\r\n";
+		}
+		txt += _("YOU'RE OFFLINE. SHOWING THE GAMES SAVED FOR OFFLINE PLAY.");
+	}
+	else
+	{
+		txt = _("Softcore points") + ":\t" + ra.softpoints; 
+		txt += "\r\n" + _("Points (hardcore)") + ":\t" + ra.points;
+		if (!ra.rank.empty())
+			txt += "\r\n" + _("Rank") + ":\t" + ra.rank;
+	}
 
 	setSubTitle(txt);
 
@@ -309,11 +377,22 @@ GuiRetroAchievements::GuiRetroAchievements(Window* window, RetroAchievementInfo 
 	{
 		ComponentListRow row;
 
+		// Looked up here, on the interface thread: the device's summary
+		// leaves the console name to this lookup (RetroAchievements::
+		// getUserSummaryFromDevice, #308 F-RA-18).
+		FileData* file = game.id.empty() ? nullptr : getFileData(game.id);
+		if (game.consoleName.empty() && file != nullptr && file->getSourceFileData() != nullptr && file->getSourceFileData()->getSystem() != nullptr)
+			game.consoleName = file->getSourceFileData()->getSystem()->getFullName();
+
 		auto itstring = std::make_shared<RetroAchievementEntry>(mWindow, game);		
 		if (!game.id.empty())
 		{			
 			int gameId = Utils::String::toInteger(game.id);
-			row.makeAcceptInputHandler([this, gameId] { GuiGameAchievements::show(mWindow, gameId); });
+			// The game's hash from the gamelist goes with its id: offline,
+			// the proxy knows a game started once through RetroArch only by
+			// its hash (#180).
+			std::string hash = file != nullptr ? file->getMetadata(MetaDataId::CheevosHash) : "";
+			row.makeAcceptInputHandler([this, gameId, hash] { GuiGameAchievements::show(mWindow, gameId, hash); });
 
 			//std::string longmsg = game.name + "\n" + game.achievements + " achievements\n" + game.points + " points\nLast played : " + game.lastplayed;
 		}

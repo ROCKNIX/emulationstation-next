@@ -1,38 +1,52 @@
 #include "guis/GuiBios.h"
 
 #include "ApiSystem.h"
-#include "components/OptionListComponent.h"
 #include "guis/GuiSettings.h"
 #include "views/ViewController.h"
 #include "SystemData.h"
 #include "LocaleES.h"
 #include "components/ComponentGrid.h"
+#include "components/ComponentList.h"
 #include "components/MultiLineMenuEntry.h"
-#include "components/ComponentTab.h"
 #include "components/ButtonComponent.h"
+#include "components/TextComponent.h"
 #include "GuiLoading.h"
-#include "guis/GuiMsgBox.h"
-#include "SystemConf.h"
+#include "utils/StringUtil.h"
 
+#include <algorithm>
 #include <cstring>
 
 #define WINDOW_WIDTH (float)Math::max((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.65f))
 
+// Glyphs from the menu font. The check-circle is what the store and the
+// theme installer draw for "installed", so present reads the same here. The
+// unlink glyph was already this screen's "missing"; the warning triangle was
+// drawn for "INVALID", a status the check never emits, while UNTESTED -- the
+// file is there, its hash is not one we know -- got the missing icon. It
+// gets the triangle now, because it is a different problem with a different
+// fix.
+#define PRESENT_ICON  _U("")
+#define UNTESTED_ICON _U("")
+#define MISSING_ICON  _U("")
+
+static std::string biosIcon(const std::string& status)
+{
+	if (status == "MISSING") return MISSING_ICON;
+	if (status == "PRESENT") return PRESENT_ICON;
+	return UNTESTED_ICON;
+}
+
 void GuiBios::show(Window* window)
 {
+	// --all: present files too, not only the problems. The launch-time check
+	// keeps the default output, which lists problems alone.
 	window->pushGui(new GuiLoading<std::vector<BiosSystem>>(window, _("PLEASE WAIT"),
-		[](auto gui) { return ApiSystem::getInstance()->getBiosInformations(); },
-		[window](std::vector<BiosSystem> ra) 
-	{ 
-		if (ra.size() == 0)
-			window->pushGui(new GuiMsgBox(window, _("NO MISSING BIOS FILES"), _("OK")));
-		else
-			window->pushGui(new GuiBios(window, ra)); 
-	}));
+		[](auto gui) { return ApiSystem::getInstance()->getBiosInformations("", true); },
+		[window](std::vector<BiosSystem> ra) { window->pushGui(new GuiBios(window, ra)); }));
 }
 
 GuiBios::GuiBios(Window* window, const std::vector<BiosSystem> bioses)
-	: GuiComponent(window), mGrid(window, Vector2i(1, 4)), mBackground(window, ":/frame.png"), mTabFilter(0)
+	: GuiComponent(window), mGrid(window, Vector2i(1, 4)), mBackground(window, ":/frame.png")
 {
 	mBios = bioses;
 
@@ -48,29 +62,18 @@ GuiBios::GuiBios(Window* window, const std::vector<BiosSystem> bioses)
 	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	// Title
-	mTitle = std::make_shared<TextComponent>(mWindow, _("MISSING BIOS CHECK"), theme->Title.font, theme->Title.color, ALIGN_CENTER);
+	mTitle = std::make_shared<TextComponent>(mWindow, _("BIOS CHECK"), theme->Title.font, theme->Title.color, ALIGN_CENTER);
 	mGrid.setEntry(mTitle, Vector2i(0, 0), false, true);
 
-	// Tabs
-	mTabs = std::make_shared<ComponentTab>(mWindow);
-	mTabs->addTab(_("Installed systems"));
-	mTabs->addTab(_("All"));	
-
-	mTabs->setCursorChangedCallback([&](const CursorState& /*state*/)
-		{			
-			if (mTabFilter != mTabs->getCursorIndex())
-			{
-				mTabFilter = mTabs->getCursorIndex();
-				loadList();
-			}
-		});
-
-	mGrid.setEntry(mTabs, Vector2i(0, 1), false, true);
+	// Row 1 held a tab strip -- "Installed systems" / "All" -- that filtered
+	// the list by whether EmulationStation had loaded a system, which nobody
+	// could tell from the label, and drew as a row of words with an
+	// underline too thin to see on a 640-wide panel. One list, ordered by
+	// what needs doing, replaces it; the row stays in the grid at no height.
 
 	// Entries
 	mList = std::make_shared<ComponentList>(mWindow);
 	mList->setUpdateType(ComponentListFlags::UpdateType::UPDATE_ALWAYS);
-
 	mGrid.setEntry(mList, Vector2i(0, 2), true, true);
 
 	// Buttons
@@ -104,98 +107,177 @@ void GuiBios::onSizeChanged()
 	const float titleSubtitleSpacing = mSize.y() * 0.03f;
 
 	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing  + (Renderer::getScreenHeight() * 0.05f));
-
-	if (mTabs->size() == 0)
-		mGrid.setRowHeight(1, 0.00001f);
-	else
-		mGrid.setRowHeight(1, titleHeight * 2);
-
-	mGrid.setRowHeight(3, mButtonGrid->getSize().y());	
+	mGrid.setRowHeight(1, 0.00001f);
+	mGrid.setRowHeight(3, mButtonGrid->getSize().y());
 }
 
 void GuiBios::refresh()
 {
 	mWindow->pushGui(new GuiLoading<std::vector<BiosSystem>>(mWindow, _("PLEASE WAIT"),
-		[](auto gui) { return ApiSystem::getInstance()->getBiosInformations(); },
+		[](auto gui) { return ApiSystem::getInstance()->getBiosInformations("", true); },
 		[this](std::vector<BiosSystem> ra) { mBios = ra; loadList(); }));
 }
 
 void GuiBios::loadList()
 {
-#define INVALID_ICON _U("\uF071")
-#define MISSING_ICON _U("\uF127")
-	
 	auto theme = ThemeData::getMenuTheme();
 
 	int idx = mList->getCursorIndex();
 	mList->clear();
 
-	if (mBios.size() == 0)
+	struct Entry
 	{
-		auto theme = ThemeData::getMenuTheme();
-		std::shared_ptr<Font> font = theme->Text.font;
-		unsigned int color = theme->Text.color;
+		BiosSystem  data;
+		std::string name;
+		bool        hasGames;
+		int         missing;
+		int         untested;
+		int         present;
+	};
 
-		ComponentListRow row;
-		auto text = std::make_shared<TextComponent>(mWindow, _("NO MISSING BIOS"), font, color);
-		if (EsLocale::isRTL())
-			text->setHorizontalAlignment(Alignment::ALIGN_RIGHT);
-
-		row.addElement(text, true);
-
-		mList->addRow(row);
-		centerWindow();
-	}
-
-	for (auto systemBiosData : mBios)
+	std::vector<Entry> entries;
+	for (auto& systemBiosData : mBios)
 	{
-		ComponentListRow row;
+		Entry e;
+		e.data = systemBiosData;
+		e.name = Utils::String::proper(systemBiosData.name);
+		e.hasGames = false;
+		e.missing = e.untested = e.present = 0;
 
-		std::string name = Utils::String::proper(systemBiosData.name); // systemBiosData.name;
-
-		bool isKnownSystem = false;
-
+		// EmulationStation loads a system only when it has games, so being in
+		// this list is "this device has games for it".
 		for (auto sys : SystemData::sSystemVector)
 		{
 			if (sys->getName() == systemBiosData.name)
 			{
-				isKnownSystem = true;
-				name = sys->getFullName();
+				e.hasGames = true;
+				e.name = sys->getFullName();
 			}
 		}
 
-		if (!isKnownSystem && mTabFilter == 0)
-			continue;
-		
-		mList->addGroup(name, true);
-
-		for (auto biosFile : systemBiosData.bios)
+		for (auto& f : systemBiosData.bios)
 		{
-			auto theme = ThemeData::getMenuTheme();
-
-			ComponentListRow row;
-
-			auto icon = std::make_shared<TextComponent>(mWindow);
-			icon->setText(biosFile.status == "INVALID" ? INVALID_ICON : MISSING_ICON);
-			icon->setColor(theme->Text.color);
-			icon->setFont(theme->Text.font);
-			icon->setSize(theme->Text.font->getLetterHeight() * 1.5f, 0);
-			row.addElement(icon, false);
-
-			auto spacer = std::make_shared<GuiComponent>(mWindow);
-			spacer->setSize(14, 0);
-			row.addElement(spacer, false);
-
-			std::string status = _(biosFile.status.c_str()) + std::string(biosFile.md5.empty() || biosFile.md5 == "-" ? "" : " - MD5: " + biosFile.md5);
-
-			auto line = std::make_shared<MultiLineMenuEntry>(mWindow, biosFile.path, status);
-			row.addElement(line, true);
-
-			mList->addRow(row);
+			if (f.status == "MISSING") e.missing++;
+			else if (f.status == "PRESENT") e.present++;
+			else e.untested++;
 		}
+
+		entries.push_back(e);
 	}
 
-	centerWindow();	
+	// What needs doing first: systems with a problem, and among those the
+	// ones there are games for, then by how much is missing. Complete
+	// systems follow, games first, so the top of the page is the work and
+	// the bottom is the reassurance.
+	std::stable_sort(entries.begin(), entries.end(), [](const Entry& a, const Entry& b)
+	{
+		const bool ap = a.missing + a.untested > 0;
+		const bool bp = b.missing + b.untested > 0;
+		if (ap != bp) return ap;
+		if (a.hasGames != b.hasGames) return a.hasGames;
+		if (a.missing != b.missing) return a.missing > b.missing;
+		if (a.untested != b.untested) return a.untested > b.untested;
+		return Utils::String::toUpper(a.name) < Utils::String::toUpper(b.name);
+	});
+
+	if (entries.empty())
+	{
+		// Only when the check itself produced nothing: with every system
+		// listed, an empty page is a failed check, not a clean one.
+		auto text = std::make_shared<TextComponent>(mWindow, _("THE BIOS CHECK RETURNED NOTHING"), theme->Text.font, theme->Text.color);
+		if (EsLocale::isRTL())
+			text->setHorizontalAlignment(Alignment::ALIGN_RIGHT);
+
+		// A TextComponent measures itself as one line when built and the
+		// list then keeps that height while widening it, so give the height
+		// back (0) and it wraps at the width it is given.
+		float wrapWidth = mList->getSize().x();
+		if (wrapWidth <= 0)
+			wrapWidth = Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getScreenWidth() : WINDOW_WIDTH;
+		text->setMultiLine(TextComponent::MultiLineType::MULTILINE);
+		text->setSize(wrapWidth * 0.94f, 0);
+
+		ComponentListRow row;
+		row.addElement(text, true);
+		mList->addRow(row);
+	}
+
+	for (auto& e : entries)
+	{
+		ComponentListRow row;
+
+		auto icon = std::make_shared<TextComponent>(mWindow);
+		icon->setText(e.missing > 0 ? std::string(MISSING_ICON) : e.untested > 0 ? std::string(UNTESTED_ICON) : std::string(PRESENT_ICON));
+		icon->setColor(theme->Text.color);
+		icon->setFont(theme->Text.font);
+		icon->setSize(theme->Text.font->getLetterHeight() * 1.5f, 0);
+		row.addElement(icon, false);
+
+		auto spacer = std::make_shared<GuiComponent>(mWindow);
+		spacer->setSize(theme->Text.font->getLetterHeight() * 0.5f, 0);
+		row.addElement(spacer, false);
+
+		const int total = e.missing + e.untested + e.present;
+		std::string summary;
+		if (e.missing == 0 && e.untested == 0)
+			summary = _("ALL PRESENT") + std::string(" (") + std::to_string(total) + ")";
+		else
+		{
+			if (e.missing > 0)
+				summary = std::to_string(e.missing) + " " + _("OF") + " " + std::to_string(total) + " " + _("MISSING");
+			if (e.untested > 0)
+				summary += (summary.empty() ? "" : ", ") + std::to_string(e.untested) + " " + _("NOT A KNOWN VERSION");
+		}
+
+		auto line = std::make_shared<MultiLineMenuEntry>(mWindow, e.name, summary);
+		row.addElement(line, true);
+
+		Window* window = mWindow;
+		BiosSystem data = e.data;
+		std::string name = e.name;
+		row.makeAcceptInputHandler([window, data, name] { GuiBios::openSystem(window, data, name); });
+
+		mList->addRow(row);
+	}
+
+	if (idx >= 0 && idx < mList->size())
+		mList->setCursorIndex(idx);
+
+	centerWindow();
+	// DETAILS comes and goes with the list (getHelpPrompts).
+	updateHelpPrompts();
+}
+
+void GuiBios::openSystem(Window* window, const BiosSystem& system, const std::string& displayName)
+{
+	auto s = new GuiSettings(window, displayName);
+
+	for (auto& f : system.bios)
+	{
+		std::string status;
+		if (f.status == "MISSING")
+			status = _("MISSING");
+		else if (f.status == "PRESENT")
+			status = _("PRESENT");
+		else
+			status = _("PRESENT, BUT NOT A KNOWN VERSION");
+
+		// The expected hash is how somebody finds the right file; a present,
+		// matching one has nothing to look up.
+		if (f.status != "PRESENT" && !f.md5.empty() && f.md5 != "-")
+			status += " - MD5: " + f.md5;
+
+		// The path as the system expects it, case kept: /storage is
+		// case-sensitive, and addWithDescription upper-cases its label, so
+		// bios/scph5501.bin read BIOS/SCPH5501.BIN and a file named as the
+		// page said still read MISSING (#308 8-es claude F-ES-06). Built by
+		// hand, as MANAGE SAVED NETWORKS' rows are for a network's name.
+		ComponentListRow row;
+		row.addElement(std::make_shared<MultiLineMenuEntry>(window, biosIcon(f.status) + "  " + f.path, status, true), true);
+		s->addRow(row);
+	}
+
+	window->pushGui(s);
 }
 
 void GuiBios::centerWindow()
@@ -225,15 +307,17 @@ bool GuiBios::input(InputConfig* config, Input input)
 		return true;
 	}
 
-	if (mTabs->input(config, input))
-		return true;
-
 	return false;
 }
 
 std::vector<HelpPrompt> GuiBios::getHelpPrompts()
 {
-	std::vector<HelpPrompt> prompts; // = mMenu.getHelpPrompts();
+	std::vector<HelpPrompt> prompts;
+	// Only when there is a system to open: the THE BIOS CHECK RETURNED
+	// NOTHING row has no action, and a prompt that does nothing is worse than
+	// none (#308 8-es claude F-ES-28; es-code-traps.md, the help bar).
+	if (!mBios.empty())
+		prompts.push_back(HelpPrompt(BUTTON_OK, _("DETAILS")));
 	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK")));
 	prompts.push_back(HelpPrompt("start", _("REFRESH")));
 	return prompts;

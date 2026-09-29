@@ -55,7 +55,9 @@ struct LaunchGameOptions
 		netPlayMode = NetPlayMode::DISABLED; 
 		port = 0;
 		saveStateInfo = nullptr; 
-		isSaveStateInfoTemporary = false; 		  
+		isSaveStateInfoTemporary = false;
+		launchedEmulator = "";
+		launchedCore = "";
 	}
 
 	int netPlayMode;
@@ -68,6 +70,19 @@ struct LaunchGameOptions
 
 	SaveState*	saveStateInfo;
 	bool isSaveStateInfoTemporary;
+	// saveStateInfo by its file, when it is one of its repository's objects
+	// (launchGame records it on the way in): a launch deferred behind a gate
+	// finds the state again by it, since a refresh of the repository deletes
+	// the object (#308 8-es-menus-and-core claude F-ES-11). Empty otherwise.
+	std::string saveStateFile;
+
+	// What the launch command actually carried, read after every rewrite of it
+	// (fork #21 R5). The capture step at exit records these. getEmulator() and
+	// getCore() re-resolve from SystemConf and can answer differently by then;
+	// a netplay client override and a savestate config both make them differ.
+	// Out-fields: getlaunchCommand fills them, launchGame reads them.
+	std::string launchedEmulator;
+	std::string launchedCore;
 };
 
 class FolderData;
@@ -80,6 +95,10 @@ public:
 	virtual ~FileData();
 
 	static FileData* GetRunningGame() { return mRunningGame; }
+	// How many games this process has started. A waiter tells "the game it
+	// was waiting for has come and gone" from "none has started yet" by it
+	// (ProxyCards: the queue a top-up stopped for a game holds for that game).
+	static unsigned GetGamesStarted();
 
 	virtual const std::string& getName();
 

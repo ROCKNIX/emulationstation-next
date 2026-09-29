@@ -5,6 +5,7 @@
 #include "utils/StringUtil.h"
 #include "FileData.h"
 #include "Log.h"
+#include "LocaleES.h"
 #include "PlatformId.h"
 #include "Settings.h"
 #include "SystemData.h"
@@ -23,7 +24,25 @@
 
 using namespace PlatformIds;
 
+#if defined(SCREENSCRAPER_DEV_LOGIN) || defined(SCREENSCRAPER_RUNTIME_DEV_LOGIN)
+
+// Upstream compiles the developer pair in. A fork build without one reads it
+// from settings, entered by the player under the scraper's options beside the
+// account it belongs to, so no image carries a key and images can be shared
+// (#64). Callers check for empty and say what is missing rather than letting
+// the API answer with a login error.
+std::string screenScraperDevLogin()
+{
 #if defined(SCREENSCRAPER_DEV_LOGIN)
+	return SCREENSCRAPER_DEV_LOGIN;
+#else
+	const std::string id = Settings::getInstance()->getString("ScreenScraperDevId");
+	const std::string pass = Settings::getInstance()->getString("ScreenScraperDevPass");
+	if (id.empty() || pass.empty())
+		return "";
+	return "devid=" + HttpReq::urlEncode(id) + "&devpassword=" + HttpReq::urlEncode(pass);
+#endif
+}
 
 /**
 	List of systems and thein IDs from
@@ -838,7 +857,7 @@ void ScreenScraperRequest::processGame(const pugi::xml_document& xmldoc, std::ve
 std::string ScreenScraperRequest::ScreenScraperConfig::getGameSearchUrl(const std::string gameName, bool jeuRecherche) const
 {	
 	std::string ret = API_URL_BASE
-		+ "/jeuInfos.php?" + std::string(SCREENSCRAPER_DEV_LOGIN) +
+		+ "/jeuInfos.php?" + screenScraperDevLogin() +
 		+ "&softname=" + HttpReq::urlEncode(VERSIONED_SOFT_NAME)
 		+ "&output=xml"
 		+ "&romnom=" + HttpReq::urlEncode(gameName);
@@ -846,7 +865,7 @@ std::string ScreenScraperRequest::ScreenScraperConfig::getGameSearchUrl(const st
 	if (jeuRecherche)
 	{
 		ret = std::string(API_URL_BASE)
-			+ "/jeuRecherche.php?" + std::string(SCREENSCRAPER_DEV_LOGIN) +
+			+ "/jeuRecherche.php?" + screenScraperDevLogin() +
 			+ "&softname=" + HttpReq::urlEncode(VERSIONED_SOFT_NAME)
 			+ "&output=xml"
 			+ "&recherche=" + HttpReq::urlEncode(gameName);
@@ -864,7 +883,7 @@ std::string ScreenScraperRequest::ScreenScraperConfig::getGameSearchUrl(const st
 std::string ScreenScraperRequest::ScreenScraperConfig::getUserInfoUrl() const
 {
 	std::string ret = API_URL_BASE
-		+ "/ssuserInfos.php?" + std::string(SCREENSCRAPER_DEV_LOGIN) +
+		+ "/ssuserInfos.php?" + screenScraperDevLogin() +
 		+ "&softname=" + HttpReq::urlEncode(VERSIONED_SOFT_NAME)
 		+ "&output=xml";
 
@@ -944,18 +963,106 @@ ScreenScraperUser ScreenScraperRequest::processUserInfo(const pugi::xml_document
 	return user;
 }
 
+// What the screen says when ScreenScraper refuses the first request of a
+// scrape (#66). The API answers every failure with a French sentence, and
+// asked with a bad developer pair together with an account it blames the
+// account ("Verifier les identifiants utilisateurs"), while asked with the
+// pair alone it blames the pair ("Verifier vos identifiants developpeur").
+// EmulationStation used to put that body on screen as it came. So: the body
+// goes to the log; a login failure is told apart by one call with the pair
+// alone -- made only after a failure, so a scrape that starts makes no
+// extra request -- and the screen names the credential and the tab it lives
+// under, in English. No code on screen: it is in the log (D-UI-028).
+static std::string screenScraperFailureMessage(HttpReq& req, const ScreenScraperRequest::ScreenScraperConfig& config)
+{
+	const int status = req.status();
+	const std::string body = Utils::String::trim(Utils::String::removeHtmlTags(req.getErrorMsg()));
+	LOG(LogError) << "ScreenScraper refused the user-info request: HTTP " << status << ": " << body;
+	const std::string lower = Utils::String::toLower(body);
+
+	// No answer at all -- no route, no DNS, a timeout, a cut link: curl got
+	// no HTTP status, and the body is curl's own sentence, which the tests
+	// below would read as the server's ("Couldn't resolve host" used to come
+	// out as SCREENSCRAPER ANSWERED WITH AN ERROR). Say the player is
+	// offline and stop; no credential is named, none was looked at
+	// (#151 PL-07).
+	if (status == HttpReq::REQ_IO_ERROR || status == HttpReq::REQ_IN_PROGRESS)
+		return _("YOU'RE NOT ONLINE. TRY AGAIN WHEN YOU ARE.");
+
+	// The status is the one thing the API says in a form a program can
+	// read; HttpReq names every code it documents. Only 403 covers both
+	// credentials, and on this endpoint its body always says "utilisateurs"
+	// -- with a bad pair, with no pair at all -- so the body cannot say
+	// which; the probe below can.
+	switch (status)
+	{
+	case HttpReq::REQ_401_FORBIDDEN:
+		return _("SCREENSCRAPER IS OPEN TO ITS MEMBERS ONLY RIGHT NOW. TRY AGAIN LATER.");
+	case HttpReq::REQ_426_SERVERMAINTENANCE:
+		return _("SCREENSCRAPER IS DOWN FOR MAINTENANCE. TRY AGAIN LATER.");
+	case HttpReq::REQ_426_BLACKLISTED:
+		return _("SCREENSCRAPER HAS BLOCKED THIS VERSION OF THE SCRAPER.");
+	case HttpReq::REQ_429_TOOMANYREQUESTS:
+		return _("SCREENSCRAPER IS BUSY. TRY AGAIN IN A MINUTE.");
+	case HttpReq::REQ_430_TOOMANYSCRAPS:
+		return _("YOU HAVE REACHED TODAY'S SCREENSCRAPER QUOTA. TRY AGAIN TOMORROW.");
+	case HttpReq::REQ_430_TOOMANYFAILURES:
+		return _("TOO MANY FAILED SCREENSCRAPER REQUESTS TODAY. TRY AGAIN TOMORROW.");
+	case HttpReq::REQ_403_BADLOGIN:
+		break;
+	default:
+		if (lower.find("maintenance") != std::string::npos || lower.find("ferm") != std::string::npos)
+			return _("SCREENSCRAPER IS DOWN FOR MAINTENANCE. TRY AGAIN LATER.");
+		if (lower.find("identifiant") == std::string::npos && lower.find("login") == std::string::npos)
+			return _("SCREENSCRAPER ANSWERED WITH AN ERROR. TRY AGAIN LATER.");
+		break;
+	}
+
+	// The pair alone, first. A rejected pair answers 200 with a sentence,
+	// not XML; an accepted one lists the systems with or without an account
+	// (tested with the public JELOS pair, 2026-09-13: systemesListe.php
+	// answers the pair alone with 200 XML while ssuserInfos.php gives the
+	// same pair 403). So the probe settles the pair before the account is
+	// looked at. It used to run only once an account was set, and a player
+	// with a mistyped pair and no account was told to add an account, added
+	// one, and failed again on the pair -- two failures where one would do
+	// (#151 PL-06).
+	HttpReq probe(config.API_URL_BASE + "/systemesListe.php?" + screenScraperDevLogin()
+		+ "&softname=" + HttpReq::urlEncode(VERSIONED_SOFT_NAME) + "&output=xml");
+	probe.wait();
+	// Three answers, not two: accepted (200 and XML), rejected (200 and a
+	// sentence), and nothing worth reading (a timeout, a 429, a maintenance
+	// page, a link that dropped between the two requests). Only the second
+	// blames the pair. The third used to, and sent a player whose link had
+	// just gone to check a password that was fine (#151 PL-07).
+	enum { PairAccepted, PairRejected, PairUnknown } pair = PairUnknown;
+	if (probe.status() == HttpReq::REQ_SUCCESS)
+		pair = Utils::String::trim(probe.getContent()).find("<?xml") == 0 ? PairAccepted : PairRejected;
+	LOG(LogInfo) << "ScreenScraper developer pair alone: HTTP " << probe.status()
+		<< (pair == PairAccepted ? ", accepted" : pair == PairRejected ? ", rejected" : ", no usable answer");
+	if (pair == PairUnknown)
+		return _("COULDN'T REACH SCREENSCRAPER. TRY AGAIN.");
+	if (pair == PairRejected)
+		return _("SCREENSCRAPER REJECTED THE DEVELOPER ID OR PASSWORD.\nCHECK THEM UNDER SCRAPER > ACCOUNTS.");
+
+	// The pair is fine and the API still refused: it needs an account on
+	// this request and on every game request, so with none configured the
+	// account is what is missing. Say that, rather than that a password
+	// they never typed was rejected.
+	if (Settings::getInstance()->getString("ScreenScraperUser").empty() || Settings::getInstance()->getString("ScreenScraperPass").empty())
+		return _("SCREENSCRAPER NEEDS YOUR ACCOUNT TO SCRAPE.\nADD IT UNDER SCRAPER > ACCOUNTS.");
+	return _("SCREENSCRAPER REJECTED YOUR USERNAME OR PASSWORD.\nCHECK THEM UNDER SCRAPER > ACCOUNTS.");
+}
+
 int ScreenScraperScraper::getThreadCount(std::string &result)
 {
 	ScreenScraperRequest::ScreenScraperConfig ssConfig;
 	std::string url = ssConfig.getUserInfoUrl();
-
 	HttpReq httpreq(url);
 	httpreq.wait();
-	
 	if (httpreq.status() != HttpReq::REQ_SUCCESS)
 	{
-		result = httpreq.getErrorMsg();
-		result = Utils::String::trim(Utils::String::replace(result, "<br>", "\r\n"));
+		result = screenScraperFailureMessage(httpreq, ssConfig);
 		return -1;
 	}
 

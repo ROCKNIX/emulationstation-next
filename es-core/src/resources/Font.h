@@ -61,6 +61,12 @@ public:
 	
 	std::string wrapText(std::string text, float xLen); // Inserts newlines into text to make it wrap properly.
 	Vector2f sizeWrappedText(const std::string& text, float xLen, float lineSpacing = 1.5f); // Returns the expected size of a string after wrapping is applied.
+	// The size of a left-aligned text as buildTextCache lays it out, tabs
+	// included: a '\t' jumps to its column's stop (the widest text before
+	// that tab on any line, plus a gap), where sizeText() measures it as a
+	// glyph and does not know where the text after it lands. A page that puts
+	// something beside a tabbed block measures the block here (#160).
+	Vector2f sizeTabbedText(const std::string& text, float lineSpacing = 1.5f);
 	Vector2f getWrappedTextCursorOffset(const std::string& text, float xLen, size_t cursor, float lineSpacing = 1.5f); // Returns the position of of the cursor after moving "cursor" characters.
 
 	float getHeight(float lineSpacing = 1.5f) const;
@@ -150,6 +156,10 @@ private:
 	bool mLoaded;
 
 	float getNewlineStartOffset(const std::string& text, const unsigned int& charStart, const float& xLen, const Alignment& alignment);
+	// One stop per tab column, in pixels from the start of a line: the widest
+	// first column, then each stop the last plus the gap plus its own column's
+	// widest text (TabStops::fromColumns). Empty when the text has no tab.
+	std::map<int, float> getTabStops(const std::string& text, float lineSpacing);
 
 	friend TextCache;
 };

@@ -329,15 +329,16 @@ std::vector<HelpPrompt> ComponentTab::getHelpPrompts()
 		bool addMovePrompt = true;
 		for(auto it = prompts.cbegin(); it != prompts.cend(); it++)
 		{
-			if(it->first == "up/down" || it->first == "up/down/left/right")
+			if(it->first == "left/right" || it->first == "up/down/left/right")
 			{
 				addMovePrompt = false;
 				break;
 			}
 		}
 
+		// The strip runs sideways; "up/down" is the grid's business.
 		if(addMovePrompt)
-			prompts.push_back(HelpPrompt(_("up/down"), _("CHOOSE")));
+			prompts.push_back(HelpPrompt("left/right", _("SWITCH TAB")));
 	}
 
 	return prompts;

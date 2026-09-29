@@ -28,6 +28,12 @@ option(ENABLE_PULSE "Set to ON to enable pulse audio (versus alsa)" OFF)
 option(ENABLE_TTS "Set to ON to enable text to speech" OFF)
 option(USE_SYSTEM_PUGIXML "Set to ON to use system-wide pugixml library" OFF)
 
+# The unit tests for the pure code (es-app/tests/unit, #120). Off by default,
+# so an image build never builds or links them; they need no SDL, no fonts
+# and no device, and es-app/tests/unit/CMakeLists.txt also stands on its own
+# for a run with the host compiler.
+option(ES_BUILD_TESTS "Set to ON to build the es-unit-tests binary" OFF)
+
 add_definitions(-w)
 
 # Win32 default platform & directory detection
@@ -300,6 +306,15 @@ endif()
 
 if(DEFINED ENV{SCREENSCRAPER_DEV_LOGIN})
     add_definitions(-DSCREENSCRAPER_DEV_LOGIN="$ENV{SCREENSCRAPER_DEV_LOGIN}")
+endif()
+
+# The ScreenScraper developer pair entered on the device rather than compiled
+# in: the scraper is built, and its settings page grows DEVELOPER ID and
+# DEVELOPER PASSWORD rows, so no image carries a key. Set from the package
+# recipe (-DSCREENSCRAPER_RUNTIME_DEV_LOGIN=1) or the environment. A compiled-in
+# SCREENSCRAPER_DEV_LOGIN still takes precedence and hides the rows.
+if(SCREENSCRAPER_RUNTIME_DEV_LOGIN OR DEFINED ENV{SCREENSCRAPER_RUNTIME_DEV_LOGIN})
+    add_definitions(-DSCREENSCRAPER_RUNTIME_DEV_LOGIN=1)
 endif()
 
 if(DEFINED ENV{GAMESDB_APIKEY})
@@ -591,6 +606,10 @@ set(LIBRARY_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 add_subdirectory("external")
 add_subdirectory("es-core")
 add_subdirectory("es-app")
+
+if(ES_BUILD_TESTS)
+  add_subdirectory("es-app/tests/unit")
+endif()
 
 if(MSGFMT_EXECUTABLE AND MSGMERGE_EXECUTABLE AND XGETTEXT_EXECUTABLE AND Intl_FOUND)
   add_subdirectory (locale)

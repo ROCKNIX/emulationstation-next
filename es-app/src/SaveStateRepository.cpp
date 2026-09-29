@@ -2,6 +2,8 @@
 #include "SystemData.h"
 #include "FileData.h"
 #include "utils/StringUtil.h"
+#include "utils/FileSystemUtil.h"
+#include <algorithm>
 #include <regex>
 #include "Log.h"
 
@@ -126,6 +128,27 @@ void SaveStateRepository::refresh()
 	}
 }
 
+// A state whose file is gone is not a state, whatever this repository still
+// holds. The manager's deletions land on a worker thread (D-UI-073), and the
+// page that would have called refresh() when one finished may itself be gone
+// by then (B pressed right after YES); a file deleted over the network or by
+// a file manager is the same case from here. Refresh() is still what frees
+// the stale objects -- the live manager calls it when a deletion lands --
+// but nobody is handed one in the meantime. The stat is uncached: another
+// thread wrote the change (fork #205). The manager calls refresh() only
+// when a landed job left the disk disagreeing with its page (#207), so the
+// stale object of a deleted file may live until the next copy or the next
+// open of the page; that is a few bytes, not a tile.
+bool SaveStateRepository::onDisk(const SaveState* state)
+{
+	return state != nullptr && !state->fileName.empty() && Utils::FileSystem::exists(state->fileName, false);
+}
+
+bool SaveStateRepository::anyOnDisk(const std::vector<SaveState*>& states)
+{
+	return std::any_of(states.cbegin(), states.cend(), [](const SaveState* s) { return onDisk(s); });
+}
+
 bool SaveStateRepository::hasSaveStates(FileData* game)
 {
 	if (mStates.size())
@@ -136,7 +159,7 @@ bool SaveStateRepository::hasSaveStates(FileData* game)
 		auto name = Utils::FileSystem::getFileName(game->getPath());
 
 		auto it = mStates.find(name);
-		if (it != mStates.cend())
+		if (it != mStates.cend() && anyOnDisk(it->second))
 			return true;
 
 		for (auto rs : SaveStateConfigFile::getSaveStateConfigs(mSystem))
@@ -147,7 +170,7 @@ bool SaveStateRepository::hasSaveStates(FileData* game)
 			std::string name = Utils::FileSystem::getStem(game->getPath());
 
 			auto it = mStates.find(name);
-			if (it != mStates.cend())
+			if (it != mStates.cend() && anyOnDisk(it->second))
 				return true;
 
 			// Don't need to test again
@@ -174,7 +197,7 @@ std::vector<SaveState*> SaveStateRepository::getSaveStates(FileData* game, std::
 			if (it != mStates.cend())
 			{
 				for (auto item : it->second)
-					if (rs->equals(item->config))
+					if (rs->equals(item->config) && onDisk(item))
 						ret.push_back(item);
 			}
 		}

@@ -87,9 +87,19 @@ void ImageComponent::resize()
 	if (!mTexture || mTexture->getSize() == Vector2i::Zero()) // !mTexture->isLoaded())
 		return;
 
-	const Vector2f textureSize = mTexture->getPhysicalSize();
-	if (textureSize == Vector2f::Zero())
+	const Vector2f physicalSize = mTexture->getPhysicalSize();
+	if (physicalSize == Vector2f::Zero())
 		return;
+	// The proportions the picture is fitted at: the file's, unless a display
+	// aspect was set for it (fork #243) -- then the file's height at that
+	// width-to-height. The texture itself is untouched; only the quad is.
+	Vector2f textureSize = (mDisplayAspect > 0.0f && physicalSize.y() > 0.0f)
+		? Vector2f(physicalSize.y() * mDisplayAspect, physicalSize.y())
+		: physicalSize;
+	// A quarter turn swaps the picture's width and height (fork #245).
+	const bool turned = (mDisplayRotation % 2) != 0;
+	if (turned)
+		textureSize = Vector2f(textureSize.y(), textureSize.x());
 
 	auto targetSize = mTargetSize - mPadding.xy() - mPadding.zw();
 
@@ -143,7 +153,10 @@ void ImageComponent::resize()
 				mSize[1] *= resizeScale.x();
 
 				float cropPercent = (mSize.y() - targetSize.y()) / (mSize.y() * 2);
-				crop(0, cropPercent, 0, cropPercent);
+				if (turned)
+					crop(cropPercent, 0, cropPercent, 0);
+				else
+					crop(0, cropPercent, 0, cropPercent);
 			}
 			else
 			{
@@ -151,7 +164,10 @@ void ImageComponent::resize()
 				mSize[1] *= resizeScale.y();
 
 				float cropPercent = (mSize.x() - targetSize.x()) / (mSize.x() * 2);
-				crop(cropPercent, 0, cropPercent, 0);
+				if (turned)
+					crop(0, cropPercent, 0, cropPercent);
+				else
+					crop(cropPercent, 0, cropPercent, 0);
 			}
 
 			// for SVG rasterization, always calculate width from rounded height (see comment above)
@@ -254,6 +270,25 @@ void ImageComponent::updateVertices()
 		mVertices[3].pos[1] = b;
 	}
 	
+	// Turn the picture inside the quad (fork #245): the four corners keep
+	// their places, the texture corners move round. The vertices are TL,
+	// BL, TR, BR; one turn counter-clockwise puts the picture's right edge
+	// at the top, so TL shows what was TR, TR what was BR, BL what was TL,
+	// BR what was BL. This is how RetroArch turns a core's frame for the
+	// display (rotation 1 = 90 degrees counter-clockwise), applied to the
+	// capture it did not turn.
+	if (mDisplayRotation != 0)
+	{
+		const Vector2f tTL = mVertices[0].tex, tBL = mVertices[1].tex, tTR = mVertices[2].tex, tBR = mVertices[3].tex;
+		switch (mDisplayRotation)
+		{
+		case 1: mVertices[0].tex = tTR; mVertices[2].tex = tBR; mVertices[1].tex = tTL; mVertices[3].tex = tBL; break;
+		case 2: mVertices[0].tex = tBR; mVertices[2].tex = tBL; mVertices[1].tex = tTR; mVertices[3].tex = tTL; break;
+		case 3: mVertices[0].tex = tBL; mVertices[2].tex = tTL; mVertices[1].tex = tBR; mVertices[3].tex = tTR; break;
+		default: break;
+		}
+	}
+
 	if (mTexture && mTexture->isScalable())
 	{
 		// For SVG images we need to round vertices in order to be precisely aligned
@@ -440,6 +475,25 @@ void ImageComponent::setResize(float width, float height)
 	mSize = mTargetSize;
 	mTargetIsMax = false;
 	mTargetIsMin = false;
+	resize();
+}
+
+void ImageComponent::setDisplayAspect(float ratio)
+{
+	if (ratio < 0.0f)
+		ratio = 0.0f;
+	if (mDisplayAspect == ratio)
+		return;
+	mDisplayAspect = ratio;
+	resize();
+}
+
+void ImageComponent::setDisplayRotation(int quarterTurns)
+{
+	quarterTurns = ((quarterTurns % 4) + 4) % 4;
+	if (mDisplayRotation == quarterTurns)
+		return;
+	mDisplayRotation = quarterTurns;
 	resize();
 }
 

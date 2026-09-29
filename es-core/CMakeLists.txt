@@ -14,6 +14,7 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/InputManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GunManager.h	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Log.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/LogPolicy.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MameNames.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gettext.h # batocera
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LocaleES.h # batocera
@@ -118,10 +119,13 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.h
 
 	# Utils
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/AtomicFileUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FileSystemUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StringUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StringListLock.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeUtil.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeText.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/OfflineProxyUrl.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ThreadPool.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Platform.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/zip_file.hpp
@@ -250,10 +254,13 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/resources/TextureDataManager.cpp
 
 	# Utils
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/AtomicFileUtil.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/FileSystemUtil.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StringUtil.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/StringListLock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeUtil.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/TimeText.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/OfflineProxyUrl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/ThreadPool.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Platform.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils/MathExpr.cpp

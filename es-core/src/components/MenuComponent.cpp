@@ -4,7 +4,14 @@
 #include "TextToSpeech.h"
 
 #define BUTTON_GRID_VERT_PADDING  (Renderer::getScreenHeight()*0.0296296)
-#define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.0052083333)
+// The gap between two buttons on a menu's button bar, and the one place it is
+// defined -- every ES screen ends in this bar, so a value set here is the
+// house style rather than a per-page decision.
+//
+// It was 0.0052 of the screen width, which is 3px on a 640px handheld panel:
+// two buttons that read as one control, and a destructive choice one thumb's
+// width from a safe one. 0.022 gives 14px there and scales with the panel.
+#define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.022)
 
 #define TITLE_HEIGHT (mTitle->getFont()->getLetterHeight() + (mSubtitle ? TITLE_WITHSUB_VERT_PADDING : TITLE_VERT_PADDING) + (mSubtitle ? mSubtitle->getSize().y() + SUBTITLE_VERT_PADDING : 0))
 
@@ -68,20 +75,27 @@ MenuComponent::MenuComponent(Window* window,
 	mGrid.setEntry(mHeaderGrid, Vector2i(0, 0), false, true, Vector2i(1, 1), mTabs == nullptr ? GridFlags::BORDER_BOTTOM : GridFlags::BORDER_NONE);
 	//mGrid.setEntry(mTitle, Vector2i(0, 0), false);
 
+	// Wrap-around between the focus stops: tab strip (if any), rows, buttons.
+	// The grid gets here only when the focused stop could not move that way.
 	mGrid.setUnhandledInputCallback([this](InputConfig* config, Input input) -> bool {
 		if (config->isMappedLike("down", input)) {
-			mGrid.setCursorTo(mList);
-			mList->setCursorIndex(0);
+			// past the bottom: back to the top stop
+			if (mTabs != nullptr && mTabs->size())
+				mGrid.setCursorTo(mTabs);
+			else {
+				mGrid.setCursorTo(mList);
+				mList->setCursorIndex(0);
+			}
 			return true;
 		}
 		if (config->isMappedLike("up", input)) {
+			// past the top: down to the bottom stop, with the last row ready
+			// for the next press up from the buttons
 			mList->setCursorIndex(mList->size() - 1);
-			if (mButtons.size()) {
-				mGrid.moveCursor(Vector2i(0, 1));
-			}
-			else {
+			if (mButtonGrid)
+				mGrid.setCursorTo(mButtonGrid);
+			else
 				mGrid.setCursorTo(mList);
-			}
 			return true;
 		}
 		return false;
@@ -90,6 +104,13 @@ MenuComponent::MenuComponent(Window* window,
 	// set up list which will never change (externally, anyway)
 	mList = std::make_shared<ComponentList>(mWindow);
 
+	// The strip is a focus stop of its own (#65): up from the first row lands
+	// on it, left/right there switch tabs, down returns to the rows. Rows keep
+	// left/right for themselves, which is how an option row cycles in place.
+	// It becomes a stop only once it has a tab (addTab): every menu is built
+	// with the strip (tabbedUI defaults to true), and an empty strip took the
+	// cursor with nothing to show for it, so up from the MAIN MENU's first row
+	// landed on nothing before BACK (fork #325).
 	if (mTabs != nullptr)
 		mGrid.setEntry(mTabs, Vector2i(0, 1), false, true, Vector2i(1, 1), GridFlags::BORDER_BOTTOM);
 
@@ -98,31 +119,30 @@ MenuComponent::MenuComponent(Window* window,
 	updateGrid();
 	updateSize();
 
-	mGrid.resetCursor();
+	// A page opens on its first row, not on the strip.
+	mGrid.setCursorTo(mList);
 }
 
 bool MenuComponent::input(InputConfig* config, Input input)
-{	
-	if (mTabs != nullptr && mTabs->size() && mGrid.getSelectedComponent() != mButtonGrid && (config->isMappedLike("left", input) || config->isMappedLike("right", input)))
-	{
-		bool ret = mTabs->input(config, input);
-
-		if (input.type != TYPE_HAT || input.value != 0) 
-			return ret;
-
-		// continue processing if the HAT value was reset to 0
-	}
-
-	if (GuiComponent::input(config, input))
-		return true;
-
-	return false;
+{
+	// Left/right go to whichever stop is focused. The strip only sees them
+	// while it holds the focus (#65); before, it took every left/right on the
+	// page, and no row ever cycled in place.
+	return GuiComponent::input(config, input);
 }
 
 void MenuComponent::addTab(const std::string label, const std::string value, bool setCursorHere)
 {
-	if (mTabs != nullptr)
-		mTabs->addTab(label, value, setCursorHere);
+	if (mTabs == nullptr)
+		return;
+	mTabs->addTab(label, value, setCursorHere);
+	// The first tab makes the strip a focus stop (fork #325): the cell is
+	// re-entered as focusable, in the same place, with the same border.
+	if (mTabs->size() == 1)
+	{
+		mGrid.removeEntry(mTabs);
+		mGrid.setEntry(mTabs, Vector2i(0, 1), true, true, Vector2i(1, 1), GridFlags::BORDER_BOTTOM);
+	}
 }
 
 void MenuComponent::addMenuIcon(Window* window, ComponentListRow& row, const std::string& iconName)
@@ -375,37 +395,43 @@ float MenuComponent::getButtonGridHeight() const
 
 void MenuComponent::updateSize()
 {
-	// GPI
+	// GPI: a full-screen menu is the screen, there is nothing to fit.
 	if (Renderer::ScreenSettings::fullScreenMenus())
-	{
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
-		return;
-	}
-
-	const float maxHeight = mMaxHeight <= 0 ? Renderer::getScreenHeight() * 0.75f : mMaxHeight;
-
-	float height = TITLE_HEIGHT + mList->getTotalRowHeight() + getButtonGridHeight() + 2;
-	if (mTabs != nullptr && mTabs->size())
-		height += mTabs->getSize().y();
-
-	if(height > maxHeight)
+	else
 	{
-		height = TITLE_HEIGHT + getButtonGridHeight();
-		int i = 0;
-		while(i < mList->size())
+		const float maxHeight = mMaxHeight <= 0 ? Renderer::getScreenHeight() * 0.75f : mMaxHeight;
+
+		float height = TITLE_HEIGHT + mList->getTotalRowHeight() + getButtonGridHeight() + 2;
+		if (mTabs != nullptr && mTabs->size())
+			height += mTabs->getSize().y();
+
+		if(height > maxHeight)
 		{
-			float rowHeight = mList->getRowHeight(i);
-			if(height + rowHeight < maxHeight)
-				height += rowHeight;
-			else
-				break;
-			i++;
+			height = TITLE_HEIGHT + getButtonGridHeight();
+			int i = 0;
+			while(i < mList->size())
+			{
+				float rowHeight = mList->getRowHeight(i);
+				if(height + rowHeight < maxHeight)
+					height += rowHeight;
+				else
+					break;
+				i++;
+			}
 		}
+
+		float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+		setSize(width, height);
 	}
 
-	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
-	setSize(width, height);
-	
+	// A header with an image beside it reads from the left: title and
+	// subtitle line up on the column's edge instead of centring in it, and
+	// the subtitle's tabs become columns (a centred text draws a tab as a
+	// space). In both modes -- this block used to sit behind the full-screen
+	// return above, so on every handheld panel the lines stayed centred while
+	// GuiGameAchievements measured their right edge as if they were not, and
+	// placed its bar over them (#160).
 	if (mTitleImage != nullptr && mTitle != nullptr && mTitle->isVisible())
 	{
 		float pad = Renderer::getScreenWidth() * 0.012;
@@ -475,6 +501,17 @@ void MenuComponent::setButtonGrid(std::shared_ptr<GuiComponent> grid)
 		mButtonGrid = grid;
 		mGrid.setEntry(mButtonGrid, Vector2i(0, 3), true, false, Vector2i(1, 1), GridFlags::BORDER_TOP);
 	}
+}
+
+void MenuComponent::setCursorToButton(int index)
+{
+	if (!mButtonGrid || index < 0 || index >= (int) mButtons.size())
+		return;
+	// The inner cursor first, then the outer focus, so the focus event that
+	// the outer move raises lands on the button asked for.
+	std::static_pointer_cast<ComponentGrid>(mButtonGrid)->setCursorTo(Vector2i(index, 0));
+	mGrid.setCursorTo(mButtonGrid);
+	updateHelpPrompts();
 }
 
 void MenuComponent::updateGrid()

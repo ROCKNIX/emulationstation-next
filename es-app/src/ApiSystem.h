@@ -5,6 +5,7 @@
 #include <map>
 #include "Window.h"
 #include "components/BusyComponent.h"
+#include "WifiText.h"
 #include "resources/TextureData.h"
 #include "components/IExternalActivity.h"
 
@@ -222,6 +223,7 @@ public:
 
     virtual bool launchKodi(Window *window);
     bool launchFileManager(Window *window);
+    bool launchCloudSignIn(Window *window, bool phoneKeyboard);
 
 #ifdef BATOCERA
     virtual void launchControlcenter();
@@ -250,6 +252,35 @@ public:
 #endif
     bool disableWifi();
 
+	// The network the device is joined to now, from NetworkManager (wifictl
+	// current) -- not wifi.ssid, which is the one configured last and, once
+	// autoconnect has joined a remembered network, a different fact (fork
+	// #191). Returns whether NetworkManager answered; ssid is empty when it
+	// answered "none". A no-answer is not "not connected", so the row can
+	// say which it was.
+	bool getCurrentWifiSsid(std::string& ssid);
+
+	// The networks NetworkManager remembers (wifictl saved), the one in use
+	// first. Returns whether the list could be read: an empty list and no
+	// list are different answers.
+	bool getSavedWifiNetworks(std::vector<WifiText::SavedNetwork>& networks);
+
+	// Forget a remembered network (wifictl forget). Returns whether the
+	// profile went -- the script's word, not its exit code alone --
+	// and sets disconnected when it was the one in use and the link
+	// dropped with it.
+	bool forgetWifiNetwork(const std::string& name, bool& disconnected);
+	// Join a network NetworkManager holds a profile for, with the key it
+	// holds (`wifictl join <name>`, name the profile's): the picker's press
+	// on a SAVED row (fork #191). Joined only when the script said
+	// "joined"; the settings wifi.ssid and wifi.key then follow the profile
+	// on disk, so a caller re-reads SystemConf before trusting either.
+	// Otherwise the script's exit code -- 2 NetworkManager not answering,
+	// 1 not joined -- and 1 for a 0 that printed no "joined";
+	// WifiText::joinFailure reads it. A WifiText::JoinAnswer, not an int or
+	// a bool: see its comment.
+	WifiText::JoinAnswer joinWifiNetwork(const std::string& name);
+
 	virtual std::vector<std::string> getIpAddresses();
 	virtual std::string getIpAddress();
 	virtual bool isWifiAPModeSupported();
@@ -274,7 +305,7 @@ public:
     std::vector<std::string> getAvailableInstallDevices();
     std::vector<std::string> getAvailableInstallArchitectures();
     std::vector<std::string> getAvailableOverclocking();
-    std::vector<BiosSystem> getBiosInformations(const std::string system = "");
+    std::vector<BiosSystem> getBiosInformations(const std::string system = "", bool all = false);
     virtual std::vector<std::string> getVideoModes(const std::string output = "");
 	std::vector<std::string> getCustomRunners();
 

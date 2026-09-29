@@ -1,6 +1,7 @@
 #include "InputManager.h"
 
 #include "utils/FileSystemUtil.h"
+#include "utils/StringUtil.h"
 #include "CECInput.h"
 #include "Log.h"
 #include "utils/Platform.h"
@@ -1264,7 +1265,7 @@ void InputManager::doOnFinish()
 					{
 						std::string tocall = command.text().get();
 
-						LOG(LogInfo) << "	" << tocall;
+						LOG(LogInfo) << "	" << Utils::String::maskSecrets(tocall);
 						std::cout << "==============================================\ninput config finish command:\n";						
 						int exitCode = Utils::Platform::ProcessStartInfo(tocall).run();
 						std::cout << "==============================================\n";
@@ -1480,7 +1481,7 @@ std::string InputManager::configureEmulators() {
       command << " ";
     }
   }
-  LOG(LogInfo) << "Configure emulators command : " << command.str().c_str();
+  LOG(LogInfo) << "Configure emulators command : " << Utils::String::maskSecrets(command.str());
   return command.str();
 }
 

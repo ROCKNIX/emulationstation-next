@@ -9,6 +9,19 @@
 
 #define HORIZONTAL_PADDING_PX  (Renderer::getScreenWidth()*0.01)
 
+// A dialog is 0.6 of the screen wide, and 0.8 when it has a paragraph to
+// say. The switch is measured, never matched on a string: a message that
+// would wrap past MSGBOX_WIDE_LINES lines at the standard width is laid out
+// at the wide one, so a confirmation that has to say several things -- what
+// goes, what arrives, what is never touched -- reads as lines and not as a
+// block (maintainer, 2026-09-07, the match preview on a 640-wide panel). A
+// short message never widens; the box still shrinks to the text's own width
+// when that is narrower than either cap. 0.8 is under the 0.9 that menus and
+// the toast use, so a dialog still reads as a dialog over the page behind it.
+#define MSGBOX_WIDTH           (Renderer::getScreenWidth() * 0.6f)
+#define MSGBOX_WIDE_WIDTH      (Renderer::getScreenWidth() * 0.8f)
+#define MSGBOX_WIDE_LINES      4
+
 GuiMsgBox::GuiMsgBox(Window* window, const std::string& text, const std::string& name1, const std::function<void()>& func1, GuiMsgBoxIcon icon) 
 	: GuiMsgBox(window, text, name1, func1, "", nullptr, "", nullptr, icon) { }
 
@@ -36,7 +49,7 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	mBackground.setCornerSize(theme->Background.cornerSize);
 	mBackground.setPostProcessShader(theme->Background.menuShader);
 
-	float width = Renderer::getScreenWidth() * 0.6f; // max width
+	float width = MSGBOX_WIDTH; // max width
 	float minWidth = Renderer::getScreenWidth() * 0.3f; // minimum width
 	
 	mImage = nullptr;
@@ -124,6 +137,18 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	mButtonGrid = makeButtonGrid(mWindow, mButtons);
 	mGrid.setEntry(mButtonGrid, Vector2i(0, 1), true, false, Vector2i(2, 1), GridFlags::BORDER_TOP);
 
+	// A paragraph gets the wide box (see MSGBOX_WIDE_LINES). Measured with
+	// the text's own font at the width the text would actually get.
+	if (width < MSGBOX_WIDE_WIDTH)
+	{
+		float textWidth = width - 3 * HORIZONTAL_PADDING_PX;
+		if (mImage != nullptr)
+			textWidth -= mImage->getSize().x() + 2 * HORIZONTAL_PADDING_PX;
+		const float lineHeight = mMsg->getFont()->getHeight();
+		if (lineHeight > 0 && mMsg->getFont()->sizeWrappedText(text, textWidth).y() > lineHeight * MSGBOX_WIDE_LINES)
+			width = MSGBOX_WIDE_WIDTH;
+	}
+
 	// decide final width
 	if(mMsg->getSize().x() < width && mButtonGrid->getSize().x() < width)
 	{
@@ -138,11 +163,61 @@ GuiMsgBox::GuiMsgBox(Window* window, const std::string& text,
 	
 	// now that we know width, we can find height
 	mMsg->setSize(width, 0); // mMsg->getSize.y() now returns the proper length
-	
-	float msgHeight = Math::max(Font::get(FONT_SIZE_LARGE)->getHeight(), mMsg->getSize().y()*1.225f);
+
+	// ...except that it does not, and on a small panel the difference puts
+	// the OK button on top of the message (#48).
+	//
+	// A TextComponent measures its automatic height by wrapping at its full
+	// width -- onTextChanged() calls sizeWrappedText(text, getSize().x()) --
+	// and draws by wrapping at its width minus its own horizontal padding:
+	// buildTextCache() lays the glyphs out at sx = mSize.x() - mPadding.x()
+	// - mPadding.z(). mMsg carries 0.015 of the screen on each side, so on a
+	// 640-wide panel the glyphs wrap at 364.8px in a box measured at 384 --
+	// 5% narrower than the height was measured for, 3.75% in the wide box --
+	// and the drawn text gains a line whenever a wrap point falls in that
+	// band.
+	//
+	// Nothing catches the extra line: a TextComponent with no autoscroll
+	// pushes no clip rect, so it paints straight through whatever is under
+	// it, which here is the button row.
+	//
+	// The 1.225 below is what hid it. It buys 0.225 of a line per line, so
+	// a message of five drawn lines or more absorbs one extra line and a
+	// shorter one does not -- and how many lines a message has depends on
+	// the panel, since the box is a fraction of the screen and the font is
+	// not scaled with it in the same proportion. That is why the same
+	// dialog is fine on a 1080p VM and has its button sitting on the text
+	// of an RG35XX SP. The bug is not the small screen; it is that the
+	// dialog measured one thing and drew another.
+	//
+	// So measure the height at the width the glyphs are actually laid out
+	// at. sizeWrappedText is sizeText(wrapText(text, xLen)) and
+	// buildTextCache is buildTextCache(wrapText(text, sx)), so the two agree
+	// exactly once they are given the same xLen. This is also the width the
+	// wide-box test above already measures at.
+	const Vector4f msgPadding = mMsg->getPadding();
+	const float drawnWidth = width - msgPadding.x() - msgPadding.z();
+	float drawnHeight = mMsg->getSize().y();
+	if (mMsg->getFont() != nullptr && drawnWidth > 0)
+		drawnHeight = mMsg->getFont()->sizeWrappedText(text, drawnWidth).y() + msgPadding.y() + msgPadding.w();
+
+	float msgHeight = Math::max(Font::get(FONT_SIZE_LARGE)->getHeight(), drawnHeight*1.225f);
 	
 	if (msgHeight + mButtonGrid->getSize().y() > Renderer::getScreenHeight())
 	{
+		// The message alone is taller than the screen. onSizeChanged() does
+		// constrain mMsg to the grid row left above the buttons, but a
+		// TextComponent renders at its natural height regardless of that
+		// bound unless it is scrolling -- so the text painted straight
+		// through the button row and the buttons appeared on top of it.
+		// Seen on an RG35XX SP with a two-paragraph message; a
+		// desktop-resolution VM never reaches this branch, which is why it
+		// survived to hardware.
+		//
+		// Set before setSize so the flag is live when onSizeChanged() runs.
+		// The grid still owns the geometry; this only makes the text respect it.
+		mMsg->setAutoScroll(TextComponent::AutoScrollType::VERTICAL);
+
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 		if (mImage != nullptr)
 			mMsg->setSize(Renderer::getScreenWidth() - mImage->getSize().x() - 4* HORIZONTAL_PADDING_PX, 0);

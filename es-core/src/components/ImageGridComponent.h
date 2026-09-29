@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #ifndef ES_CORE_COMPONENTS_IMAGE_GRID_COMPONENT_H
 #define ES_CORE_COMPONENTS_IMAGE_GRID_COMPONENT_H
 
@@ -90,6 +91,13 @@ public:
 	virtual void clear();
 
 	void setImage(const std::string& imagePath, const T& obj);
+	// Every tile's picture drawn at this width-to-height (fork #243; 0 =
+	// each file's own): the save state manager's thumbnails are one
+	// system's, and RetroArch wrote them at the core's native size.
+	// Called for each tile once it has its entry, for a grid whose tiles
+	// differ one from the next (the SCREENSHOTS system: each file its own
+	// game's aspect and rotation, fork #245).
+	void setTileDecorator(const std::function<void(GridTileComponent*, const T&)>& decorator) { mTileDecorator = decorator; }
 	std::string getImage(const T& obj);
 
 	bool input(InputConfig* config, Input input) override;
@@ -170,6 +178,7 @@ private:
 	Vector4f mPadding;
 	Vector2f mMargin;
 	Vector2f mTileSize;
+	std::function<void(GridTileComponent*, const T&)> mTileDecorator;
 	Vector2i mGridDimension;
 	Vector2f mGridSizeOverride;
 
@@ -296,6 +305,8 @@ void ImageGridComponent<T>::preloadTiles()
 		loadTile(tile, entry);
 		
 		entry.data.tile = tile;
+		if (mTileDecorator)
+			mTileDecorator(tile.get(), entry.object);
 	}
 }
 
@@ -366,6 +377,8 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 				loadTile(tile, entry);
 
 				entry.data.tile = tile;
+		if (mTileDecorator)
+			mTileDecorator(tile.get(), entry.object);
 
 				if (tile->isVisible())
 					mVisibleTiles.push_back(tile);
@@ -401,6 +414,12 @@ void ImageGridComponent<T>::ensureVisibleTileExist()
 			{
 				auto tile = createTile(idx, dimOpposite, tileDistance, startPosition);
 				loadTile(tile, entry);
+				// The loop copy is the same entry drawn again at the other end,
+				// so it takes the same decoration (a screenshot's turn and
+				// aspect, fork #243/#245); the two creation sites above did
+				// and this one did not (audit #258 PL-017).
+				if (mTileDecorator)
+					mTileDecorator(tile.get(), entry.object);
 				mScrollLoopTiles[idx] = tile;
 			}
 		}

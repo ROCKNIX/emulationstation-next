@@ -39,6 +39,28 @@ public:
 
         static void updateGameLists(Window* window, bool confirm = true);
         static void editKeyboardMappings(Window *window, IKeyboardMapContainer* mapping, bool editable);
+        // onFolderRow: open with the cursor on CHANGE CLOUD FOLDER -- the
+        // page a changed folder rebuilds, which keeps the player's place.
+        static void openCloud(Window* window, bool onFolderRow = false);
+	static void openCloudSetup(Window* window);
+	// The cloud folder editor (CHANGE CLOUD FOLDER), for a dialog that
+	// found the configured folder missing beside one with a near name (#127).
+	static void openCloudFolderEditor(Window* window, const std::string& current);
+        static void openCloudAddRemote(Window* window);
+        // MANAGE NETWORKS: the networks NetworkManager remembers, the one in
+        // use marked, A to forget one (fork #191). Fetches the list behind a
+        // spinner, then pushes the page.
+        static void openManageNetworks(Window* window);
+	// The question (FORGET name?, what changes), the spinner over one nmcli
+	// call, then onForgotten and the toast; on a failure a dialog and nothing
+	// else. The manage page's row and the Wi-Fi picker's FORGET (#318,
+	// D-UI-118) share it, so a network is forgotten the same way from both.
+	static void forgetWifiNetworkWithConfirmation(Window* window, const std::string& name, bool inUse, const std::function<void()>& onForgotten);
+        // consumeMarker: clear .restore-finish-pending on FINISH (the
+        // post-restore boot); false when opened from the menu later.
+        static void openRestoreRelink(Window* window, bool consumeMarker = false);
+        // Whole-device snapshot to and from the cloud, plus the credential
+        // re-entry that follows a restore.
 
 private:
         void addEntry(const std::string& name, bool add_arrow, const std::function<void()>& func, const std::string iconName = "");
@@ -75,6 +97,7 @@ private:
         // windows
         void openEmulatorSettings();
         void openSystemEmulatorSettings(SystemData* system);
+
 
         MenuComponent mMenu;
         std::shared_ptr<TextComponent> mVersion;

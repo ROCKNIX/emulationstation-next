@@ -443,6 +443,365 @@ namespace Utils
 
 		} // shellQuote
 
+		// ------------------------------------------------------------ maskSecrets
+		//
+		// A credential's value never reaches a log (D-INFRA-011): every command
+		// line, URL or query EmulationStation logs goes through here first, at
+		// every level (fork #177). The key or flag stays and the value reads
+		// <redacted>, so the line still says what ran; an empty value stays
+		// empty, since whether a credential is set may be shown and only what it
+		// is may not. A value already written as a placeholder in angle brackets
+		// (<password>, <redacted>) is left alone, which also makes a second pass
+		// a no-op.
+		//
+		// What counts as a credential's value, in the shapes this tree builds:
+		//
+		//   setrootpass hunter2                the rest of the line: GuiMenu quotes
+		//                                      the password since #198, and a log line
+		//                                      from before it, or a hand-typed one, has
+		//                                      it bare -- either way no tail is left
+		//   wifictl connect 'ssid' 'psk' 'CC'  the second word after connect or
+		//   wifictl enable 'ssid' 'psk'        enable: the passphrase, not the SSID
+		//   --password x, -p x, -pin x,        a flag ending in a credential word,
+		//   -netplaypass x, --token x          then one word; --key is batocera-
+		//                                      hotkeys' key NAME and mkdir -p takes
+		//                                      no value, so neither masks
+		//   password=x, pass=x, token=x,       a name ending in a credential word,
+		//   key=x, secret=x, psk=x, pin=x      then =: devpassword, cheevos_token,
+		//                                      wifi.key, ScreenScraperPass, api-key
+		//   ?y=x, &t=x, &p=x                   RetroAchievements' one-letter query
+		//                                      keys: the web API key, the token,
+		//                                      the login password
+		//
+		// A value is one shell word: every single-quoted, double-quoted and bare
+		// piece of it and every backslash-escaped character, to the next
+		// unquoted space, &, ; or | (#308 F-ES-09) -- shellQuote's '\'' escape
+		// is three such pieces. The quotes go with the value, so a passphrase
+		// with spaces is masked whole. Inside a quoted string (a URL in double
+		// quotes) the value ends at that string's closing quote. An unterminated
+		// quote takes the rest of the line: where the shape is unclear, more is
+		// masked rather than less.
+
+		static bool maskIsWordChar(char c)
+		{
+			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+				|| c == '_' || c == '.' || c == '-';
+		}
+
+		static bool maskIsSpace(char c)
+		{
+			return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+		}
+
+		static bool maskEndsValue(char c)
+		{
+			return maskIsSpace(c) || c == '&' || c == ';' || c == '|' || c == '\'' || c == '"';
+		}
+
+		static std::string maskLower(const std::string& word)
+		{
+			std::string lower = word;
+			for (auto& c : lower)
+				if (c >= 'A' && c <= 'Z')
+					c = (char)(c - 'A' + 'a');
+			return lower;
+		}
+
+		// Does a lower-cased name end in a word that means "credential"?
+		static bool maskIsSecretName(const std::string& lower)
+		{
+			static const char* const words[] = { "password", "pass", "token", "key", "secret", "psk", "pin" };
+			for (const char* word : words)
+			{
+				const size_t len = strlen(word);
+				if (lower.size() >= len && lower.compare(lower.size() - len, len, word) == 0)
+					return true;
+			}
+			return false;
+		}
+
+		// What quote `pos` sits inside, reading the line from its start as the
+		// shell would: 0 at the top level, else the quote character.
+		static char maskQuoteAt(const std::string& s, size_t pos)
+		{
+			char quote = 0;
+			for (size_t i = 0; i < pos && i < s.size(); ++i)
+			{
+				const char c = s[i];
+				if (quote == '\'')
+				{
+					if (c == '\'')
+						quote = 0;
+					continue;
+				}
+				if (c == '\\')
+				{
+					++i;
+					continue;
+				}
+				if (quote == '"')
+				{
+					if (c == '"')
+						quote = 0;
+					continue;
+				}
+				if (c == '\'' || c == '"')
+					quote = c;
+			}
+			return quote;
+		}
+
+		// One character of the command a quoted string holds, as the shell
+		// that runs it will read it (audit of the fix round PL-010): in a
+		// double-quoted string \" \\ \$ and \` are one character, the escaped
+		// one, and any other backslash stays itself; in a single-quoted string
+		// every byte stands for itself, except shellQuote's '\'' -- close,
+		// escaped quote, reopen -- which is one single quote of the command
+		// (audit of the fix round, claude G2-E-core-01: a value shellQuote
+		// quoted inside a command it quoted again began with that quote, was
+		// taken for the string's end, and went to the log unmasked). Sets c,
+		// and returns the character's width in the line -- or 0 where the
+		// enclosing string itself ends.
+		static size_t maskInnerChar(const std::string& s, size_t i, char enclosing, char& c)
+		{
+			c = s[i];
+			if (c == enclosing)
+			{
+				// The two ways a shell writes a single quote inside a
+				// single-quoted string: '\'' and '"'"' (the audit of the
+				// fixes, gpt G3-E-01: the second read as the string's end,
+				// and the password after it was logged).
+				if (enclosing != '\'')
+					return 0;
+				if (s.compare(i, 4, "'\\''") == 0)
+					return 4;
+				if (s.compare(i, 5, "'\"'\"'") == 0)
+					return 5;
+				return 0;
+			}
+			if (enclosing == '"' && c == '\\' && i + 1 < s.size())
+			{
+				const char next = s[i + 1];
+				if (next == '"' || next == '\\' || next == '$' || next == '`')
+				{
+					c = next;
+					return 2;
+				}
+			}
+			return 1;
+		}
+
+		// The end of the one shell word starting at pos (#308 F-ES-09). At the
+		// top level a word runs across every quoted and bare piece of it, and
+		// every backslash-escaped character, until unquoted whitespace or &, ;
+		// or |: `--password 'front'back` passes the shell frontback, and the
+		// mask used to stop at the first closing quote and log "back". Inside
+		// a quoted string -- a URL in double quotes, a command in single ones
+		// -- the value ends where it always did: at the string's own closing
+		// quote, or at whitespace, &, ; or |.
+		static size_t maskValueEnd(const std::string& s, size_t pos)
+		{
+			if (pos >= s.size())
+				return pos;
+
+			// Inside a quoted string -- the command of an sh -c, a URL -- the
+			// value is a word of the command the string holds: the string's
+			// own closing quote ends it, and so does the inner command's
+			// unquoted whitespace, &, ; or |, but the inner command's own quotes
+			// keep a word whole. They used to end it before it began, and
+			// `sh -c 'tool --password "front back"'` logged the password
+			// (audit of the fixes of #307, gpt's coverage note on F-ES-09).
+			// The inner command is read character by character as its own shell
+			// reads it (maskInnerChar), so a backslash there -- at its top level
+			// or inside its double quote -- takes the next character with it:
+			// the inner quote was tracked before the backslash, and
+			// `sh -c 'tool --password "front\" back"'` logged "back" (audit of
+			// the fix round PL-010). Inside the inner single quote a backslash
+			// is only a backslash, as the shell has it.
+			const char enclosing = maskQuoteAt(s, pos);
+			if (enclosing != 0)
+			{
+				char inner = 0;
+				size_t i = pos;
+				while (i < s.size())
+				{
+					char c = 0;
+					const size_t width = maskInnerChar(s, i, enclosing, c);
+					if (width == 0)
+						return i; // the string itself ends
+					if (inner == 0 && (maskIsSpace(c) || c == '&' || c == ';' || c == '|'))
+						return i;
+					i += width;
+					if (inner == '\'')
+					{
+						if (c == '\'')
+							inner = 0;
+					}
+					else if (c == '\\')
+					{
+						if (i < s.size())
+						{
+							char escaped = 0;
+							const size_t next = maskInnerChar(s, i, enclosing, escaped);
+							if (next == 0)
+								return i; // the string ends after a lone backslash
+							i += next; // the inner command's escaped character
+						}
+					}
+					else if (inner == '"')
+					{
+						if (c == '"')
+							inner = 0;
+					}
+					else if (c == '\'' || c == '"')
+						inner = c;
+				}
+				return s.size();
+			}
+
+			char quote = 0;
+			size_t i = pos;
+			for (; i < s.size(); ++i)
+			{
+				const char c = s[i];
+				if (quote == '\'')
+				{
+					if (c == '\'')
+						quote = 0;
+					continue;
+				}
+				if (c == '\\')
+				{
+					++i; // an escaped character, whatever it is
+					continue;
+				}
+				if (quote == '"')
+				{
+					if (c == '"')
+						quote = 0;
+					continue;
+				}
+				if (c == '\'' || c == '"')
+					quote = c;
+				else if (maskIsSpace(c) || c == '&' || c == ';' || c == '|')
+					return i;
+			}
+			return s.size(); // the end of the line, or an unterminated quote: the value is the rest
+		}
+
+		static bool maskIsPlaceholder(const std::string& s, size_t pos, size_t end)
+		{
+			return end > pos + 1 && s[pos] == '<' && s[end - 1] == '>';
+		}
+
+		// Append the value at [pos, end) masked -- or as it is when it is empty
+		// or already a placeholder -- and return end.
+		static size_t maskAppendValue(const std::string& s, size_t pos, size_t end, std::string& out)
+		{
+			if (end == pos || maskIsPlaceholder(s, pos, end))
+				out.append(s, pos, end - pos);
+			else
+				out += "<redacted>";
+			return end;
+		}
+
+		static size_t maskCopySpaces(const std::string& s, size_t pos, std::string& out)
+		{
+			while (pos < s.size() && maskIsSpace(s[pos]))
+				out += s[pos++];
+			return pos;
+		}
+
+		std::string maskSecrets(const std::string& _string)
+		{
+			const std::string& s = _string;
+			std::string out;
+			out.reserve(s.size());
+
+			std::string previous; // the word before this one, lower-cased
+			size_t i = 0;
+			while (i < s.size())
+			{
+				if (!maskIsWordChar(s[i]))
+				{
+					out += s[i++];
+					continue;
+				}
+
+				const size_t start = i;
+				while (i < s.size() && maskIsWordChar(s[i]))
+					++i;
+
+				const std::string word = maskLower(s.substr(start, i - start));
+				out.append(s, start, i - start);
+
+				// name=value, or a one-letter RetroAchievements key after ? or &
+				const bool queryKey = (word == "y" || word == "t" || word == "p")
+					&& start > 0 && (s[start - 1] == '?' || s[start - 1] == '&');
+
+				if (i < s.size() && s[i] == '=' && (queryKey || maskIsSecretName(word)))
+				{
+					out += '=';
+					++i;
+					i = maskAppendValue(s, i, maskValueEnd(s, i), out);
+					previous = word;
+					continue;
+				}
+
+				if (i < s.size() && maskIsSpace(s[i]))
+				{
+					if (word == "setrootpass")
+					{
+						i = maskCopySpaces(s, i, out);
+						size_t end = s.size();
+						while (end > i && maskIsSpace(s[end - 1]))
+							--end;
+						i = maskAppendValue(s, i, end, out);
+						previous = word;
+						continue;
+					}
+
+					if (word == "wifictl")
+					{
+						size_t j = i;
+						while (j < s.size() && maskIsSpace(s[j]))
+							++j;
+						size_t k = j;
+						while (k < s.size() && maskIsWordChar(s[k]))
+							++k;
+
+						const std::string sub = maskLower(s.substr(j, k - j));
+						if (sub == "connect" || sub == "enable")
+						{
+							out.append(s, i, k - i);
+							i = maskCopySpaces(s, k, out);
+							const size_t ssidEnd = maskValueEnd(s, i); // the SSID is no secret
+							out.append(s, i, ssidEnd - i);
+							i = maskCopySpaces(s, ssidEnd, out);
+							i = maskAppendValue(s, i, maskValueEnd(s, i), out);
+							previous = sub;
+							continue;
+						}
+					}
+
+					const bool flag = word.size() > 1 && word[0] == '-'
+						&& ((word == "-p" && previous != "mkdir") || (word != "--key" && maskIsSecretName(word)));
+					if (flag)
+					{
+						i = maskCopySpaces(s, i, out);
+						i = maskAppendValue(s, i, maskValueEnd(s, i), out);
+						previous = word;
+						continue;
+					}
+				}
+
+				previous = word;
+			}
+
+			return out;
+
+		} // maskSecrets
+
 		std::string replace(const std::string& _string, const std::string& _replace, const std::string& _with)
 		{
 			if (_replace.empty())

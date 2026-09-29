@@ -105,6 +105,15 @@ public:
 		text->setGlowColor(glowColor);
 		text->setGlowSize(glowSize);
 		text->setAutoScroll(autoScroll);
+		// "true" / "false" force the mode; anything else leaves TextComponent's
+		// AUTO, which wraps only when the area clears 1.8 lines of the font's
+		// tallest glyph seen so far -- a moving threshold (see GuiSaveState).
+		if (multiLine == "true")
+			text->setMultiLine(TextComponent::MultiLineType::MULTILINE);
+		else if (multiLine == "false")
+			text->setMultiLine(TextComponent::MultiLineType::SINGLELINE);
+		else
+			text->setMultiLine(TextComponent::MultiLineType::AUTO);
 		text->setFont(fontPath, fontSize * Math::min(Renderer::getScreenHeight(), Renderer::getScreenWidth()));
 	}
 	
@@ -123,6 +132,7 @@ public:
 	std::string  fontPath;
 	float fontSize;
 	bool autoScroll;
+	std::string multiLine;
 	Vector4f padding;
 };
 
@@ -220,6 +230,10 @@ public:
 	void setVideo(const std::string& path, float defaultDelay = -1.0);
 
 	void setImage(const std::string& path, bool isDefaultImage = false);
+	// The width-to-height the tile's picture is drawn at (fork #243; 0 =
+	// the file's own). Kept across setImage.
+	void setDisplayAspect(float ratio);
+	void setDisplayRotation(int quarterTurns);
 	void setMarquee(const std::string& path);
 	
 	void setFavorite(bool favorite);
@@ -288,6 +302,8 @@ private:
 
 	std::string mCurrentMarquee;
 	std::string mCurrentPath;
+	float mDisplayAspect = 0.0f;
+	int mDisplayRotation = 0;
 	std::string mVideoPath;
 
 	void setSelectedZoom(float percent);

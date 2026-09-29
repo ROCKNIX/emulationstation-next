@@ -31,6 +31,7 @@ endif()
 set(ES_HEADERS	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EmulationStation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FileData.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/LaunchCommand.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FileTag.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FileSorts.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MetaData.h
@@ -46,6 +47,20 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ThreadedScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedHasher.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedBluetooth.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedCloudSync.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateJobQueue.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateBookkeeper.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudExit.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudOffer.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudText.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CheevosRetry.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CheevosIndex.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/WifiText.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineAchievements.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineAchievementsText.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ProxyCards.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineScanJob.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudTransferJob.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SystemRandomPlaylist.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LangParser.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/KeyboardMapping.h	
@@ -79,6 +94,13 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiUpdate.cpp # batocera    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBackup.h # batocera
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBackup.cpp # batocera
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCloudTransfer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiOfflineScan.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CaptureRotation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CaptureRotationText.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DisplayAspect.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DisplayAspectText.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperRun.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiInstall.h # batocera
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiInstall.cpp # batocera
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiLoading.h # batocera
@@ -158,6 +180,19 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ThreadedScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedHasher.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedBluetooth.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedCloudSync.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateJobQueue.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateBookkeeper.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudOffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudText.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CheevosRetry.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CheevosIndex.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/WifiText.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineAchievements.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineAchievementsText.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ProxyCards.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/OfflineScanJob.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudTransferJob.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SystemRandomPlaylist.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LangParser.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/KeyboardMapping.cpp
@@ -188,6 +223,13 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiInstallStart.cpp # batocera
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiUpdate.cpp # batocera    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBackup.cpp # batocera
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCloudTransfer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiOfflineScan.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CaptureRotation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CaptureRotationText.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DisplayAspect.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DisplayAspectText.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperRun.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiInstall.cpp # batocera    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiThemeInstaller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBezelInstaller.cpp

@@ -2,10 +2,12 @@
 #ifndef ES_APP_GUIS_GUI_SETTINGS_H
 #define ES_APP_GUIS_GUI_SETTINGS_H
 
+#include <memory>
 #include "components/MenuComponent.h"
 #include "guis/GuiFileBrowser.h"
 
 class SwitchComponent;
+class MultiLineMenuEntry;
 
 // This is just a really simple template for a GUI that calls some save functions when closed.
 class GuiSettings : public GuiComponent
@@ -99,6 +101,19 @@ public:
 
 	MenuComponent& getMenu() { return mMenu; }
 
+	// A token that dies with the page. A worker that reports back through
+	// Window::postToUiThread keeps a std::weak_ptr of it and does nothing
+	// when lock() fails: the page it was going to fill in has been closed,
+	// and there is nothing left to write to. Held here rather than in a
+	// save function so that adding one does not turn a page with nothing
+	// to save into one that writes the settings files on close.
+	std::shared_ptr<void> lifeToken()
+	{
+		if (mLifeToken == nullptr)
+			mLifeToken = std::make_shared<int>(0);
+		return mLifeToken;
+	}
+
 	inline void onFinalize(const std::function<void()>& func) { mOnFinalizeFunc = func; };
 
 	bool getVariable(const std::string name) 
@@ -133,10 +148,13 @@ protected:
 	MenuComponent mMenu;
 
 private:
+	void buildInputTextConfigRow(const std::string& title, const std::string& settingsID, bool password, bool storeInSettings, const std::function<void(Window*, std::string/*title*/, std::string /*value*/, const std::function<void(std::string)>& onsave)>& customEditor);
+
 	bool mDoSave = true;
 
 	std::vector< std::function<void()> > mSaveFuncs;
 	std::function<void()> mOnFinalizeFunc;
+	std::shared_ptr<void> mLifeToken;
 
 	std::map<std::string, bool> mVariableMap;
 
