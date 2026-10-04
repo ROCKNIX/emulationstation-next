@@ -523,6 +523,56 @@ void GuiMenu::openServicesSettings()
 	mWindow->pushGui(s);
 }
 
+static void applyZramSettings(const std::string& size, bool zstd)
+{
+	Utils::Platform::runSystemCommand("/usr/bin/rocknix-memory-manager --zram-size " + size + " --zram-algo " + (zstd ? "zstd" : "lz4") + " --reload", "", nullptr);
+}
+
+void GuiMenu::openZramSettings()
+{
+	auto config = ApiSystem::executeScriptLegacy("/usr/bin/rocknix-memory-manager --get-zram");
+	std::string size = config.size() > 0 ? config[0] : "0";
+	bool zstd = config.size() > 1 && config[1] == "zstd";
+	bool zramEnabled = size != "0";
+
+	std::vector<std::string> sizes = { "50%", "75%", "100%", "125%", "150%" };
+	if (std::find(sizes.begin(), sizes.end(), size) == sizes.end())
+		size = "100%";
+
+	auto s = new GuiSettings(mWindow, _("ZRAM SWAP").c_str());
+
+	auto enable_zram = std::make_shared<SwitchComponent>(mWindow);
+	enable_zram->setState(zramEnabled);
+	s->addWithDescription(_("ENABLE ZRAM"), _("Compresses unused memory so bigger games fit in RAM."), enable_zram);
+
+	if (zramEnabled)
+	{
+		auto zstd_zram = std::make_shared<SwitchComponent>(mWindow);
+		zstd_zram->setState(zstd);
+		s->addWithDescription(_("ZSTD COMPRESSION"), _("Recompresses idle memory with zstd every 10 minutes to save more space. Off uses only lz4, which is faster but saves less."), zstd_zram);
+
+		auto size_zram = std::make_shared<OptionListComponent<std::string> >(mWindow, _("ZRAM SIZE"), false);
+		for (auto& option : sizes)
+			size_zram->add(option, option, option == size);
+		s->addWithDescription(_("ZRAM SIZE"), _("Swap space, as a percent of total RAM. Compressed, it never takes more than half of RAM."), size_zram);
+
+		s->addSaveFunc([size, zstd, size_zram, zstd_zram]
+		{
+			if (size_zram->getSelected() != size || zstd_zram->getState() != zstd)
+				applyZramSettings(size_zram->getSelected(), zstd_zram->getState());
+		});
+	}
+
+	enable_zram->setOnChangedCallback([this, s, enable_zram, size, zstd]()
+	{
+		applyZramSettings(enable_zram->getState() ? size : "0", zstd);
+		delete s;
+		openZramSettings();
+	});
+
+	mWindow->pushGui(s);
+}
+
 void GuiMenu::openDmdSettings()
 {
 	auto s = new GuiSettings(mWindow, _("DMD").c_str());
@@ -2155,6 +2205,8 @@ void GuiMenu::openSystemSettings()
 			SystemConf::getInstance()->set("enable.turbo-mode", turbomode ? "1" : "0");
 		});
 	}
+
+	s->addEntry(_("ZRAM SWAP"), true, [this] { openZramSettings(); });
 
 #if defined(SM6115)
 	// Add option to set gpu max clock speed
