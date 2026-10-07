@@ -4056,7 +4056,7 @@ void GuiMenu::openGamesSettings()
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SHADERS) && !hasGlobalFeature("shaderset"))
 	{
 #endif
-			std::string currentVideofilter = SystemConf::getInstance()->get("global.videofilters");
+			std::string currentVideofilter = SystemConf::getInstance()->get("global.videofilter");
 
 			auto videofilters_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("VIDEO FILTER"), false);
 			videofilters_choices->add(_("AUTO"), "auto", currentVideofilter.empty() || currentVideofilter == "auto");
@@ -4075,7 +4075,7 @@ void GuiMenu::openGamesSettings()
 				videofilters_choices->selectFirstItem();
 
 			s->addWithLabel(_("VIDEO FILTER"), videofilters_choices);
-			s->addSaveFunc([videofilters_choices] { SystemConf::getInstance()->set("global.videofilters", videofilters_choices->getSelected()); });
+			s->addSaveFunc([videofilters_choices] { SystemConf::getInstance()->set("global.videofilter", videofilters_choices->getSelected()); });
 #if !defined(ROCKNIX)
 		}
 #endif
@@ -6445,7 +6445,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 	{
 		// gameboy colorize
 		auto colorizations_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("COLORIZATION"), false);
-		std::string currentColorization = SystemConf::getInstance()->get(configName + "-renderer.colorization");
+		std::string currentColorization = SystemConf::getInstance()->get(configName + ".renderer.colorization");
 		if (currentColorization.empty())
 			currentColorization = std::string("auto");
 		
@@ -6586,7 +6586,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		if (CustomFeatures::FeaturesLoaded || (!CustomFeatures::FeaturesLoaded && (systemData->getName() == "gb" || systemData->getName() == "gbc" || systemData->getName() == "gb2players" || systemData->getName() == "gbc2players")))  // only for gb, gbc and gb2players
 		{
 			systemConfiguration->addWithLabel(_("COLORIZATION"), colorizations_choices);
-			systemConfiguration->addSaveFunc([colorizations_choices, configName] { SystemConf::getInstance()->set(configName + "-renderer.colorization", colorizations_choices->getSelected()); });
+			systemConfiguration->addSaveFunc([colorizations_choices, configName] { SystemConf::getInstance()->set(configName + ".renderer.colorization", colorizations_choices->getSelected()); });
 		}		
 	}
 
