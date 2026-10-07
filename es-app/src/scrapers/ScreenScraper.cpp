@@ -214,6 +214,7 @@ const std::set<Scraper::ScraperMediaSource>& ScreenScraperScraper::getSupportedM
 		ScraperMediaSource::Ratings,
 		ScraperMediaSource::PadToKey,
 		ScraperMediaSource::Bezel_16_9,
+		ScraperMediaSource::Cartridge,
 		ScraperMediaSource::Region
 	};
 
@@ -438,6 +439,8 @@ std::vector<std::string> ScreenScraperRequest::getRipList(std::string imageSourc
 		return { "screenmarqueesmall", "screenmarquee", "wheel", "wheel-hd", "wheel-steel", "wheel-carbon" };
 	if (imageSource == "video")
 		return { "video-normalized", "video" };
+	if (imageSource == "cartridge")
+		return { "support-texture", "support-2D" };
 
 	//if (imageSource == "box-2D-back")
 	//	return{ "box-2D-back" };
@@ -825,6 +828,19 @@ void ScreenScraperRequest::processGame(const pugi::xml_document& xmldoc, std::ve
 						result.urls[MetaDataId::Bezel] = ScraperSearchItem(ensureUrl(art.text().get()), art.attribute("format") ? "." + std::string(art.attribute("format").value()) : "");
 					else
 						LOG(LogDebug) << "Failed to find media XML node for bezel";
+				}
+			}
+
+			if (Settings::getInstance()->getBool("ScrapeCartridge"))
+			{
+				ripList = getRipList("cartridge");
+				if (!ripList.empty())
+				{
+					pugi::xml_node art = findMedia(media_list, ripList, romlang, region);
+					if (art)
+						result.urls[MetaDataId::Cartridge] = ScraperSearchItem(ensureUrl(art.text().get()), art.attribute("format") ? "." + std::string(art.attribute("format").value()) : "");
+					else
+						LOG(LogDebug) << "Failed to find media XML node for cartridge";
 				}
 			}
 		}
