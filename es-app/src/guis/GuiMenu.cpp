@@ -340,6 +340,15 @@ void GuiMenu::openResetOptions()
 		});
 	}
 
+	if (Utils::Platform::GetEnv("DEVICE_PANEL_CALIBRATION") == "true") {
+		s->addEntry(_("CALIBRATE DISPLAY REFRESH RATE"), true, [window] {
+		window->pushGui(new GuiMsgBox(window, _("THE DISPLAY WILL SWITCH BETWEEN 120 HZ AND 60 HZ WHILE ITS REFRESH RATE IS MEASURED. THIS TAKES ABOUT A MINUTE.\n\nCALIBRATE THE DISPLAY?"), _("YES"),
+			[] {
+			Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/rocknix-panel-calibration\"", "", nullptr);
+			}, _("NO"), nullptr));
+		});
+	}
+
 	s->addEntry(_("FACTORY RESET"), true, [window] {
 	window->pushGui(new GuiMsgBox(window, _("WARNING: YOUR DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nEJECT YOUR GAME CARD BEFORE PROCEEDING!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 		[] {
