@@ -5,12 +5,17 @@
 #include <sstream>
 #include <fstream>
 #include <cstdio>
+#include <map>
+#include <vector>
 
 #include "ApiSystem.h"
 #include "Scripting.h"
 #include "Window.h"
+#include "components/OptionListComponent.h"
+#include "guis/GuiLoading.h"
 #include "guis/GuiMsgBox.h"
 #include "utils/Platform.h"
+#include "utils/StringUtil.h"
 #include "Log.h"
 #include "SystemConf.h"
 #include "HttpReq.h"
@@ -37,17 +42,27 @@ class MoonlightClient {
   std::string server_ip_;
 };
 
+// Result of a pairing attempt, passed back to the UI thread
+struct MoonlightPairResult {
+  bool paired = false;
+  std::string server_ip;
+};
+
 // Moonlight version check function
 bool isEmbedded(void) {
   FILE* mlver = popen ("moonlight -v", "r");
-  std::stringstream ss;
-  ss << mlver;
-  std::string output = ss.str(); 
-  if (output.find("Embedded") != std::string::npos) {
-    return true;
-  } else {
+  if (mlver == nullptr) {
     return false;
   }
+
+  std::string output;
+  char buffer[256];
+  while (fgets(buffer, sizeof buffer, mlver) != nullptr) {
+    output += buffer;
+  }
+  pclose(mlver);
+
+  return output.find("Embedded") != std::string::npos;
 }
 
 // SSL extraction function (client.pem)
@@ -98,6 +113,71 @@ void extractKey() {
   }
   while (line.find("\\n", pos) != std::string::npos);
   keyFile << line;
+}
+
+// Streaming options live in moonlight's own config, not SystemConf.
+// Only managed keys are rewritten, comments and everything else stay.
+static const char* MOONLIGHT_CONF = "/storage/.config/moonlight/moonlight.conf";
+
+std::map<std::string, std::string> readMoonlightConf() {
+  std::map<std::string, std::string> values;
+  std::ifstream in(MOONLIGHT_CONF);
+  std::string line;
+
+  while (std::getline(in, line)) {
+    const size_t comment = line.find('#');
+    if (comment != std::string::npos) {
+      line = line.substr(0, comment);
+    }
+
+    const size_t equals = line.find('=');
+    if (equals == std::string::npos) {
+      continue;
+    }
+
+    const std::string key = Utils::String::trim(line.substr(0, equals));
+    if (!key.empty()) {
+      values[key] = Utils::String::trim(line.substr(equals + 1));
+    }
+  }
+
+  return values;
+}
+
+void updateMoonlightConf(const std::map<std::string, std::string>& updates) {
+  std::vector<std::string> lines;
+  std::map<std::string, bool> replaced;
+  std::string line;
+
+  std::ifstream in(MOONLIGHT_CONF);
+  while (std::getline(in, line)) {
+    const size_t equals = line.find('=');
+    const size_t comment = line.find('#');
+
+    if (equals != std::string::npos && (comment == std::string::npos || comment > equals)) {
+      const std::string key = Utils::String::trim(line.substr(0, equals));
+      auto it = updates.find(key);
+      if (it != updates.end()) {
+        line = key + " = " + it->second;
+        replaced[key] = true;
+      }
+    }
+
+    lines.push_back(line);
+  }
+  in.close();
+
+  // Append keys the file did not have
+  for (const auto& update : updates) {
+    if (!replaced[update.first]) {
+      lines.push_back(update.first + " = " + update.second);
+    }
+  }
+
+  std::ofstream out(MOONLIGHT_CONF);
+  for (const auto& l : lines) {
+    out << l << "\n";
+  }
 }
 
 // File existence check function
@@ -267,13 +347,17 @@ void GuiMoonlight::show(Window* window)
 GuiMoonlight::GuiMoonlight(Window* window)
  : GuiSettings(window, "MOONLIGHT GAME STREAMING")
 {
-  char pin[5];
-  snprintf(pin, sizeof pin, "%04d", rand() % 10000);
+  char pinBuffer[5];
+  snprintf(pinBuffer, sizeof pinBuffer, "%04d", rand() % 10000);
+  const std::string pin(pinBuffer);
 
 	auto theme = ThemeData::getMenuTheme();
 	std::shared_ptr<Font> font = theme->Text.font;
 	unsigned int color = theme->Text.color;
 	auto pinUI = std::make_shared<TextComponent>(window, pin, font, color);
+
+	// GuiSettings::save() does nothing unless a save func is registered
+	addSaveFunc([] { SystemConf::getInstance()->saveSystemConf(); });
 
 	addGroup(_("TOOLS"));
 
@@ -296,34 +380,171 @@ GuiMoonlight::GuiMoonlight(Window* window)
     }
   });
 
+	addGroup(_("SETTINGS"));
+  addInputTextConfigRow(_("SERVER IP"), "moonlight.host", false);
+  addWithLabel(_("PAIRING PIN"), pinUI);
+
+	addGroup(_("STREAMING"));
+
+  // Seeded from moonlight.conf, written back by the save func below
+  const auto conf = readMoonlightConf();
+
+  auto valueOr = [&conf](const std::string& key, const std::string& fallback) {
+    auto it = conf.find(key);
+    return (it == conf.end() || it->second.empty()) ? fallback : it->second;
+  };
+
+  // Steps match moonlight's bitrate tiers. Not every device has a 1080p screen.
+  const std::string currentRes = valueOr("width", "1280") + "x" + valueOr("height", "720");
+  auto resolution = std::make_shared<OptionListComponent<std::string>>(window, _("RESOLUTION"), false);
+  bool knownRes = false;
+  for (const std::string& res : { "640x360", "854x480", "1280x720", "1920x1080", "2560x1440", "3840x2160" }) {
+    const bool selected = (res == currentRes);
+    knownRes |= selected;
+    resolution->add(res, res, selected);
+  }
+  // Keep a hand-edited value instead of snapping to a preset
+  if (!knownRes) {
+    resolution->add(currentRes, currentRes, true);
+  }
+  addWithLabel(_("RESOLUTION"), resolution);
+
+  const std::string currentFps = valueOr("fps", "60");
+  auto fps = std::make_shared<OptionListComponent<std::string>>(window, _("FRAME RATE"), false);
+  bool knownFps = false;
+  for (const std::string& f : { "30", "60", "90", "120" }) {
+    const bool selected = (f == currentFps);
+    knownFps |= selected;
+    fps->add(f + " FPS", f, selected);
+  }
+  if (!knownFps) {
+    fps->add(currentFps + " FPS", currentFps, true);
+  }
+  addWithLabel(_("FRAME RATE"), fps);
+
+  // -1 is moonlight's default: it works the rate out from resolution and fps
+  const std::string currentBitrate = valueOr("bitrate", "-1");
+  auto bitrate = std::make_shared<OptionListComponent<std::string>>(window, _("BITRATE"), false);
+  bool knownBitrate = (currentBitrate == "-1");
+  bitrate->add(_("AUTO"), "-1", knownBitrate);
+  for (const std::string& b : { "1000", "3000", "5000", "10000", "15000", "20000", "30000", "40000", "50000" }) {
+    const bool selected = (b == currentBitrate);
+    knownBitrate |= selected;
+    bitrate->add(std::to_string(std::stoi(b) / 1000) + " Mbps", b, selected);
+  }
+  if (!knownBitrate) {
+    bitrate->add(currentBitrate + " Kbps", currentBitrate, true);
+  }
+  addWithLabel(_("BITRATE"), bitrate);
+
+  // moonlight treats "hevc" as "h265" and falls back to auto on anything else
+  std::string currentCodec = valueOr("codec", "auto");
+  if (currentCodec == "hevc") {
+    currentCodec = "h265";
+  }
+  if (currentCodec != "auto" && currentCodec != "h264" && currentCodec != "h265" && currentCodec != "av1") {
+    currentCodec = "auto";
+  }
+
+  auto codec = std::make_shared<OptionListComponent<std::string>>(window, _("VIDEO CODEC"), false);
+  codec->add(_("AUTO"), "auto", currentCodec == "auto");
+  codec->add("H.264", "h264", currentCodec == "h264");
+  codec->add("H.265 (HEVC)", "h265", currentCodec == "h265");
+  codec->add("AV1", "av1", currentCodec == "av1");
+  addWithLabel(_("VIDEO CODEC"), codec);
+
+  addSaveFunc([resolution, fps, bitrate, codec] {
+    const std::string res = resolution->getSelected();
+    const size_t x = res.find('x');
+    if (x == std::string::npos) {
+      return;
+    }
+
+    updateMoonlightConf({
+      { "width",   res.substr(0, x) },
+      { "height",  res.substr(x + 1) },
+      { "fps",     fps->getSelected() },
+      { "bitrate", bitrate->getSelected() },
+      { "codec",   codec->getSelected() },
+    });
+  });
+
+	addGroup(_("PAIRING"));
+
   addEntry(_("PAIR WITH SERVER"), false, [window, pin] {
     std::string server_ip = SystemConf::getInstance()->get("moonlight.host");
+    if (server_ip.empty()) {
+      window->pushGui(new GuiMsgBox(window, _("Unable to connect to server")));
+      return;
+    }
 
     char cmd[1024];
     if (isEmbedded() == false) {
-      snprintf(cmd, sizeof cmd, "QT_QPA_PLATFORM=wayland moonlight pair -pin %s %s", pin, server_ip.c_str());
+      snprintf(cmd, sizeof cmd, "QT_QPA_PLATFORM=wayland moonlight pair -pin %s %s", pin.c_str(), server_ip.c_str());
     } else {
-      snprintf(cmd, sizeof cmd, "moonlight pair -pin %s %s", pin, server_ip.c_str());
+      snprintf(cmd, sizeof cmd, "moonlight pair -pin %s %s", pin.c_str(), server_ip.c_str());
     }
-		ApiSystem::executeScriptLegacy(cmd, [server_ip, window](std::string line) {
-      std::string new_server_ip;
-      if (ParseServerIp(line, &new_server_ip) && server_ip != new_server_ip) {
-  			SystemConf::getInstance()->set("moonlight.host", new_server_ip);
-      }
-      const std::string pared_ok = "Succesfully paired";
-      if (line == "Succesfully paired") {
+
+    // moonlight blocks until the host accepts the PIN, so keep it off the UI thread
+    const std::string command(cmd);
+    const std::string waitText = _("PAIRING PIN") + ": " + pin;
+
+    // Cancelling must kill the pairing too, or it keeps running against a PIN
+    // the menu has thrown away.
+    char killCmd[1024];
+    snprintf(killCmd, sizeof killCmd, "pkill -f \"moonlight pair -pin %s\"", pin.c_str());
+    const std::string killCommand(killCmd);
+    auto cancelled = std::make_shared<bool>(false);
+
+    window->pushGui(new GuiLoading<MoonlightPairResult>(window, waitText,
+      [command, server_ip](IGuiLoadingHandler*) {
+        MoonlightPairResult result;
+        result.server_ip = server_ip;
+
+        ApiSystem::executeScriptLegacy(command, [&result](std::string line) {
+          std::string new_server_ip;
+          if (ParseServerIp(line, &new_server_ip)) {
+            result.server_ip = new_server_ip;
+          }
+          if (line == "Succesfully paired") {
+            result.paired = true;
+          }
+        });
+
+        return result;
+      },
+      [window, server_ip, cancelled](MoonlightPairResult result) {
+        // Cancelled, nothing to report
+        if (*cancelled) {
+          return;
+        }
+
+        if (!result.server_ip.empty() && result.server_ip != server_ip) {
+          SystemConf::getInstance()->set("moonlight.host", result.server_ip);
+          SystemConf::getInstance()->saveSystemConf();
+        }
+
+        if (!result.paired) {
+          window->pushGui(new GuiMsgBox(window, _("Unable to connect to server")));
+          return;
+        }
+
+        if (fileExists("/storage/.config/Moonlight Game Streaming Project/Moonlight.conf") == true) {
+          const std::string cert_path = "/storage/.cache/Moonlight Game Streaming Project/";
+          if (fileExists(cert_path + "client.pem") == false) {
+            extractClient();
+          }
+          if (fileExists(cert_path + "key.pem") == false) {
+            extractKey();
+          }
+        }
+
         window->pushGui(new GuiMsgBox(window, _("Succesfully paired with server")));
-      }
-    if (fileExists("/storage/.config/Moonlight Game Streaming Project/Moonlight.conf") == true) {
-      const std::string cert_path = "/storage/.cache/Moonlight Game Streaming Project/";
-      if (fileExists(cert_path + "client.pem") == false) {
-        extractClient();
-      }
-      if (fileExists(cert_path + "key.pem") == false) {
-        extractKey();
-      }
-    }
-		});
+      },
+      [cancelled, killCommand]() {
+        *cancelled = true;
+        Utils::Platform::runSystemCommand(killCommand, "", nullptr);
+      }));
 	});
 
   addEntry(_("UNPAIR WITH SERVER"), false, [this, window] {
@@ -336,10 +557,6 @@ GuiMoonlight::GuiMoonlight(Window* window)
       window->pushGui(new GuiMsgBox(window, _("Unpaired from server")));
     }
 	});
-
-	addGroup(_("SETTINGS"));
-  addInputTextConfigRow(_("SERVER IP"), "moonlight.host", false);
-  addWithLabel(_("PAIRING PIN"), pinUI);
 }
 
 std::vector<std::string> GuiMoonlight::ParseAppList(const std::vector<std::string>& vec) {

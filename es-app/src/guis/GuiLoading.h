@@ -26,14 +26,15 @@ template<typename T>
 class GuiLoading : public GuiComponent, public IGuiLoadingHandler
 {
 public:
-	GuiLoading(Window *window, const std::string title, const std::function<T(IGuiLoadingHandler*)> &func, const std::function<void(T)> &func2 = nullptr)
-		: GuiComponent(window), mBusyAnim(window), mFunc(func), mFunc2(func2)
+	GuiLoading(Window *window, const std::string title, const std::function<T(IGuiLoadingHandler*)> &func, const std::function<void(T)> &func2 = nullptr, const std::function<void()> &onCancel = nullptr)
+		: GuiComponent(window), mBusyAnim(window), mFunc(func), mFunc2(func2), mOnCancel(onCancel)
 	{
 		setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
 		setTag("GuiLoading");
 	
 		mText = title;
 		mTextChanged = false;
+		mCancelRequested = false;
 
 		mRunning = true;
 		mHandle = new std::thread(&GuiLoading::threadLoading, this);
@@ -78,7 +79,20 @@ public:
 
 	bool input(InputConfig *config, Input input) override
 	{
-		return false;	
+		// Only when the caller passed a handler. It should make mFunc return;
+		// deleting this GUI here would block on the worker thread.
+		if (mOnCancel != nullptr && input.value != 0 && config->isMappedTo(BUTTON_BACK, input))
+		{
+			if (!mCancelRequested)
+			{
+				mCancelRequested = true;
+				mOnCancel();
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 	
 	void update(int deltaTime) override
@@ -137,6 +151,8 @@ private:
 
     const std::function<T(IGuiLoadingHandler*)> mFunc;
     const std::function<void(T)> mFunc2;
+    const std::function<void()> mOnCancel;
+    bool			mCancelRequested;
     T result;
 };
 
