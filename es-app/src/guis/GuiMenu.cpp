@@ -2347,13 +2347,7 @@ void GuiMenu::openSystemSettings()
 	auto optionsEnableSuspend = std::make_shared<SwitchComponent>(mWindow);
 	bool suspendEnabled = SystemConf::getInstance()->get("system.suspend.enable") == "1";
 	optionsEnableSuspend->setState(suspendEnabled);
-	s->addWithLabel(_("ENABLE SUSPEND"), optionsEnableSuspend);
-	
-	optionsEnableSuspend->setOnChangedCallback([optionsEnableSuspend] {
-		bool enableSuspendState = optionsEnableSuspend->getState();
-		SystemConf::getInstance()->set("system.suspend.enable", enableSuspendState ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
+	s->addWithDescription(_("ENABLE SUSPEND"), _("Suspend must be enabled for shutdown to function."), optionsEnableSuspend);
 	
 	// Timed shutdown toggle
 	auto optionsEnableTimedShutdown = std::make_shared<SwitchComponent>(mWindow);
@@ -2365,6 +2359,15 @@ void GuiMenu::openSystemSettings()
 		bool enableTimedShutdownState = optionsEnableTimedShutdown->getState();
 		SystemConf::getInstance()->set("system.suspend.enable_timed_shutdown", enableTimedShutdownState ? "1" : "0");
 		SystemConf::getInstance()->saveSystemConf();
+	});
+
+	optionsEnableSuspend->setOnChangedCallback([optionsEnableSuspend, optionsEnableTimedShutdown] {
+		bool enableSuspendState = optionsEnableSuspend->getState();
+		SystemConf::getInstance()->set("system.suspend.enable", enableSuspendState ? "1" : "0");
+		SystemConf::getInstance()->saveSystemConf();
+
+		// lock timed shutdown toggle to suspend toggle behavior
+		optionsEnableTimedShutdown->setState(enableSuspendState);
 	});
 
 	// Shutdown delay after suspend
