@@ -57,6 +57,7 @@ private:
         void openQuitMenu();
         void openSystemInformations();
         void openServicesSettings();
+        void openZramSettings();
         void openMultiScreensSettings();
         void openDmdSettings();
         void openDeveloperSettings();
