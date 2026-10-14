@@ -30,9 +30,9 @@ public:
 		setIsLinear(true);
 		setImage(image, false, MaxSizeInfo(8192, 8192));
 
-		setPosition(Renderer::getScreenWidth() * 0.5, Renderer::getScreenHeight() * 0.5);
+		setPosition(Renderer::getMenuCenterX(0), Renderer::getMenuCenterY(0));
 		setOrigin(0.5, 0.5);
-		setMaxSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());	
+		setMaxSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);	
 	}
 
 	void runAnimation()
@@ -42,14 +42,14 @@ public:
 		{
 			auto fromOrigin = getOrigin();
 			auto fromScale = getScale();
-			auto toScale = Renderer::getScreenWidth() / sz.x();
+			auto toScale = Renderer::getMenuRect().w / sz.x();
 			auto toOrigin = fromOrigin;
 
 			auto imgHeight = sz.y() * toScale;
-			if (imgHeight > Renderer::getScreenHeight())
-				toOrigin = Vector2f(0.5, Renderer::getScreenHeight() / imgHeight / 2.0);
+			if (imgHeight > Renderer::getMenuRect().h)
+				toOrigin = Vector2f(0.5, Renderer::getMenuRect().h / imgHeight / 2.0);
 			else
-				toScale = Renderer::getScreenHeight() / sz.y();
+				toScale = Renderer::getMenuRect().h / sz.y();
 
 			Animation* infoFadeIn = new LambdaAnimation([this, fromScale, toScale, fromOrigin, toOrigin](float t)
 			{
@@ -276,7 +276,7 @@ GuiImageViewer::GuiImageViewer(Window* window, bool linearSmooth) :
 	g_isGuiImageViewerRunning = true;
 
 	setPosition(0, 0);
-	setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+	setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 		
 	mGrid.setPosition(0, 0);
 	mGrid.setSize(mSize);
@@ -324,7 +324,8 @@ GuiImageViewer::GuiImageViewer(Window* window, bool linearSmooth) :
 
 	mGrid.applyTheme(mTheme, "grid", "gamegrid", 0);
 
-	animateTo(Vector2f(0, Renderer::getScreenHeight()), Vector2f(0, 0));
+	animateTo(Vector2f(Renderer::getMenuRect().x, Renderer::getMenuRect().y + Renderer::getMenuRect().h),
+		Vector2f(Renderer::getMenuRect().x, Renderer::getMenuRect().y));
 }
 
 void GuiImageViewer::loadPdf(const std::string& imagePath)
@@ -714,7 +715,7 @@ void GuiVideoViewer::playVideo(Window* window, const std::string videoPath)
 GuiVideoViewer::GuiVideoViewer(Window* window, const std::string& path) : GuiComponent(window)
 {
 	setPosition(0, 0);
-	setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+	setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 
 #ifdef _RPI_
 	if (Settings::getInstance()->getBool("VideoOmxPlayer"))
@@ -729,8 +730,8 @@ GuiVideoViewer::GuiVideoViewer(Window* window, const std::string& path) : GuiCom
 	}
 	
 	mVideo->setOrigin(0.5f, 0.5f);
-	mVideo->setPosition(Renderer::getScreenWidth() / 2.0f, Renderer::getScreenHeight() / 2.0f);
-	mVideo->setMaxSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+	mVideo->setPosition(Renderer::getMenuCenterX(0), Renderer::getMenuCenterY(0));
+	mVideo->setMaxSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 
 	mVideo->setOnVideoEnded([&]()
 	{		

@@ -5,13 +5,13 @@
 #include "LocaleES.h"
 #include "SystemConf.h"
 
-#define OSK_WIDTH (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getScreenWidth() : Renderer::getScreenWidth() * 0.78f)
-#define OSK_HEIGHT (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getScreenHeight() : Renderer::getScreenHeight() * 0.60f)
+#define OSK_WIDTH (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getMenuRect().w : Renderer::getMenuRect().w * 0.78f)
+#define OSK_HEIGHT (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getMenuRect().h : Renderer::getMenuRect().h * 0.60f)
 
-#define OSK_PADDINGX (Renderer::getScreenWidth() * 0.02f)
-#define OSK_PADDINGY (Renderer::getScreenWidth() * 0.01f)
+#define OSK_PADDINGX (Renderer::getMenuRect().w * 0.02f)
+#define OSK_PADDINGY (Renderer::getMenuRect().w * 0.01f)
 
-#define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.0052083333)
+#define BUTTON_GRID_HORIZ_PADDING (Renderer::getMenuRect().w*0.0052083333)
 #define BUTTON_LAYER_SIZE (4)
 
 std::vector<std::vector<const char*>> kbUs {
@@ -296,18 +296,18 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 	if (mMultiLine) 
 	{
 		if (Renderer::ScreenSettings::fullScreenMenus())
-			setSize(OSK_WIDTH, Renderer::getScreenHeight());
+			setSize(OSK_WIDTH, Renderer::getMenuRect().h);
 		else
 			setSize(OSK_WIDTH, OSK_HEIGHT - mText->getFont()->getHeight() + textHeight);
 
-		setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+		setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 	}
 	else
 	{
-		//setSize(OSK_WIDTH, mTitle->getFont()->getHeight() + textHeight + 40 + (Renderer::getScreenHeight() * 0.085f) * 6);
+		//setSize(OSK_WIDTH, mTitle->getFont()->getHeight() + textHeight + 40 + (Renderer::getMenuRect().h * 0.085f) * 6);
 		setSize(OSK_WIDTH, OSK_HEIGHT);
-		setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
-		animateTo(Vector2f((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2));
+		setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
+		animateTo(Vector2f(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y())));
 	}
 }
 

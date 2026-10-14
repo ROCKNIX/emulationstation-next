@@ -64,9 +64,9 @@ mMenu(window, _("INSTALL ON A NEW DISK").c_str())
 		mMenu.addButton(_("NETWORK REQUIRED"), "back", [&] { delete this; });	
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 	else
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.1f);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.1f);
 }
 
 void GuiInstallStart::start()

@@ -3,8 +3,8 @@
 #include "components/MultiLineMenuEntry.h"
 #include "TextToSpeech.h"
 
-#define BUTTON_GRID_VERT_PADDING  (Renderer::getScreenHeight()*0.0296296)
-#define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.0052083333)
+#define BUTTON_GRID_VERT_PADDING  (Renderer::getMenuRect().h*0.0296296)
+#define BUTTON_GRID_HORIZ_PADDING (Renderer::getMenuRect().w*0.0052083333)
 
 #define TITLE_HEIGHT (mTitle->getFont()->getLetterHeight() + (mSubtitle ? TITLE_WITHSUB_VERT_PADDING : TITLE_VERT_PADDING) + (mSubtitle ? mSubtitle->getSize().y() + SUBTITLE_VERT_PADDING : 0))
 
@@ -301,7 +301,7 @@ void MenuComponent::setTitleImage(std::shared_ptr<ImageComponent> titleImage, bo
 	}
 	else
 	{
-		float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+		float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 		float iw = TITLE_HEIGHT / width;
 
 		mTitleImage->setMaxSize(1.3f * iw * mSize.x(), TITLE_HEIGHT);
@@ -343,7 +343,7 @@ void MenuComponent::setSubTitle(const std::string& text)
 	
 	mSubtitle->setText(text);
 	mSubtitle->setVerticalAlignment(Alignment::ALIGN_TOP);
-	mSubtitle->setSize(Renderer::getScreenWidth() * 0.88f, 0);
+	mSubtitle->setSize(Renderer::getMenuRect().w * 0.88f, 0);
 	mSubtitle->setLineSpacing(1.1);
 	
 	const float titleHeight = mTitle->getFont()->getLetterHeight() + (mSubtitle ? TITLE_WITHSUB_VERT_PADDING : TITLE_VERT_PADDING);
@@ -378,11 +378,11 @@ void MenuComponent::updateSize()
 	// GPI
 	if (Renderer::ScreenSettings::fullScreenMenus())
 	{
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 		return;
 	}
 
-	const float maxHeight = mMaxHeight <= 0 ? Renderer::getScreenHeight() * 0.75f : mMaxHeight;
+	const float maxHeight = mMaxHeight <= 0 ? Renderer::getMenuRect().h * 0.75f : mMaxHeight;
 
 	float height = TITLE_HEIGHT + mList->getTotalRowHeight() + getButtonGridHeight() + 2;
 	if (mTabs != nullptr && mTabs->size())
@@ -403,12 +403,12 @@ void MenuComponent::updateSize()
 		}
 	}
 
-	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+	float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 	setSize(width, height);
 	
 	if (mTitleImage != nullptr && mTitle != nullptr && mTitle->isVisible())
 	{
-		float pad = Renderer::getScreenWidth() * 0.012;
+		float pad = Renderer::getMenuRect().w * 0.012;
 		mTitle->setPadding(Vector4f(pad, 0.0f, pad, 0.0f));
 		mTitle->setHorizontalAlignment(ALIGN_LEFT);
 

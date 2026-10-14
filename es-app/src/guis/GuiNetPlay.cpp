@@ -37,7 +37,7 @@
 #include <unistd.h>
 #endif
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
 
 // http://lobby.libretro.com/list/
 // Core list :
@@ -221,18 +221,18 @@ GuiNetPlay::GuiNetPlay(Window* window)
 		return false;
 	});
 
-	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+	float width = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 
 	// Position & Size
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.90f);
+		setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.90f);
 
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 
 	// Loading
-    mBusyAnim.setSize(Vector2f(Renderer::getScreenWidth(), Renderer::getScreenHeight()));
+    mBusyAnim.setSize(Vector2f(Renderer::getMenuRect().w, Renderer::getMenuRect().h));
 	mBusyAnim.setText(_("PLEASE WAIT"));
 	startRequest();
 }
@@ -651,7 +651,7 @@ public:
 		float rowHeight = mText->getSize().y() * 1.1f + mSubstring->getSize().y() + mDetails->getSize().y();
 		float imageColWidth = rowHeight * 1.15f;
 
-		float sw = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
+		float sw = (float)Math::min(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.90f));
 		
 		mImage->setOrigin(0.5f, 0.5f);
 		mImage->setMaxSize(imageColWidth, rowHeight);

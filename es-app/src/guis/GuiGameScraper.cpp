@@ -50,11 +50,11 @@ GuiGameScraper::GuiGameScraper(Window* window, ScraperSearchParams params, std::
 	mSearch->setSearchDoneCallback([&] { BuildButtonGrid(true); });
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(Renderer::getScreenWidth() * 0.90f, Renderer::getScreenHeight() * 0.85f);
+		setSize(Renderer::getMenuRect().w * 0.90f, Renderer::getMenuRect().h * 0.85f);
 		
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);	
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));	
 
 	mGrid.resetCursor();
 	mSearch->search(params); // start the search

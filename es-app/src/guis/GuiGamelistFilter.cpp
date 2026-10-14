@@ -39,9 +39,9 @@ void GuiGamelistFilter::initializeMenu()
 	mMenu.addButton(_("BACK"), "back", std::bind(&GuiGamelistFilter::applyFilters, this));
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 	else
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f);
 }
 
 void GuiGamelistFilter::resetAllFilters()
@@ -77,7 +77,7 @@ void GuiGamelistFilter::addTextFilterToMenu()
 	row.addElement(mTextFilter, true);
 
 	auto spacer = std::make_shared<GuiComponent>(mWindow);
-	spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+	spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 	row.addElement(spacer, false);
 
 	auto bracket = std::make_shared<ImageComponent>(mWindow);

@@ -14,8 +14,8 @@ GuiInfoPopup::GuiInfoPopup(Window* window, std::string message, int duration) :
 	TextToSpeech::getInstance()->say(message, true);
 
 	mFrame = new NinePatchComponent(window);
-	float maxWidth = Renderer::getScreenWidth() * 0.9f;
-	float maxHeight = Renderer::getScreenHeight() * 0.2f;
+	float maxWidth = Renderer::getMenuRect().w * 0.9f;
+	float maxHeight = Renderer::getMenuRect().h * 0.2f;
 
 	std::shared_ptr<TextComponent> s = std::make_shared<TextComponent>(mWindow,
 		"",
@@ -39,13 +39,13 @@ GuiInfoPopup::GuiInfoPopup(Window* window, std::string message, int duration) :
 	}
 
 	// add a padding to the box
-	int paddingX = (int) (Renderer::getScreenWidth() * 0.03f);
-	int paddingY = (int) (Renderer::getScreenHeight() * 0.02f);
+	int paddingX = (int) (Renderer::getMenuRect().w * 0.03f);
+	int paddingY = (int) (Renderer::getMenuRect().h * 0.02f);
 	mSize[0] = mSize.x() + paddingX;
 	mSize[1] = mSize.y() + paddingY;
 
-	float posX = Renderer::getScreenWidth()*0.5f - mSize.x()*0.5f;
-	float posY = Renderer::getScreenHeight() * 0.02f;
+	float posX = Renderer::getMenuCenterX(mSize.x());
+	float posY = Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.02f;
 
 	setPosition(posX, posY, 0);
 

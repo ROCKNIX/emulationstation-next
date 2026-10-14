@@ -64,11 +64,11 @@ GuiDetectDevice::GuiDetectDevice(Window* window, bool firstRun, const std::funct
 	mGrid.setEntry(mDeviceHeld, Vector2i(0, 4), false, true);
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(Renderer::getScreenWidth() * 0.6f, Renderer::getScreenHeight() * 0.5f);
+		setSize(Renderer::getMenuRect().w * 0.6f, Renderer::getMenuRect().h * 0.5f);
 
-	setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, (Renderer::getScreenHeight() - mSize.y()) / 2);
+	setPosition(Renderer::getMenuCenterX(mSize.x()), Renderer::getMenuCenterY(mSize.y()));
 }
 
 void GuiDetectDevice::onSizeChanged()

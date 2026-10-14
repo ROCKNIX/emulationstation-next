@@ -14,7 +14,7 @@
 #include "SystemConf.h"
 #include "Paths.h"
 
-#define WINDOW_WIDTH (float)Math::max((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.65f))
+#define WINDOW_WIDTH (float)Math::max(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.65f))
 
 #define DRIVE_ICON		_U("\uF0A0 ")
 #define FOLDER_ICON		_U("\uF07C ")
@@ -141,11 +141,11 @@ void GuiFileBrowser::navigateTo(const std::string path)
 void GuiFileBrowser::centerWindow()
 {
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		mMenu.setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
 	{
-		mMenu.setSize(mMenu.getSize().x(), Renderer::getScreenHeight() * 0.875f);
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+		mMenu.setSize(mMenu.getSize().x(), Renderer::getMenuRect().h * 0.875f);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 	}
 }
 

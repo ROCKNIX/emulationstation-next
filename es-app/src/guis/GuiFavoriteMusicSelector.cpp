@@ -53,8 +53,8 @@ GuiFavoriteMusicSelector::GuiFavoriteMusicSelector(Window* window) : GuiComponen
         save();
     });
     
-    s->getMenu().setPosition((Renderer::getScreenWidth() - s->getMenu().getSize().x()) / 2, 
-                            (Renderer::getScreenHeight() - s->getMenu().getSize().y()) / 2);
+    s->getMenu().setPosition(Renderer::getMenuCenterX(s->getMenu().getSize().x()), 
+                            Renderer::getMenuCenterY(s->getMenu().getSize().y()));
     
     mWindow->pushGui(s);
     
