@@ -545,7 +545,7 @@ void GuiMenu::openSwapFileSettings()
 
 	std::vector<std::string> sizes = { "256", "384", "512", "768", "1024" };
 	if (std::find(sizes.begin(), sizes.end(), size) == sizes.end())
-		size = "384";
+		size = "512";
 
 	auto s = new GuiSettings(mWindow, _("SWAP FILE").c_str());
 
