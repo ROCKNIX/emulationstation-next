@@ -2493,7 +2493,7 @@ void GuiMenu::openSystemSettings()
 		if(optionsEnableBatteryplus->changed()) {
 			SystemConf::getInstance()->set("system.batteryplus.enabled", optionsEnableBatteryplus->getState() ? "1" : "0");
 			SystemConf::getInstance()->saveSystemConf();
-			s->setVariable("exitreboot", true);
+			Utils::Platform::runSystemCommand("systemctl restart batteryplus", "", nullptr);
 		}
 	});
 #endif
