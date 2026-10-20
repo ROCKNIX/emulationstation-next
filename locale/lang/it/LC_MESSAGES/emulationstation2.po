@@ -723,6 +723,9 @@ msgstr "CERCA GIOCHI"
 msgid "SYSTEMS"
 msgstr "SISTEMI"
 
+msgid "SYSTEMS LIST"
+msgstr "ELENCO SISTEMI"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALLA SU UN NUOVO DISCO"
 

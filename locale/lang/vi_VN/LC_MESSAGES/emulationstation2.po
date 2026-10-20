@@ -728,6 +728,9 @@ msgstr "TÌM TRÒ CHƠI"
 msgid "SYSTEMS"
 msgstr "HỆ THỐNG"
 
+msgid "SYSTEMS LIST"
+msgstr "DANH SÁCH HỆ THỐNG"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "CÀI ĐẶT TRÊN ĐĨA MỚI"
 

@@ -728,6 +728,9 @@ msgstr "FFEINDIO GEMAU"
 msgid "SYSTEMS"
 msgstr "SYSTEMAU"
 
+msgid "SYSTEMS LIST"
+msgstr "RHESTR SYSTEMAU"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr ""
 

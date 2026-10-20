@@ -725,6 +725,9 @@ msgstr "HITTA SPEL"
 msgid "SYSTEMS"
 msgstr "SYSTEM"
 
+msgid "SYSTEMS LIST"
+msgstr "SYSTEMLISTA"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALLERA PÅ EN NY DISK"
 

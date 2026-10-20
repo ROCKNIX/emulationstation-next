@@ -726,6 +726,9 @@ msgstr "ΕΥΡΕΣΗ ΠΑΙΧΝΙΔΙΩΝ"
 msgid "SYSTEMS"
 msgstr "ΣΥΣΤΗΜΑΤΑ"
 
+msgid "SYSTEMS LIST"
+msgstr "ΛΙΣΤΑ ΣΥΣΤΗΜΑΤΩΝ"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "ΕΓΚΑΤΑΣΤΑΣΗ ΣΕ ΝΕΟ ΔΙΣΚΟ"
 

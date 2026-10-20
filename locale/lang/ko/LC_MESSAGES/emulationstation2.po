@@ -721,6 +721,9 @@ msgstr "게임 찾기"
 msgid "SYSTEMS"
 msgstr "시스템"
 
+msgid "SYSTEMS LIST"
+msgstr "시스템 목록"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "새 디스크에 설치"
 

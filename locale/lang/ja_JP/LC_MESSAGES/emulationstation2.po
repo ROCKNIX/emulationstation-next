@@ -724,6 +724,9 @@ msgstr "ゲームを検索"
 msgid "SYSTEMS"
 msgstr "システム"
 
+msgid "SYSTEMS LIST"
+msgstr "システム一覧"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "新規ストレージにインストール"
 
