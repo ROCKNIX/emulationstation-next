@@ -644,8 +644,9 @@ float jw_distance(std::string s1, std::string s2, bool caseSensitive = true) {
 
 int FileFilterIndex::showFile(FileData* game)
 {
-	// this shouldn't happen, but just in case let's get it out of the way
-	if (!isFiltered())
+	// CollectionFilter checks its system selection before delegating here.
+	// Only text and metadata filters need the matching logic below.
+	if (!FileFilterIndex::isFiltered())
 		return 1;
 
 	// if folder, needs further inspection - i.e. see if folder contains at least one element
