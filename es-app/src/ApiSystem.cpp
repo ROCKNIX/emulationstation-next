@@ -920,7 +920,7 @@ std::vector<std::string> ApiSystem::getAvailableDisplayModes()
         return {};
     }
 
-    auto result = executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wlr-randr | awk '/Modes/{flag=1;next}/Position/{flag=0}flag'\"");
+    auto result = executeEnumerationScript("/usr/bin/sh -lc \"/usr/bin/wlr-randr | awk 'NR>1&&/^[^ ]/{exit} /Modes/{flag=1;next}/Position/{flag=0}flag'\"");
 
     if (result.empty()) {
         LOG(LogWarning) << "No display modes found from wlr-randr";
