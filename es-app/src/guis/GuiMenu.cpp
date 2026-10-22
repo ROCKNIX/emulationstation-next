@@ -349,6 +349,15 @@ void GuiMenu::openResetOptions()
 		});
 	}
 
+	#if defined(BATTERYPLUS)
+		s->addEntry(_("RESET BATTERYPLUS CALIBRATION"), true, [window] {
+		window->pushGui(new GuiMsgBox(window, _("ARE YOU SURE?"), _("YES"),
+			[] {
+			Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset batteryplus\"", "", nullptr);
+			}, _("NO"), nullptr));
+		});
+	#endif
+
 	s->addEntry(_("FACTORY RESET"), true, [window] {
 	window->pushGui(new GuiMsgBox(window, _("WARNING: YOUR DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nEJECT YOUR GAME CARD BEFORE PROCEEDING!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 		[] {
