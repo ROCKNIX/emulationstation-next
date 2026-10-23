@@ -88,6 +88,8 @@ public:
 	std::string getDisplayLabel(bool includeText = false);
 
 protected:
+	virtual bool hasGlobalFilter() const { return false; }
+
 	//std::vector<FilterDataDecl> filterDataDecl;
 	std::map<int, FilterDataDecl> mFilterDecl;
 
@@ -189,6 +191,8 @@ public:
 	void resetSystemFilter();
 
 protected:
+	bool hasGlobalFilter() const override { return !mSystemFilter.empty(); }
+
 	std::string mName;
 	std::string mPath;
 	std::unordered_set<std::string> mSystemFilter;

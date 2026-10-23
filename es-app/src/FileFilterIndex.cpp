@@ -644,7 +644,8 @@ float jw_distance(std::string s1, std::string s2, bool caseSensitive = true) {
 
 int FileFilterIndex::showFile(FileData* game)
 {
-	// this shouldn't happen, but just in case let's get it out of the way
+	// CollectionFilter checks its system selection before delegating here.
+	// Only text and metadata filters need the matching logic below.
 	if (!isFiltered())
 		return 1;
 
@@ -662,7 +663,9 @@ int FileFilterIndex::showFile(FileData* game)
 		return 0;
 	}
 
-	bool keepGoing = false;
+	// Global filters have already accepted this game before delegating here.
+	const bool globalFilterActive = hasGlobalFilter();
+	bool keepGoing = globalFilterActive;
 	
 	int textScore = 0;
 
@@ -829,7 +832,7 @@ int FileFilterIndex::showFile(FileData* game)
 		}
 	}
 
-	bool hasFilter = false;
+	bool hasFilter = globalFilterActive;
 
 	for (auto& it : mFilterDecl)
 	{
