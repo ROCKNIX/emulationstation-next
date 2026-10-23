@@ -541,6 +541,51 @@ void GuiMenu::openServicesSettings()
 	mWindow->pushGui(s);
 }
 
+static void applySwapFileSettings(const std::string& size)
+{
+	Utils::Platform::runSystemCommand("/usr/bin/rocknix-memory-manager --swap-size " + size + " --reload", "", nullptr);
+}
+
+void GuiMenu::openSwapFileSettings()
+{
+	auto config = ApiSystem::executeScriptLegacy("/usr/bin/rocknix-memory-manager --get-swap");
+	std::string size = config.size() > 0 ? config[0] : "0";
+	bool swapEnabled = size != "0";
+
+	std::vector<std::string> sizes = { "256", "384", "512", "768", "1024" };
+	if (std::find(sizes.begin(), sizes.end(), size) == sizes.end())
+		size = "512";
+
+	auto s = new GuiSettings(mWindow, _("SWAP FILE").c_str());
+
+	auto enable_swap = std::make_shared<SwitchComponent>(mWindow);
+	enable_swap->setState(swapEnabled);
+	s->addWithDescription(_("ENABLE SWAP FILE"), _("Uses storage as extra memory when RAM runs out. Slower than ZRAM."), enable_swap);
+
+	if (swapEnabled)
+	{
+		auto size_swap = std::make_shared<OptionListComponent<std::string> >(mWindow, _("SWAP FILE SIZE"), false);
+		for (auto& option : sizes)
+			size_swap->add(option + " MB", option, option == size);
+		s->addWithDescription(_("SWAP FILE SIZE"), _("Size of the swap file on storage."), size_swap);
+
+		s->addSaveFunc([size, size_swap]
+		{
+			if (size_swap->getSelected() != size)
+				applySwapFileSettings(size_swap->getSelected());
+		});
+	}
+
+	enable_swap->setOnChangedCallback([this, s, enable_swap, size]()
+	{
+		applySwapFileSettings(enable_swap->getState() ? size : "0");
+		delete s;
+		openSwapFileSettings();
+	});
+
+	mWindow->pushGui(s);
+}
+
 static void applyZramSettings(const std::string& size, bool zstd)
 {
 	Utils::Platform::runSystemCommand("/usr/bin/rocknix-memory-manager --zram-size " + size + " --zram-algo " + (zstd ? "zstd" : "lz4") + " --reload", "", nullptr);
@@ -2294,6 +2339,7 @@ void GuiMenu::openSystemSettings()
 		});
 	}
 
+	s->addEntry(_("SWAP FILE"), true, [this] { openSwapFileSettings(); });
 	s->addEntry(_("ZRAM SWAP"), true, [this] { openZramSettings(); });
 
 #if defined(SM6115)
