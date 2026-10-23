@@ -730,6 +730,9 @@ msgstr "ETSI PELEJÄ"
 msgid "SYSTEMS"
 msgstr "JÄRJESTELMÄT"
 
+msgid "SYSTEMS LIST"
+msgstr "JÄRJESTELMÄLUETTELO"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "ASENNA UUDELLE LEVYLLE"
 

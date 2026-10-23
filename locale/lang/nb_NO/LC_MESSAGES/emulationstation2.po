@@ -725,6 +725,9 @@ msgstr "FINN SPILL"
 msgid "SYSTEMS"
 msgstr "KONSOLLER"
 
+msgid "SYSTEMS LIST"
+msgstr "LISTE OVER KONSOLLER"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALLER PÅ NY DISK"
 

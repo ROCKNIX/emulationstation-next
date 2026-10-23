@@ -772,6 +772,9 @@ msgstr "البحث عن لعبة"
 msgid "SYSTEMS"
 msgstr "النظام"
 
+msgid "SYSTEMS LIST"
+msgstr "قائمة الأنظمة"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "تثبيت على قرص جديد"
 

@@ -724,6 +724,9 @@ msgstr "FIND GAMES"
 msgid "SYSTEMS"
 msgstr "SYSTEMS"
 
+msgid "SYSTEMS LIST"
+msgstr "SYSTEMS LIST"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALL ON A NEW DISK"
 

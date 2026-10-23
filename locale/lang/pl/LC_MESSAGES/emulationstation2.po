@@ -730,6 +730,9 @@ msgstr "ZNAJDŹ GRY"
 msgid "SYSTEMS"
 msgstr "SYSTEMY"
 
+msgid "SYSTEMS LIST"
+msgstr "LISTA SYSTEMÓW"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "ZAINSTALUJ NA NOWYM DYSKU"
 

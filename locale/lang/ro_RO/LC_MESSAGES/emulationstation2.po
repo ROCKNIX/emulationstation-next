@@ -734,6 +734,9 @@ msgstr "GĂSEȘTE JOCURI"
 msgid "SYSTEMS"
 msgstr "SISTEME"
 
+msgid "SYSTEMS LIST"
+msgstr "LISTA SISTEMELOR"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALEAZĂ PE UN DISC NOU"
 

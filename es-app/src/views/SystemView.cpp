@@ -28,6 +28,7 @@
 #include "BindingManager.h"
 #include "guis/GuiRetroAchievements.h"
 #include "components/CarouselComponent.h"
+#include <algorithm>
 
 SystemView::SystemView(Window* window) : GuiComponent(window),
 	mViewNeedsReload(true),
@@ -498,7 +499,7 @@ bool SystemView::input(InputConfig* config, Input input)
 
 		if (config->isMappedTo("x", input))
 		{
-			mCarousel.setCursor(SystemData::getRandomSystem());
+			mCarousel.setCursor(SystemData::getRandomSystem(getSelected()));
 			return true;
 		}
 
@@ -619,7 +620,7 @@ void SystemView::update(int deltaTime)
 	{
 		bool netPlay = SystemData::isNetplayActivated() && SystemConf::getInstance()->getBool("global.netplay");
 		if (netPlay)
-			mCarousel.setCursor(SystemData::getRandomSystem());
+			mCarousel.setCursor(SystemData::getRandomSystem(getSelected()));
 		else
 			showQuickSearch();
 	}
@@ -902,13 +903,18 @@ std::vector<HelpPrompt> SystemView::getHelpPrompts()
 	}
 	else
 	{
-		prompts.push_back(HelpPrompt("x", _("RANDOM")));
+		const auto* selectedSystem = getSelected();
+		const auto visibleAlternativeSystemCount = std::count_if(
+			SystemData::sSystemVector.cbegin(), SystemData::sSystemVector.cend(),
+			[selectedSystem](SystemData* system) { return system->isGameSystem() && system->isVisible() && system != selectedSystem; });
+		if (visibleAlternativeSystemCount > 0)
+			prompts.push_back(HelpPrompt("x", _("RANDOM")));
 		if (SystemData::getSystem("all") != nullptr)
 			prompts.push_back(HelpPrompt("y", _("SEARCH"), [&] { showQuickSearch(); })); // QUICK 
 	}
 
 	if (SystemData::IsManufacturerSupported)
-		prompts.push_back(HelpPrompt("b", _("NAVIGATION BAR"), [&] { showNavigationBar(); }));
+		prompts.push_back(HelpPrompt("b", _("SYSTEMS LIST"), [&] { showNavigationBar(); }));
 
 #ifdef _ENABLE_FILEMANAGER_
 	if (UIModeController::getInstance()->isUIModeFull()) {
@@ -1595,7 +1601,7 @@ bool SystemView::onAction(const std::string& action)
 
 	if (action == "random")
 	{
-		mCarousel.setCursor(SystemData::getRandomSystem());
+		mCarousel.setCursor(SystemData::getRandomSystem(getSelected()));
 		return true;
 	}
 

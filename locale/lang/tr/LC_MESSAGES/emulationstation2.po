@@ -726,6 +726,9 @@ msgstr "OYUNLARI BUL"
 msgid "SYSTEMS"
 msgstr "SİSTEMLER"
 
+msgid "SYSTEMS LIST"
+msgstr "SİSTEM LİSTESİ"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "YENİ BİR DİSKE KUR"
 
