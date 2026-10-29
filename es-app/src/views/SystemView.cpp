@@ -589,14 +589,18 @@ void SystemView::showNavigationBar(const std::string& title, const std::function
 		idx++;
 	}
 
-	float w = Math::min(Renderer::getScreenWidth() * 0.5, ThemeData::getMenuTheme()->Text.font->sizeText("S").x() * 31.0f);
-	w = Math::max(w, Renderer::getScreenWidth() / 3.0f);
+	// This is dialog chrome rather than themed view geometry, so it follows the
+	// menu region: it slides in from the region's left edge, not the canvas's.
+	Renderer::Rect mr = Renderer::getMenuRect();
 
-	gs->getMenu().setSize(w, Renderer::getScreenHeight());
+	float w = Math::min(mr.w * 0.5, ThemeData::getMenuTheme()->Text.font->sizeText("S").x() * 31.0f);
+	w = Math::max(w, mr.w / 3.0f);
+
+	gs->getMenu().setSize(w, mr.h);
 
 	gs->getMenu().animateTo(
-		Vector2f(-w, 0),
-		Vector2f(0, 0), AnimateFlags::OPACITY | AnimateFlags::POSITION);
+		Vector2f(mr.x - w, mr.y),
+		Vector2f(mr.x, mr.y), AnimateFlags::OPACITY | AnimateFlags::POSITION);
 
 	mWindow->pushGui(gs);
 }

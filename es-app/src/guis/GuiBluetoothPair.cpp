@@ -11,7 +11,7 @@
 #include "guis/GuiTextEditPopupKeyboard.h"
 #include "GuiLoading.h"
 
-#define WINDOW_WIDTH (float)Math::min(Renderer::getScreenHeight() * 1.125f, Renderer::getScreenWidth() * 0.90f)
+#define WINDOW_WIDTH (float)Math::min(Renderer::getMenuRect().h * 1.125f, Renderer::getMenuRect().w * 0.90f)
 
 GuiBluetoothPair* GuiBluetoothPair::Instance = nullptr;
 
@@ -24,13 +24,13 @@ GuiBluetoothPair::GuiBluetoothPair(Window* window)
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
 	{
-		setPosition((Renderer::getScreenWidth() - getSize().x()) / 2, (Renderer::getScreenHeight() - getSize().y()) / 2);
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setPosition(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuCenterY(getSize().y()));
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	}
 	else
 	{
-		setPosition((Renderer::getScreenWidth() - getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
-		setSize(getSize().x(), Renderer::getScreenHeight() * 0.60f);
+		setPosition(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.15f);
+		setSize(getSize().x(), Renderer::getMenuRect().h * 0.60f);
 	}
 
 	mBusyAnim.setText(_("SCANNING BLUETOOTH"));

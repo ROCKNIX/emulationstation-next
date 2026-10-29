@@ -44,9 +44,9 @@ GuiBackupStart::GuiBackupStart(Window* window) : GuiComponent(window), mMenu(win
 	mMenu.addButton(_("BACK"), "back", [&] { delete this; });
 
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y()));
 	else
-		mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.1f);
+		mMenu.setPosition(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.1f);
 }
 
 void GuiBackupStart::start()

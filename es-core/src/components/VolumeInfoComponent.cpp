@@ -8,8 +8,8 @@
 #include "VolumeControl.h"
 #include "Window.h"
 
-#define PADDING_PX			(Renderer::getScreenWidth()*0.006)
-#define PADDING_BAR			(Renderer::isSmallScreen() ? Renderer::getScreenWidth()*0.02 : Renderer::getScreenWidth()*0.006)
+#define PADDING_PX			(Renderer::getMenuRect().w*0.006)
+#define PADDING_BAR			(Renderer::isSmallScreen() ? Renderer::getMenuRect().w*0.02 : Renderer::getMenuRect().w*0.006)
 
 #define VISIBLE_TIME		2650
 #define FADE_TIME			250
@@ -30,7 +30,7 @@ VolumeInfoComponent::VolumeInfoComponent(Window* window, bool actionLine)
 
 	Vector2f fullSize(
 		2 * PADDING_PX + font->sizeText("100%").x(),
-		2 * PADDING_PX + Renderer::getScreenHeight() * 0.20f);
+		2 * PADDING_PX + Renderer::getMenuRect().h * 0.20f);
 	
 	fullSize.y() = fullSize.x() * 2.5f;
 
@@ -53,8 +53,8 @@ VolumeInfoComponent::VolumeInfoComponent(Window* window, bool actionLine)
 	addChild(mLabel);
 
 	// FCA TopLeft
-	float posX = Renderer::getScreenWidth() * 0.02f;
-	float posY = Renderer::getScreenHeight() * 0.04f;
+	float posX = Renderer::getMenuRect().x + Renderer::getMenuRect().w * 0.02f;
+	float posY = Renderer::getMenuRect().y + Renderer::getMenuRect().h * 0.04f;
 
 	setPosition(posX, posY, 0);
 }

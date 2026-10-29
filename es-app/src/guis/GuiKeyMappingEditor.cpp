@@ -21,7 +21,7 @@
 #include <unordered_set>
 #include <algorithm>
 
-#define WINDOW_WIDTH (float)Math::max((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.73f))
+#define WINDOW_WIDTH (float)Math::max(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.73f))
 
 void GuiKeyMappingEditor::initMappingNames()
 {
@@ -195,11 +195,11 @@ void GuiKeyMappingEditor::onSizeChanged()
 void GuiKeyMappingEditor::centerWindow()
 {
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
+		setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.875f);
 
-	setPosition((Renderer::getScreenWidth() - getSize().x()) / 2, (Renderer::getScreenHeight() - getSize().y()) / 2);
+	setPosition(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuCenterY(getSize().y()));
 }
 
 static bool sortPackagesByGroup(PacmanPackage& sys1, PacmanPackage& sys2)
@@ -392,7 +392,7 @@ void GuiKeyMappingEditor::loadList(bool restoreIndex)
 		else
 		{
 			auto info = std::make_shared<TextComponent>(mWindow, mouseMapping == "joystick1" ? _("LEFT ANALOG STICK") : _("RIGHT ANALOG STICK"), theme->Text.font, theme->Text.color);
-			info->setPadding(Vector4f(0, 0, Renderer::getScreenWidth() * 0.01f, 0));
+			info->setPadding(Vector4f(0, 0, Renderer::getMenuRect().w * 0.01f, 0));
 			mouseRow.addElement(info, false);
 			mList->addRow(mouseRow, idx > 0 && last);
 		}

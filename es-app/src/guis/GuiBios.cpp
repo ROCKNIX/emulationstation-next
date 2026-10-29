@@ -16,7 +16,7 @@
 
 #include <cstring>
 
-#define WINDOW_WIDTH (float)Math::max((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.65f))
+#define WINDOW_WIDTH (float)Math::max(Renderer::getMenuRect().h, (int)(Renderer::getMenuRect().w * 0.65f))
 
 void GuiBios::show(Window* window)
 {
@@ -103,7 +103,7 @@ void GuiBios::onSizeChanged()
 	const float titleHeight = mTitle->getFont()->getLetterHeight();
 	const float titleSubtitleSpacing = mSize.y() * 0.03f;
 
-	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing  + (Renderer::getScreenHeight() * 0.05f));
+	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing  + (Renderer::getMenuRect().h * 0.05f));
 
 	if (mTabs->size() == 0)
 		mGrid.setRowHeight(1, 0.00001f);
@@ -201,11 +201,11 @@ void GuiBios::loadList()
 void GuiBios::centerWindow()
 {
 	if (Renderer::ScreenSettings::fullScreenMenus())
-		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		setSize(Renderer::getMenuRect().w, Renderer::getMenuRect().h);
 	else
-		setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
+		setSize(WINDOW_WIDTH, Renderer::getMenuRect().h * 0.875f);
 
-	setPosition((Renderer::getScreenWidth() - getSize().x()) / 2, (Renderer::getScreenHeight() - getSize().y()) / 2);
+	setPosition(Renderer::getMenuCenterX(getSize().x()), Renderer::getMenuCenterY(getSize().y()));
 }
 
 bool GuiBios::input(InputConfig* config, Input input)

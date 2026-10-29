@@ -272,11 +272,11 @@ GuiGamelistOptions::GuiGamelistOptions(Window* window, IGameListView* gamelist, 
 		}
 	}
 
-	mMenu.setMaxHeight(Renderer::getScreenHeight() * 0.85f);
+	mMenu.setMaxHeight(Renderer::getMenuRect().h * 0.85f);
 
 	// center the menu
-	setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
-	mMenu.animateTo(Vector2f((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2));
+	setSize((float)Renderer::getMenuRect().w, (float)Renderer::getMenuRect().h);
+	mMenu.animateTo(Vector2f(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y())));
 }
 
 void GuiGamelistOptions::addTextFilterToMenu()
@@ -311,7 +311,7 @@ void GuiGamelistOptions::addTextFilterToMenu()
 	row.addElement(mTextFilter, true);
 
 	auto spacer = std::make_shared<GuiComponent>(mWindow);
-	spacer->setSize(Renderer::getScreenWidth() * 0.005f, 0);
+	spacer->setSize(Renderer::getMenuRect().w * 0.005f, 0);
 	row.addElement(spacer, false);
 
 	auto bracket = std::make_shared<ImageComponent>(mWindow);

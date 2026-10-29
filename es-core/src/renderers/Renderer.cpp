@@ -39,6 +39,10 @@ namespace Renderer
 	static int              screenOffsetX      = 0;
 	static int              screenOffsetY      = 0;
 	static int              screenRotate       = 0;
+	static int              menuOffsetX        = 0;
+	static int              menuOffsetY        = 0;
+	static int              menuWidth          = 0;
+	static int              menuHeight         = 0;
 	static bool             initialCursorState = 1;
 	static Vector2i         screenMargin;
 	static Rect				viewPort;
@@ -169,6 +173,11 @@ namespace Renderer
 		screenOffsetX = Settings::getInstance()->getInt("ScreenOffsetX") ? Settings::getInstance()->getInt("ScreenOffsetX") : 0;
 		screenOffsetY = Settings::getInstance()->getInt("ScreenOffsetY") ? Settings::getInstance()->getInt("ScreenOffsetY") : 0;
 		screenRotate  = Settings::getInstance()->getInt("ScreenRotate")  ? Settings::getInstance()->getInt("ScreenRotate")  : 0;
+
+		menuOffsetX   = Settings::getInstance()->getInt("MenuOffsetX");
+		menuOffsetY   = Settings::getInstance()->getInt("MenuOffsetY");
+		menuWidth     = Settings::getInstance()->getInt("MenuWidth");
+		menuHeight    = Settings::getInstance()->getInt("MenuHeight");
 
 		if (screenRotate == 1 || screenRotate == 3)
 		{
@@ -626,6 +635,38 @@ namespace Renderer
 	int         getScreenOffsetX() { return screenOffsetX; }
 	int         getScreenOffsetY() { return screenOffsetY; }
 	int         getScreenRotate()  { return screenRotate; }
+
+	// The sub-rectangle of the canvas that menus, dialogs and overlays live in.
+	//
+	// Defaults to the whole canvas, which is what every device wants when the
+	// window maps 1:1 onto one panel. It exists for setups where the canvas is
+	// deliberately larger than the visible panel -- dual-screen handhelds run one
+	// oversized window across two panels, so a dialog sized as a fraction of the
+	// canvas is far too wide and spills onto the wrong screen (or into a region
+	// no panel shows at all). Setting MenuOffsetX/MenuWidth confines them to the
+	// panel that actually shows the UI.
+	Rect getMenuRect()
+	{
+		int w = (menuWidth  > 0 && menuWidth  <= screenWidth)  ? menuWidth  : screenWidth;
+		int h = (menuHeight > 0 && menuHeight <= screenHeight) ? menuHeight : screenHeight;
+
+		int x = menuOffsetX < 0 ? 0 : (menuOffsetX > screenWidth  - w ? screenWidth  - w : menuOffsetX);
+		int y = menuOffsetY < 0 ? 0 : (menuOffsetY > screenHeight - h ? screenHeight - h : menuOffsetY);
+
+		return Rect(x, y, w, h);
+	}
+
+	float getMenuCenterX(float width)
+	{
+		Rect r = getMenuRect();
+		return r.x + (r.w - width) / 2.0f;
+	}
+
+	float getMenuCenterY(float height)
+	{
+		Rect r = getMenuRect();
+		return r.y + (r.h - height) / 2.0f;
+	}
 	bool		isVerticalScreen() { return screenHeight > screenWidth; }
 
 	float		getScreenProportion() 
@@ -1098,6 +1139,13 @@ namespace Renderer
 
 		windowWidth = screenWidth = width;
 		windowHeight = screenHeight = height;
+
+		// getMenuRect() clamps against the canvas, so a stale menu region from
+		// before the resize would silently fall back to the full canvas rather
+		// than staying put; drop it instead of keeping a rect that no longer
+		// describes anything real.
+		if (menuWidth > screenWidth || menuHeight > screenHeight)
+			menuOffsetX = menuOffsetY = menuWidth = menuHeight = 0;
 
 		resetCache();
 		updateProjection();

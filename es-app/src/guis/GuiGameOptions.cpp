@@ -471,23 +471,23 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 	{	
 		mMenu.addButton(_("BACK"), _("go back"), [this] { close(); });
 
-		mMenu.setMaxHeight(Renderer::getScreenHeight() * 0.85f);
-		setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
-		mMenu.animateTo(Vector2f((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2));
+		mMenu.setMaxHeight(Renderer::getMenuRect().h * 0.85f);
+		setSize((float)Renderer::getMenuRect().w, (float)Renderer::getMenuRect().h);
+		mMenu.animateTo(Vector2f(Renderer::getMenuCenterX(mMenu.getSize().x()), Renderer::getMenuCenterY(mMenu.getSize().y())));
 	}
 	else
 	{
-		float w = Math::min(Renderer::getScreenWidth() * 0.5, ThemeData::getMenuTheme()->Text.font->sizeText("S").x() * 33.0f);
-		w = Math::max(w, Renderer::getScreenWidth() / 3.0f);
+		float w = Math::min(Renderer::getMenuRect().w * 0.5, ThemeData::getMenuTheme()->Text.font->sizeText("S").x() * 33.0f);
+		w = Math::max(w, Renderer::getMenuRect().w / 3.0f);
 
-		mMenu.setSize(w, Renderer::getScreenHeight() + 2);
+		mMenu.setSize(w, Renderer::getMenuRect().h + 2);
 		/*mMenu.animateTo(
 			Vector2f(-w, -1),
 			Vector2f(-1, -1), AnimateFlags::OPACITY | AnimateFlags::POSITION);
 			*/
 		mMenu.animateTo(
-			Vector2f(Renderer::getScreenWidth(), -1),
-			Vector2f(Renderer::getScreenWidth() - w -1, -1), AnimateFlags::OPACITY | AnimateFlags::POSITION);
+			Vector2f(Renderer::getMenuRect().x + Renderer::getMenuRect().w, -1),
+			Vector2f(Renderer::getMenuRect().x + Renderer::getMenuRect().w - w -1, -1), AnimateFlags::OPACITY | AnimateFlags::POSITION);
 	}
 }
 
