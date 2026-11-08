@@ -32,7 +32,8 @@ bool MultiStateInput::isShortPressed(InputConfig* config, Input input)
 		mTimeHoldingButton = 0;
 	}
 	else
-		mIsPressed = false;
+		if (!config->isMappedTo("HotKeyEnable", input))
+			mIsPressed = false;
 
 	return false;
 }
