@@ -718,6 +718,9 @@ msgstr "RECERCAR DE JÒCS"
 msgid "SYSTEMS"
 msgstr "SISTÈMAS"
 
+msgid "SYSTEMS LIST"
+msgstr "LISTA DE SISTÈMAS"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr ""
 

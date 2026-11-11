@@ -729,6 +729,9 @@ msgstr "CERCAR JOCS"
 msgid "SYSTEMS"
 msgstr "SISTEMES"
 
+msgid "SYSTEMS LIST"
+msgstr "LLISTA DE SISTEMES"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTAL·LACIÓ EN UN NOU DISC"
 

@@ -692,33 +692,15 @@ std::vector<HelpPrompt> ISimpleGameListView::getHelpPrompts()
 
 	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK"), [&] { goBack(); }));
 
-	if (invertNorthButton)
-		prompts.push_back(HelpPrompt(BUTTON_OK, _("SAVE STATES (HOLD)"), [&] { showSelectedGameSaveSnapshots(); }));
-	else 
-		prompts.push_back(HelpPrompt(BUTTON_OK, _("GAME OPTIONS (HOLD)"), [&] { showSelectedGameOptions(); }));
+	prompts.push_back(HelpPrompt(BUTTON_OK, _("LAUNCH")));
 
 	if (!UIModeController::getInstance()->isUIModeKid())
 		prompts.push_back(HelpPrompt("select", _("OPTIONS"), [&] { showGamelistOptions(); }));
 
-	if (cursorHasSaveStatesEnabled())
-	{
-		if (invertNorthButton)
-		{
-			if (UIModeController::getInstance()->isUIModeKid())
-				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS"), [&] { showSelectedGameOptions(); }));
-			else
-				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameOptions(); }));
-		}
-		else
-		{
-			if (UIModeController::getInstance()->isUIModeKid())
-				prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
-			else
-				prompts.push_back(HelpPrompt("x", _("SAVE STATES") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameSaveSnapshots(); }));
-		}
-	}
-	else if (!UIModeController::getInstance()->isUIModeKid())
-		prompts.push_back(HelpPrompt("x", _("FAVORITE")));
+	if (invertNorthButton)
+		prompts.push_back(HelpPrompt("x", _("GAME OPTIONS"), [&] { showSelectedGameOptions(); }));
+	else
+		prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
 
 	prompts.push_back(HelpPrompt("y", _("SEARCH") + std::string("/") + _("RANDOM"), [&] { showQuickSearch(); }));
 

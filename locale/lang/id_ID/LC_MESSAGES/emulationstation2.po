@@ -720,6 +720,9 @@ msgstr "TEMUKAN GAME"
 msgid "SYSTEMS"
 msgstr "SISTEM"
 
+msgid "SYSTEMS LIST"
+msgstr "DAFTAR SISTEM"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALL PADA DISK BARU"
 

@@ -720,6 +720,9 @@ msgstr "חיפוש משחקים"
 msgid "SYSTEMS"
 msgstr "מערכות"
 
+msgid "SYSTEMS LIST"
+msgstr "רשימת מערכות"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "התקנה על כונן חדש"
 

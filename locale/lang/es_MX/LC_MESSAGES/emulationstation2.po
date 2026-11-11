@@ -731,6 +731,9 @@ msgstr "BUSCAR JUEGOS"
 msgid "SYSTEMS"
 msgstr "SISTEMAS"
 
+msgid "SYSTEMS LIST"
+msgstr "LISTA DE SISTEMAS"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALAR EN UN NUEVO DISCO"
 

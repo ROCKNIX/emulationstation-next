@@ -1475,6 +1475,30 @@ SystemData* SystemData::getRandomSystem()
 	return NULL;
 }
 
+SystemData* SystemData::getRandomSystem(const SystemData* excludedSystem)
+{
+	auto isEligible = [excludedSystem](SystemData* system) {
+		return system->isGameSystem() && system->isVisible() && system != excludedSystem;
+	};
+
+	unsigned int total = sSystemVector.count(isEligible);
+	if (total == 0)
+		return nullptr;
+
+	int target = Randomizer::random(total);
+	for (auto system : sSystemVector)
+	{
+		if (isEligible(system))
+		{
+			if (target == 0)
+				return system;
+			target--;
+		}
+	}
+
+	return nullptr;
+}
+
 FileData* SystemData::getRandomGame()
 {
 	std::vector<FileData*> list = mRootFolder->getFilesRecursive(GAME, true);

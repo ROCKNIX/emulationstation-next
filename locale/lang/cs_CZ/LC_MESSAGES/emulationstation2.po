@@ -726,6 +726,9 @@ msgstr "HLEDAT HRY"
 msgid "SYSTEMS"
 msgstr "SYSTÉMY"
 
+msgid "SYSTEMS LIST"
+msgstr "SEZNAM SYSTÉMŮ"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "INSTALACE NA NOVÝ DISK"
 

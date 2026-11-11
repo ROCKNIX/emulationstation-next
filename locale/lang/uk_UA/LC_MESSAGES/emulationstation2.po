@@ -721,6 +721,9 @@ msgstr "ЗНАЙТИ ІГРИ"
 msgid "SYSTEMS"
 msgstr "СИСТЕМИ"
 
+msgid "SYSTEMS LIST"
+msgstr "СПИСОК СИСТЕМ"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "ВСТАНОВИТИ НА НОВИЙ НОСІЙ"
 

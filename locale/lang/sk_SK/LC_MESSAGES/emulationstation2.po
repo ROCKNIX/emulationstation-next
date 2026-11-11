@@ -729,6 +729,9 @@ msgstr "Nájsť hry"
 msgid "SYSTEMS"
 msgstr "Systémy"
 
+msgid "SYSTEMS LIST"
+msgstr "ZOZNAM SYSTÉMOV"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "Nainštalovať na nový disk"
 

@@ -137,6 +137,7 @@ public:
 	SystemData* getNext() const;
 	SystemData* getPrev() const;
 	static SystemData* getRandomSystem();
+	static SystemData* getRandomSystem(const SystemData* excludedSystem);
 	FileData* getRandomGame();
 
 	// Load or re-load theme.
