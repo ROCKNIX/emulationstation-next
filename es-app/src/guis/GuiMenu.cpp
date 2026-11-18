@@ -2388,116 +2388,121 @@ void GuiMenu::openSystemSettings()
 		dtbOverlayItem(mWindow, s, "custom");
 	}
 
-#if defined(AMD64) || defined(H700) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(S922X) || defined(SM6115) || defined(SM8250)
-	// Allow user control over how the device sleeps - only show for devices with real suspend enabled
-	s->addGroup(_("SUSPEND"));
-	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
-	std::vector<std::string> availableSleepModes = ApiSystem::getInstance()->getSleepModes();
-	std::string selectedSleep = SystemConf::getInstance()->get("system.suspendmode");
-	if (selectedSleep.empty())
-		selectedSleep = "default";
-	bool found = false;
-	for (auto it = availableSleepModes.begin(); it != availableSleepModes.end(); it++)
-	{
-		optionsSleep->add((*it), (*it), selectedSleep == (*it));
-		if (selectedSleep == (*it))
-			found = true;
-	}
-	if (!found)
-		optionsSleep->add(selectedSleep, selectedSleep, true);
-	s->addWithLabel(_("DEVICE SUSPEND MODE"), optionsSleep);
-	s->addSaveFunc([this, optionsSleep, selectedSleep]
-	{
-		if (optionsSleep->changed()) {
-			SystemConf::getInstance()->set("system.suspendmode", optionsSleep->getSelected());
-			Utils::Platform::runSystemCommand("/usr/bin/suspendmode " + optionsSleep->getSelected(), "", nullptr);
+#if defined(ROCKNIX)
+	#if defined(AMD64) || defined(H700) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(S922X) || defined(SM6115) || defined(SM8250)
+		// Allow user control over how the device sleeps - only show for devices with real suspend enabled
+		s->addGroup(_("SUSPEND"));
+		auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
+		std::vector<std::string> availableSleepModes = ApiSystem::getInstance()->getSleepModes();
+		std::string selectedSleep = SystemConf::getInstance()->get("system.suspendmode");
+		if (selectedSleep.empty())
+			selectedSleep = "default";
+		bool found = false;
+		for (auto it = availableSleepModes.begin(); it != availableSleepModes.end(); it++)
+		{
+			optionsSleep->add((*it), (*it), selectedSleep == (*it));
+			if (selectedSleep == (*it))
+				found = true;
 		}
-	});
-#else
-	// Allow user control over a timed shutdown after fake suspend
-	s->addGroup(_("SUSPEND"));
+		if (!found)
+			optionsSleep->add(selectedSleep, selectedSleep, true);
+		s->addWithLabel(_("DEVICE SUSPEND MODE"), optionsSleep);
+		s->addSaveFunc([this, optionsSleep, selectedSleep]
+		{
+			if (optionsSleep->changed()) {
+				SystemConf::getInstance()->set("system.suspendmode", optionsSleep->getSelected());
+				Utils::Platform::runSystemCommand("/usr/bin/suspendmode " + optionsSleep->getSelected(), "", nullptr);
+			}
+		});
+	#endif
 
-	// Fake suspend toggle
-	auto optionsEnableSuspend = std::make_shared<SwitchComponent>(mWindow);
-	bool suspendEnabled = SystemConf::getInstance()->get("system.suspend.enable") == "1";
-	optionsEnableSuspend->setState(suspendEnabled);
-	s->addWithLabel(_("ENABLE SUSPEND"), optionsEnableSuspend);
-	
-	optionsEnableSuspend->setOnChangedCallback([optionsEnableSuspend] {
-		bool enableSuspendState = optionsEnableSuspend->getState();
-		SystemConf::getInstance()->set("system.suspend.enable", enableSuspendState ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-	
-	// Timed shutdown toggle
-	auto optionsEnableTimedShutdown = std::make_shared<SwitchComponent>(mWindow);
-	bool timedShutdownEnabled = SystemConf::getInstance()->get("system.suspend.enable_timed_shutdown") == "1";
-	optionsEnableTimedShutdown->setState(timedShutdownEnabled);
-	s->addWithLabel(_("ENABLE TIMED SHUTDOWN"), optionsEnableTimedShutdown);
-	
-	optionsEnableTimedShutdown->setOnChangedCallback([optionsEnableTimedShutdown] {
-		bool enableTimedShutdownState = optionsEnableTimedShutdown->getState();
-		SystemConf::getInstance()->set("system.suspend.enable_timed_shutdown", enableTimedShutdownState ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
+	// If hardware suspend is disabled, allow fake suspend to be configured
+	std::string currentSuspendMode = SystemConf::getInstance()->get("system.suspendmode");
+	if(currentSuspendMode == "off") {
+		s->addGroup(_("FAKE SUSPEND"));
 
-	// Shutdown delay after suspend
-	auto ctlShutdownDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
+		// Fake suspend toggle
+		auto optionsEnableSuspend = std::make_shared<SwitchComponent>(mWindow);
+		bool suspendEnabled = SystemConf::getInstance()->get("system.suspend.enable") == "1";
+		optionsEnableSuspend->setState(suspendEnabled);
+		s->addWithLabel(_("ENABLE SUSPEND"), optionsEnableSuspend);
+		
+		optionsEnableSuspend->setOnChangedCallback([optionsEnableSuspend] {
+			bool enableSuspendState = optionsEnableSuspend->getState();
+			SystemConf::getInstance()->set("system.suspend.enable", enableSuspendState ? "1" : "0");
+			SystemConf::getInstance()->saveSystemConf();
+		});
+		
+		// Timed shutdown toggle
+		auto optionsEnableTimedShutdown = std::make_shared<SwitchComponent>(mWindow);
+		bool timedShutdownEnabled = SystemConf::getInstance()->get("system.suspend.enable_timed_shutdown") == "1";
+		optionsEnableTimedShutdown->setState(timedShutdownEnabled);
+		s->addWithLabel(_("ENABLE TIMED SHUTDOWN"), optionsEnableTimedShutdown);
+		
+		optionsEnableTimedShutdown->setOnChangedCallback([optionsEnableTimedShutdown] {
+			bool enableTimedShutdownState = optionsEnableTimedShutdown->getState();
+			SystemConf::getInstance()->set("system.suspend.enable_timed_shutdown", enableTimedShutdownState ? "1" : "0");
+			SystemConf::getInstance()->saveSystemConf();
+		});
 
-	// Read system config value (seconds)
-	std::string shutdownDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay");
-	float shutdownDelayValue = 0.f;
+		// Shutdown delay after suspend
+		auto ctlShutdownDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
 
-	if(shutdownDelayValueString.length() > 0) {
-		shutdownDelayValue = (float)atoi(shutdownDelayValueString.c_str());
+		// Read system config value (seconds)
+		std::string shutdownDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay");
+		float shutdownDelayValue = 0.f;
+
+		if(shutdownDelayValueString.length() > 0) {
+			shutdownDelayValue = (float)atoi(shutdownDelayValueString.c_str());
+		}
+
+		// Convert to minutes for UI
+		ctlShutdownDelay->setValue((float)(shutdownDelayValue / 60));
+		s->addWithLabel(_("SHUTDOWN DELAY"), ctlShutdownDelay);
+		s->addSaveFunc([ctlShutdownDelay]
+		{
+			SystemConf::getInstance()->set("system.shutdown_delay", std::to_string((int)(round(ctlShutdownDelay->getValue()) * 60)));
+		});
+
+		// Shutdown delay after suspend (in game)
+		auto ctlShutdownInGameDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
+
+		// Read system config value (seconds)
+		std::string shutdownInGameDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay_running_game");
+		float shutdownInGameDelayValue = 0.f;
+
+		if(shutdownInGameDelayValueString.length() > 0) {
+			shutdownInGameDelayValue = (float)atoi(shutdownInGameDelayValueString.c_str());
+		}
+
+		// Convert to minutes for UI
+		ctlShutdownInGameDelay->setValue((float)(shutdownInGameDelayValue / 60));
+		s->addWithLabel(_("SHUTDOWN DELAY (IN GAME)"), ctlShutdownInGameDelay);
+		s->addSaveFunc([ctlShutdownInGameDelay]
+		{
+			SystemConf::getInstance()->set("system.shutdown_delay_running_game", std::to_string((int)(round(ctlShutdownInGameDelay->getValue()) * 60)));
+		});
+
+		// Add option to park cores on suspend
+		auto optionsSuspendParkCores = std::make_shared<SwitchComponent>(mWindow);
+		bool suspendParkCoresEnabled = SystemConf::getInstance()->get("system.suspend.park_cores") == "1";
+		optionsSuspendParkCores->setState(suspendParkCoresEnabled);
+		s->addWithLabel(_("ENABLE CORE PARKING"), optionsSuspendParkCores);
+		optionsSuspendParkCores->setOnChangedCallback([optionsSuspendParkCores] {
+			bool suspendParkCoresState = optionsSuspendParkCores->getState();
+			SystemConf::getInstance()->set("system.suspend.park_cores", suspendParkCoresState ? "1" : "0");
+		});
+
+		// Add option to use DPMS on suspend
+		auto optionsSuspendDpms = std::make_shared<SwitchComponent>(mWindow);
+		bool suspendDpmsEnabled = SystemConf::getInstance()->get("system.suspend.dpms") == "1";
+		optionsSuspendDpms->setState(suspendDpmsEnabled);
+		s->addWithLabel(_("ENABLE DPMS"), optionsSuspendDpms);
+		optionsSuspendDpms->setOnChangedCallback([optionsSuspendDpms] {
+			bool suspendDpmsState = optionsSuspendDpms->getState();
+			SystemConf::getInstance()->set("system.suspend.dpms", suspendDpmsState ? "1" : "0");
+		});
 	}
-
-	// Convert to minutes for UI
-	ctlShutdownDelay->setValue((float)(shutdownDelayValue / 60));
-	s->addWithLabel(_("SHUTDOWN DELAY"), ctlShutdownDelay);
-	s->addSaveFunc([ctlShutdownDelay]
-	{
-		SystemConf::getInstance()->set("system.shutdown_delay", std::to_string((int)(round(ctlShutdownDelay->getValue()) * 60)));
-	});
-
-	// Shutdown delay after suspend (in game)
-	auto ctlShutdownInGameDelay = std::make_shared<SliderComponent>(mWindow, 0.f, 30.0f, 1.f, "m");
-
-	// Read system config value (seconds)
-	std::string shutdownInGameDelayValueString = SystemConf::getInstance()->get("system.shutdown_delay_running_game");
-	float shutdownInGameDelayValue = 0.f;
-
-	if(shutdownInGameDelayValueString.length() > 0) {
-		shutdownInGameDelayValue = (float)atoi(shutdownInGameDelayValueString.c_str());
-	}
-
-	// Convert to minutes for UI
-	ctlShutdownInGameDelay->setValue((float)(shutdownInGameDelayValue / 60));
-	s->addWithLabel(_("SHUTDOWN DELAY (IN GAME)"), ctlShutdownInGameDelay);
-	s->addSaveFunc([ctlShutdownInGameDelay]
-	{
-		SystemConf::getInstance()->set("system.shutdown_delay_running_game", std::to_string((int)(round(ctlShutdownInGameDelay->getValue()) * 60)));
-	});
-
-	// Add option to park cores on suspend
-	auto optionsSuspendParkCores = std::make_shared<SwitchComponent>(mWindow);
-	bool suspendParkCoresEnabled = SystemConf::getInstance()->get("system.suspend.park_cores") == "1";
-	optionsSuspendParkCores->setState(suspendParkCoresEnabled);
-	s->addWithLabel(_("ENABLE CORE PARKING"), optionsSuspendParkCores);
-	optionsSuspendParkCores->setOnChangedCallback([optionsSuspendParkCores] {
-		bool suspendParkCoresState = optionsSuspendParkCores->getState();
-		SystemConf::getInstance()->set("system.suspend.park_cores", suspendParkCoresState ? "1" : "0");
-	});
-
-	// Add option to use DPMS on suspend
-	auto optionsSuspendDpms = std::make_shared<SwitchComponent>(mWindow);
-	bool suspendDpmsEnabled = SystemConf::getInstance()->get("system.suspend.dpms") == "1";
-	optionsSuspendDpms->setState(suspendDpmsEnabled);
-	s->addWithLabel(_("ENABLE DPMS"), optionsSuspendDpms);
-	optionsSuspendDpms->setOnChangedCallback([optionsSuspendDpms] {
-		bool suspendDpmsState = optionsSuspendDpms->getState();
-		SystemConf::getInstance()->set("system.suspend.dpms", suspendDpmsState ? "1" : "0");
-	});
 #endif
 
 #if defined(BATTERYPLUS)
