@@ -936,7 +936,12 @@ std::vector<std::string> ApiSystem::getAvailableColors()
 
 std::vector<std::string> ApiSystem::getSleepModes()
 {
-	return executeEnumerationScript("/usr/bin/sh -lc \"echo \\\"default\\\"; tr \\\" \\\" \\\"\\n\\\" </sys/power/state | grep -v disk\"");
+	if (!Utils::FileSystem::exists("/sys/power/state")) {
+		LOG(LogWarning) << "/sys/power/state not found, suspend mode configuration unavailable";
+        return {"default","off"};
+    }
+
+	return executeEnumerationScript("/usr/bin/sh -lc \"echo 'default off $(</sys/power/state)' | tr ' ' '\n' | grep -v 'disk'\"");
 }
 
 std::string ApiSystem::getCurrentAudioOutputDevice() 
