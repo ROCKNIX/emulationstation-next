@@ -2389,7 +2389,7 @@ void GuiMenu::openSystemSettings()
 	}
 
 #if defined(ROCKNIX)
-	#if defined(AMD64) || defined(H700) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(S922X) || defined(SM6115) || defined(SM8250)
+	#if defined(AMD64) || defined(H700) || defined(RK3326) || defined(RK3399) || defined(RK3566) || defined(RK3588) || defined(S922X) || defined(SM6115) || defined(SM8250) || defined(SM4450) || defined(SM8550) || defined(SM8750)
 		// Allow user control over how the device sleeps - only show for devices with real suspend enabled
 		s->addGroup(_("SUSPEND"));
 		auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
