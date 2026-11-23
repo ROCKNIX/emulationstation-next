@@ -718,6 +718,9 @@ msgstr "尋找遊戲"
 msgid "SYSTEMS"
 msgstr "遊戲平台"
 
+msgid "SYSTEMS LIST"
+msgstr "遊戲平台清單"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "安裝至新的磁碟"
 

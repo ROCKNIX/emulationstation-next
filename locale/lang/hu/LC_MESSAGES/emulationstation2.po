@@ -727,6 +727,9 @@ msgstr "JÁTÉKOK KERESÉSE"
 msgid "SYSTEMS"
 msgstr "RENDSZEREK"
 
+msgid "SYSTEMS LIST"
+msgstr "RENDSZERLISTA"
+
 msgid "INSTALL ON A NEW DISK"
 msgstr "TELEPÍTÉS ÚJ LEMEZRE"
 
