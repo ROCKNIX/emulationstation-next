@@ -4065,6 +4065,14 @@ void GuiMenu::openGamesSettings()
 
 	s->addGroup(_("DEFAULT GLOBAL SETTINGS"));
 
+	// Make starting lowerdeck optional
+	if (Utils::Platform::GetEnv("DEVICE_HAS_DUAL_SCREEN").find("true") != std::string::npos) {
+		auto lowerdeck_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("lowerdeck"));
+		lowerdeck_enabled->addRange({ { _("AUTO"), "auto" },{ _("ON") , "1" },{ _("OFF") , "0" } }, SystemConf::getInstance()->get("global.lowerdeck"));
+		s->addWithLabel(_("lowerdeck"), lowerdeck_enabled);
+		s->addSaveFunc([lowerdeck_enabled] { SystemConf::getInstance()->set("global.lowerdeck", lowerdeck_enabled->getSelected()); });
+	}
+
 	// Screen ratio choice
 	if (!hasGlobalFeature("ratio"))
 	{
@@ -6338,6 +6346,14 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		systemConfiguration->addEntry(_("SCALING AND SHARPENING"), true, [mWindow, configName] { openResolutionScalingSettings(mWindow, configName); });
 
 	auto customFeatures = systemData->getCustomFeatures(currentEmulator, currentCore);
+
+	// Make starting lowerdeck optional
+	if (Utils::Platform::GetEnv("DEVICE_HAS_DUAL_SCREEN").find("true") != std::string::npos) {
+		auto lowerdeck_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("lowerdeck"));
+		lowerdeck_enabled->addRange({ { _("AUTO"), "auto" },{ _("ON") , "1" },{ _("OFF") , "0" } }, SystemConf::getInstance()->get(configName + ".lowerdeck"));
+		systemConfiguration->addWithLabel(_("lowerdeck"), lowerdeck_enabled);
+		systemConfiguration->addSaveFunc([lowerdeck_enabled, configName] { SystemConf::getInstance()->set(configName + ".lowerdeck", lowerdeck_enabled->getSelected()); });
+	}
 
 	// Screen ratio choice
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::ratio))
